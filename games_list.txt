@@ -1,0 +1,31 @@
+.venv/bin/python scripts/play_local.py --list
+INFO:arc_agi.scorecard:Initialized ScorecardManager with idle_for=0:15:00 and max_open_for=3 days, 0:00:00
+2026-09-18 20:05:32 | INFO | Got anonymous API key: cd3f62c6-e9eb-4db5-826e-bbf5a5bd4c8f
+2026-09-18 20:05:32 | INFO | You can register for an API key at https://three.arcprize.org
+2026-09-18 20:05:34 | INFO | Successfully fetched 25 environment(s) from API
+25 environments:
+  ar25-0c556536: AR25
+  bp35-0a0ad940: BP35
+  cd82-fb555c5d: CD82
+  cn04-2fe56bfb: CN04
+  dc22-fdcac232: DC22
+  ft09-0d8bbf25: FT09
+  g50t-5849a774: G50T
+  ka59-38d34dbb: KA59
+  lf52-271a04aa: LF52
+  lp85-305b61c3: LP85
+  ls20-9607627b: LS20
+  m0r0-492f87ba: M0R0
+  r11l-495a7899: R11L
+  re86-8af5384d: RE86
+  s5i5-18d95033: S5I5
+  sb26-7fbdac44: SB26
+  sc25-635fd71a: SC25
+  sk48-d8078629: SK48
+  sp80-589a99af: SP80
+  su15-1944f8ab: SU15
+  tn36-ef4dde99: TN36
+  tr87-cd924810: TR87
+  tu93-0768757b: TU93
+  vc33-5430563c: VC33
+  wa30-ee6fef47: WA30
