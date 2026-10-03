@@ -1,0 +1,10 @@
+{
+  "accel": "t4",
+  "jobs": [
+    "train_ppo.py --tag TEAM-23-ppo-rnd-effect-s0 --seed 0 --steps 400000 --device cuda --rnd-coef 0.05 --effect-model",
+    "train_ppo.py --tag TEAM-23-ppo-rnd-effect-s1 --seed 1 --steps 400000 --device cuda --rnd-coef 0.05 --effect-model",
+    "train_ppo.py --tag TEAM-23-ppo-rnd-effect-s2 --seed 2 --steps 400000 --device cuda --rnd-coef 0.05 --effect-model"
+  ],
+  "maxpar": 99,
+  "threads": 0
+}

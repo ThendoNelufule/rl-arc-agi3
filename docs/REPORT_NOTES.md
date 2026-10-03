@@ -167,3 +167,32 @@ Unmeasured: gateway latency per action (check in the first real submission log).
   experiments/runs/_local_superseded/ (TEAM-10/11 0.0000, TEAM-20 0.0004 locally) and are only
   used as a cross-check. Eval wall-clock times from now on refer to Kaggle CPU (1 thread per job).
 - Every run folder pulled from Kaggle carries evaluated_on.txt naming its kernel.
+
+## TEAM-20 re-run on Kaggle CPU (consistency check)
+- Kaggle CPU result identical to the local one: 0.0004 +- 0.0006, 1 level (lp85, train s0, eval
+  seed 2) -> evaluation is deterministic given seeds and hardware change did not alter results.
+  Eval time: ~116 s per train seed (3 eval seeds), 1 thread.
+
+## TEAM-21-ppo-rnd (P3.2) | 2026-10-04
+- Limitation observed (TEAM-20): ~4 extrinsic rewards per 400k steps -> PPO barely moves from
+  uniform (entropy 3.49 -> ~3.0 nats); dev behaviour = random.
+- Hypothesis: a learned novelty signal (RND) that generalises across near-identical frames gives
+  PPO a dense gradient towards state-changing, novel behaviour that transfers to unseen games.
+- Intervention (stacked on TEAM-20): RND intrinsic reward, coef 0.05, single combined reward
+  stream (simplification vs Burda et al.'s two value heads), target orthogonal init + per-dim
+  standardised features, bonus / EMA(mean error). RND only during training; eval = frozen `ppo`.
+- Compute: 3 seeds x 400k, one Kaggle T4 kernel (3 parallel jobs), 0.45-0.46 h each.
+  Eval Kaggle CPU 1 thread: ~52-118 s per train seed.
+- Training: levels 5/7/6 (TEAM-20: 3/5/5); intrinsic bonus held at ~0.049/step; entropy ~3.0.
+- Results (dev, 3x3): official 0.0247 +- 0.0317 (train seeds), all 9 runs 0.0247 +- 0.0651;
+  5 levels (train seeds 1/2/2). TEAM-20: 0.0004, 1 level.
+  Levels: lp85 in 4/9 runs (after 124-489 actions), ls20 once (41 actions -> that single eval
+  run scores 0.2085 and dominates the mean: efficiency is squared). High variance, n=3.
+- Behaviour: noop 0.355, distinct frac 0.40-0.45, top-action 0.11-0.13, entropy 4.84-4.94 bits;
+  repeated-known-no-op share 0.084-0.100 of actions (24-28% of no-ops; TEAM-20 0.07-0.13).
+- Conclusion: RND is the first intervention that moves dev performance (5x levels, 60x score),
+  mostly through lp85 and one efficient ls20 solve; the policy is still memoryless and still
+  re-tries known no-ops ~9% of the time -> P3.3 adds memory (masked LSTM, TEAM-22).
+- Kaggle: notebook arc3-team-21-ppo-rnd v1 (seed 0 weights), smoke OK; public LB PENDING.
+- Note on TEAM-22 timing: TEAM-22 training was launched before this result (to keep the GPU busy);
+  its adoption as P3.3 is decided by the evidence above (memoryless repeats), as pre-planned.

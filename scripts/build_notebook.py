@@ -50,7 +50,7 @@ ASSETS_SLUG = "thendonelufule/arc3-rl-assets"
 # Pinned on every per-version submission kernel so all versions run in the same environment.
 DOCKER_IMAGE = ("gcr.io/kaggle-images/python@sha256:"
                 "dafd4ce5668bbf1ad422e4c109e0f18c9623c3a7c7f48b0235f13142755c40b9")
-RL_MODULES = ["arc_gym.py", "nets.py", "replay.py", "sb3_nets.py", "recurrent.py", "policies.py"]
+RL_MODULES = ["arc_gym.py", "nets.py", "replay.py", "sb3_nets.py", "recurrent.py", "effect.py", "policies.py"]
 
 
 def code_cell(source: str) -> dict:

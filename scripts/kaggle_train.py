@@ -20,7 +20,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 USER = "thendonelufule"
 SHIP = ["rl/arc_gym.py", "rl/nets.py", "rl/replay.py", "rl/sb3_nets.py", "rl/recurrent.py", "rl/policies.py",
-        "rl/train_dqn.py", "rl/train_ppo.py", "rl/rnd.py", "rl/evaluate.py", "splits.json"]
+        "rl/train_dqn.py", "rl/train_ppo.py", "rl/rnd.py", "rl/effect.py", "rl/evaluate.py", "splits.json"]
 ACCEL = {"cpu": dict(enable_gpu=False), "t4": dict(enable_gpu=True, machine_shape="NvidiaTeslaT4"),
          "p100": dict(enable_gpu=True, machine_shape="NvidiaTeslaP100")}
 

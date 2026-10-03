@@ -21,8 +21,13 @@ Current phase: P2.3 TEAM-12-dqn-novelty-mask (training) + P3.1 TEAM-20-ppo-base 
 - 2026-10-03 P3.1 done: TEAM-20-ppo-base dev 0.0004 +- 0.0006 (3x3, 1 level) = random level.
   Notebook arc3-team-20-ppo-base v1 pushed. TEAM-21 (PPO+RND) training; TEAM-12 training.
 
+- 2026-10-04 00:20 P3.2 done: TEAM-21-ppo-rnd dev 0.0247 +- 0.0317 (3x3, 5 levels) = best so far.
+  Eval moved to Kaggle CPU (OOM locally). TEAM-22 (RND+LSTM) and TEAM-23 (RND + effect model for
+  graph exploration on the PPO chain) training on T4s.
+
 ## Submission queue (ranked by dev official score; Kaggle = 1 submission/day, never used for tuning)
 | rank | notebook (version) | dev official (3x3) | dev levels | Kaggle public |
-| 1 | arc3-team-20-ppo-base (v1) | 0.0004 +- 0.0006 | 1 | pending |
-| 2 | arc3-team-10-dqn-base (v1) | 0.0000 | 0 | pending |
-| 3 | arc3-team-11-dqn-novelty (v1) | 0.0000 | 0 | pending |
+| 1 | arc3-team-21-ppo-rnd (v1) | 0.0247 +- 0.0317 | 5 | pending |
+| 2 | arc3-team-20-ppo-base (v1) | 0.0004 +- 0.0006 | 1 | pending |
+| 3 | arc3-team-10-dqn-base (v1) | 0.0000 (local; Kaggle-CPU re-run pending) | 0 | pending |
+| 4 | arc3-team-11-dqn-novelty (v1) | 0.0000 (local; Kaggle-CPU re-run pending) | 0 | pending |

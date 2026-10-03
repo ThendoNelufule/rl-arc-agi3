@@ -24,6 +24,14 @@
         "TEAM-20-ppo-base.pt",
         "TEAM-20-ppo-base.json"
       ]
+    },
+    "TEAM-21-ppo-rnd": {
+      "policy": "ppo",
+      "source": "experiments/train/TEAM-21-ppo-rnd-s0",
+      "files": [
+        "TEAM-21-ppo-rnd.pt",
+        "TEAM-21-ppo-rnd.json"
+      ]
     }
   },
   "submission_rule": "training seed 0 of each version (fixed before any Kaggle score)"

@@ -24,6 +24,7 @@ from stable_baselines3.common.vec_env import DummyVecEnv
 
 from arc_gym import ArcGymEnv, get_arcade
 from recurrent import MaskChannel, MaskedRecurrentPolicy, RPOLICY_KWARGS
+from effect import EffectVecEnv
 from rnd import RNDVecEnv
 from sb3_nets import POLICY_KWARGS
 from train_dqn import hardware
@@ -104,6 +105,8 @@ def main():
     p.add_argument("--log-every", type=int, default=10_000)
     p.add_argument("--rnd-coef", type=float, default=0.0,
                    help="P3.2 RND intrinsic reward coefficient (0 = off)")
+    p.add_argument("--effect-model", action="store_true",
+                   help="also train a separate action-effect model on the agent's experience")
     p.add_argument("--recurrent", action="store_true",
                    help="P3.3 masked RecurrentPPO (LSTM 256) instead of MaskablePPO")
     p.add_argument("--device", default="cpu")
@@ -123,6 +126,9 @@ def main():
     games = json.loads((ROOT / "splits.json").read_text())["train"]
     venv = DummyVecEnv(make_env_fns(games, args.ep_len, get_arcade(), mask_channel=args.recurrent))
     venv.seed(args.seed)
+    eff = None
+    if args.effect_model:
+        venv = eff = EffectVecEnv(venv, device=args.device, seed=args.seed)
     if args.rnd_coef > 0:
         venv = RNDVecEnv(venv, coef=args.rnd_coef, device=args.device, seed=args.seed)
     algo_cls, pol, kw = ((RecurrentPPO, MaskedRecurrentPolicy, RPOLICY_KWARGS) if args.recurrent
@@ -137,6 +143,10 @@ def main():
     train_s = time.time() - t0
 
     torch.save(model.policy.state_dict(), out / "model.pt")
+    if eff is not None:
+        eff.save(out / "effect.pt", out / "effect.json", args.tag)
+        print(f"effect model: BCE {eff.loss_sum / max(eff.loss_n, 1):.4f} (last-window avg n/a), "
+              f"positive rate {eff.pos_sum / max(eff.n, 1):.3f}")
     (out / "model.json").write_text(json.dumps(dict(
         algo="recurrent_ppo" if args.recurrent else "maskable_ppo", tag=args.tag, gdim=256, deterministic=False,
         rnd_coef=args.rnd_coef), indent=2))
