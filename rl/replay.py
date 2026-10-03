@@ -26,12 +26,14 @@ class Replay:
         self.r = np.zeros(cap, np.float32)
         self.d = np.zeros(cap, np.float32)
         self.nm = np.zeros((cap, n_actions), bool)
+        self.chg = np.zeros(cap, np.float32)     # 1 if the action changed the frame (P2.3 label)
 
     def __len__(self):
         return self.cap if self.full else self.i
 
-    def add(self, o, a, r, no, d, nm):
+    def add(self, o, a, r, no, d, nm, chg=0.0):
         i = self.i
+        self.chg[i] = chg
         self.o[i], self.no[i] = pack(o[None])[0], pack(no[None])[0]
         self.a[i], self.r[i], self.d[i], self.nm[i] = a, r, d, nm
         self.i = (i + 1) % self.cap
@@ -40,4 +42,4 @@ class Replay:
     def sample(self, n, rng):
         idx = rng.integers(0, len(self), n)
         return (unpack(self.o[idx]), self.a[idx], self.r[idx],
-                unpack(self.no[idx]), self.d[idx], self.nm[idx])
+                unpack(self.no[idx]), self.d[idx], self.nm[idx], self.chg[idx])

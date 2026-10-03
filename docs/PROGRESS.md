@@ -1,5 +1,5 @@
 # Progress
-Current phase: P2.2 TEAM-11-dqn-novelty
+Current phase: P2.3 TEAM-12-dqn-novelty-mask (training) + P3.1 TEAM-20-ppo-base (training)
 - 2026-09-18 P0 done: pipeline verified, Kaggle 0.02 (random)
 - 2026-10-03 P1.1 adapter, P1.2 frozen splits, P1.3 eval harness done
 - 2026-10-03 P1.4 done: private dataset thendonelufule/arc3-rl-assets (SB3 2.9.0 + sb3-contrib
@@ -15,3 +15,6 @@ Current phase: P2.2 TEAM-11-dqn-novelty
   analyze_run.py, aggregate.py, scripts/kaggle_train.py, agent wrapper + 9h wall-clock guard.
 - 2026-10-03 Submissions: one notebook per version (arc3-<slug>, image pinned), weights = seed 0.
   arc3-team-10-dqn-base v1 pushed + smoke OK; awaiting manual "Submit to Competition".
+- 2026-10-03 P2.2 done: TEAM-11-dqn-novelty dev 0.0000 +- 0.0000 (3x3, 0 levels); 27-33% of actions
+  repeat known no-ops -> motivates P2.3. Submission notebook arc3-team-11-dqn-novelty v1 pushed.
+  TEAM-12 (novelty + effect masking) and TEAM-20 (PPO base) training in parallel on T4s.

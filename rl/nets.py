@@ -51,3 +51,21 @@ class QNet(nn.Module):
         gb = g[:, :, None, None].expand(-1, -1, 8, 8)
         c = self.click(torch.cat([local, gb], 1)).flatten(1)      # (B,64) row-major = 8r+c
         return torch.cat([self.simple(g), c], 1)
+
+
+class QEffNet(QNet):
+    """QNet + action-effect head (P2.3): logits of p(frame changes | s, a) for all 70 actions,
+    same layout as the Q heads (MLP for simple actions, spatial 1x1-conv for click cells).
+    Parameter names of the Q part match QNet, so a QNet checkpoint loads with strict=False."""
+
+    def __init__(self, ch=64, gdim=256, hid=128):
+        super().__init__(ch, gdim, hid)
+        self.esimple = nn.Sequential(nn.Linear(gdim, hid), nn.ReLU(), nn.Linear(hid, N_SIMPLE))
+        self.eclick = nn.Sequential(nn.Conv2d(ch + gdim, hid, 1), nn.ReLU(), nn.Conv2d(hid, 1, 1))
+
+    def both(self, x):
+        local, g = self.enc(x)
+        cat = torch.cat([local, g[:, :, None, None].expand(-1, -1, 8, 8)], 1)
+        q = torch.cat([self.simple(g), self.click(cat).flatten(1)], 1)
+        e = torch.cat([self.esimple(g), self.eclick(cat).flatten(1)], 1)
+        return q, e

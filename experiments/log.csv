@@ -5,3 +5,5 @@ date,kernel,phase,games_set,seeds,local_score,kaggle_score,notes
 2026-10-03,p21-random-train,P2.1,train,3,0.0111,,random on train split for reward density (4 levels)
 2026-10-03,TEAM-10-dqn-base,P2.1,dev,3x3,0.0000,,dqn-online; 0 levels; 3 train seeds x 3 eval seeds; T4 0.3h/seed
 2026-10-03,TEAM-10f-dqn-frozen,P2.1,dev,3x3,0.0000,,frozen variant of TEAM-10; collapses to one action (top 0.77-0.93)
+2026-10-03,TEAM-11-dqn-novelty,P2.2,dev,3x3,0.0000,,dqn-online + count novelty beta 0.05; 0 levels; repeats known no-ops 27-33% of actions
+2026-10-03,TEAM-11f-dqn-novelty-frozen,P2.2,dev,3x3,0.0000,,frozen variant of TEAM-11

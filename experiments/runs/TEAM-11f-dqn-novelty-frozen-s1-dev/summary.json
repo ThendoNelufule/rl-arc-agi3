@@ -1,0 +1,37 @@
+{
+  "tag": "TEAM-11f-dqn-novelty-frozen-s1-dev",
+  "policy": "dqn",
+  "ckpt": "experiments/train/TEAM-11-dqn-novelty-s1/model.pt",
+  "split": "dev",
+  "games": [
+    "dc22",
+    "ka59",
+    "lf52",
+    "lp85",
+    "ls20"
+  ],
+  "seeds": 3,
+  "budget": 500,
+  "official_score_per_seed": {
+    "0": 0.0,
+    "1": 0.0,
+    "2": 0.0
+  },
+  "official_score_mean": 0.0,
+  "official_score_std": 0.0,
+  "levels_per_seed": {
+    "0": 0,
+    "1": 0,
+    "2": 0
+  },
+  "mean_level_frac": 0.0,
+  "eval_seconds": 78.1,
+  "versions": {
+    "python": "3.12.10",
+    "arc_agi": "0.9.9",
+    "arcengine": "0.9.3",
+    "numpy": "2.0.2",
+    "gymnasium": "1.2.0",
+    "platform": "Windows-11-10.0.26200-SP0"
+  }
+}

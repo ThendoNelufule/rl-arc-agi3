@@ -20,7 +20,7 @@ import torch.nn.functional as F
 sys.path.insert(0, str(Path(__file__).parent))
 logging.disable(logging.INFO)
 from arc_gym import ArcGymEnv, get_arcade
-from nets import QNet, N_ACTIONS
+from nets import QEffNet, QNet, N_ACTIONS
 from replay import Replay
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -79,6 +79,10 @@ def main():
     p.add_argument("--novelty-beta", type=float, default=0.0,
                    help="P2.2 count-based bonus beta/sqrt(N(frame)), counts reset each episode (0=off)")
     p.add_argument("--log-every", type=int, default=10_000)
+    p.add_argument("--effect-coef", type=float, default=0.0,
+                   help="P2.3 action-effect head: BCE weight (0 = off, plain QNet)")
+    p.add_argument("--effect-tau", type=float, default=0.1,
+                   help="P2.3 mask actions with predicted p(change) < tau (training + eval)")
     p.add_argument("--device", default="cpu")
     p.add_argument("--threads", type=int, default=0, help="torch CPU threads (0 = default)")
     p.add_argument("--overwrite", action="store_true")
@@ -101,7 +105,9 @@ def main():
     obs = np.stack([e.reset(seed=args.seed)[0] for e in envs])
     masks = np.stack([e.action_masks() for e in envs])
 
-    net, tgt = QNet().to(dev), QNet().to(dev)
+    use_eff = args.effect_coef > 0
+    Net = QEffNet if use_eff else QNet
+    net, tgt = Net().to(dev), Net().to(dev)
     tgt.load_state_dict(net.state_dict())
     opt = torch.optim.Adam(net.parameters(), lr=args.lr)
     buf = Replay(args.buffer, N_ACTIONS)
@@ -123,23 +129,31 @@ def main():
         eps = max(args.eps_end, args.eps_start - (args.eps_start - args.eps_end) * t /
                   (args.eps_frac * args.steps))
         with torch.no_grad():
-            greedy = masked_argmax(net(torch.from_numpy(obs).to(dev)),
-                                   torch.from_numpy(masks).to(dev)).cpu().numpy()
+            m_t = torch.from_numpy(masks).to(dev)
+            if use_eff and t >= args.learning_starts:
+                q_all, e_all = net.both(torch.from_numpy(obs).to(dev))
+                keep = m_t & (torch.sigmoid(e_all) >= args.effect_tau)
+                keep[keep.sum(1) == 0] = m_t[keep.sum(1) == 0]     # never mask everything
+                act_masks = keep.cpu().numpy()
+                greedy = masked_argmax(q_all, keep).cpu().numpy()
+            else:
+                act_masks = masks
+                greedy = masked_argmax(net(torch.from_numpy(obs).to(dev)), m_t).cpu().numpy()
         for i, e in enumerate(envs):
             g = games[i]
-            a = int(rng.choice(np.flatnonzero(masks[i]))) if rng.random() < eps else int(greedy[i])
+            a = int(rng.choice(np.flatnonzero(act_masks[i]))) if rng.random() < eps else int(greedy[i])
             nobs, r, term, trunc, info = e.step(a)
             nmask = e.action_masks()
+            changed = not np.array_equal(nobs, obs[i])
             r_train = r
             if args.novelty_beta > 0:
                 h = hashlib.blake2b(nobs.tobytes(), digest_size=8).digest()
                 c = ep_count[i][h] = ep_count[i].get(h, 0) + 1
                 bonus = args.novelty_beta / np.sqrt(c)
                 r_train += bonus; int_sum += bonus
-            buf.add(obs[i], a, r_train, nobs, float(term), nmask)
+            buf.add(obs[i], a, r_train, nobs, float(term), nmask, float(changed))
             st = stats[g]
             st["steps"] += 1
-            changed = not np.array_equal(nobs, obs[i])
             st["changed"] += changed; win_change += changed; win_steps += 1
             ep_seen[i].add(hashlib.blake2b(nobs.tobytes(), digest_size=8).digest())
             if r > 0:
@@ -155,15 +169,23 @@ def main():
 
         if t >= args.learning_starts:
             for _ in range(max(1, G // args.train_freq)):
-                o, a, r, no, d, nm = buf.sample(args.batch, rng)
+                o, a, r, no, d, nm, chg = buf.sample(args.batch, rng)
                 o, no = torch.from_numpy(o).to(dev), torch.from_numpy(no).to(dev)
                 a, r, d, nm = (torch.from_numpy(a).to(dev), torch.from_numpy(r).to(dev),
                                torch.from_numpy(d).to(dev), torch.from_numpy(nm).to(dev))
-                q = net(o).gather(1, a[:, None])[:, 0]
+                if use_eff:
+                    q_all, e_all = net.both(o)
+                    q = q_all.gather(1, a[:, None])[:, 0]
+                    eff_loss = F.binary_cross_entropy_with_logits(
+                        e_all.gather(1, a[:, None])[:, 0], torch.from_numpy(chg).to(dev))
+                else:
+                    q = net(o).gather(1, a[:, None])[:, 0]
                 with torch.no_grad():
                     qn = tgt(no).masked_fill(~nm, -1e9).max(1).values
                     y = r + args.gamma * (1 - d) * qn
                 loss = F.smooth_l1_loss(q, y)
+                if use_eff:
+                    loss = loss + args.effect_coef * eff_loss
                 opt.zero_grad(); loss.backward()
                 torch.nn.utils.clip_grad_norm_(net.parameters(), 10.0)
                 opt.step()
@@ -190,8 +212,9 @@ def main():
     sd = {k: v.cpu() for k, v in net.state_dict().items()}
     torch.save(sd, out / "model.pt")
     (out / "model.json").write_text(json.dumps(dict(
-        algo="dqn", arch="QNet", arch_kwargs={}, eval_eps=args.eval_eps, tag=args.tag,
-        novelty_beta=args.novelty_beta), indent=2))
+        algo="dqn", arch="QEffNet" if use_eff else "QNet", arch_kwargs={}, eval_eps=args.eval_eps,
+        tag=args.tag, novelty_beta=args.novelty_beta,
+        effect_tau=args.effect_tau if use_eff else 0.0), indent=2))
     with open(out / "per_game.csv", "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["game", "levels", "episodes", "deaths", "steps", "frame_change_rate",

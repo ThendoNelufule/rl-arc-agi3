@@ -46,7 +46,7 @@ class DQNPolicy(Policy):
     def __init__(self, ckpt=None, **kw):
         super().__init__(ckpt)
         import torch
-        from nets import QNet
+        import nets
         if ckpt is None:
             raise SystemExit("dqn policies need --ckpt path/to/model.pt")
         p = Path(ckpt)
@@ -55,17 +55,20 @@ class DQNPolicy(Policy):
         self.eps = float(self.cfg.get("eval_eps", 0.05))
         self.torch = torch
         self.sd = torch.load(p, weights_only=True, map_location="cpu")
-        self.net = QNet(**self.cfg.get("arch_kwargs", {}))
+        self.Net = getattr(nets, self.cfg.get("arch", "QNet"))
+        self.net = self.Net(**self.cfg.get("arch_kwargs", {}))
         self.net.load_state_dict(self.sd)
+        self.tau = float(self.cfg.get("effect_tau", 0.0))   # P2.3 effect masking (QEffNet only)
+        self.use_eff = self.tau > 0 and hasattr(self.net, "both")
         self.net.eval()
 
     def reset(self, game_id, seed):
         super().reset(game_id, seed)
         self.torch.manual_seed(seed)
+        self.noop = set()             # per-game exact memory: (frame hash, action) seen to do nothing
         if self.online:
-            from nets import QNet
             self.net.load_state_dict(self.sd)
-            self.tgt = QNet(**self.cfg.get("arch_kwargs", {}))
+            self.tgt = self.Net(**self.cfg.get("arch_kwargs", {}))
             self.tgt.load_state_dict(self.sd)
             self.opt = self.torch.optim.Adam(self.net.parameters(), lr=self.ONLINE["lr"])
             self.buf, self.n_obs = [], 0
@@ -76,14 +79,32 @@ class DQNPolicy(Policy):
         with self.torch.no_grad():
             return self.net(self.torch.from_numpy(np.ascontiguousarray(obs[None])))[0].numpy()
 
+    def effect_mask(self, obs, mask):
+        """Legal actions minus those predicted (p < tau) or remembered to leave the frame unchanged."""
+        h = obs.tobytes()
+        keep = mask.copy()
+        for a in np.flatnonzero(keep):
+            if (h, a) in self.noop:
+                keep[a] = False
+        with self.torch.no_grad():
+            q, e = self.net.both(self.torch.from_numpy(np.ascontiguousarray(obs[None])))
+        keep &= self.torch.sigmoid(e[0]).numpy() >= self.tau
+        return (keep if keep.any() else mask), q[0].numpy()
+
     def act(self, obs, mask, info) -> int:
+        if self.use_eff:
+            mask, q = self.effect_mask(obs, mask)
         legal = np.flatnonzero(mask)
         if self.rng.random() < self.eps:
             return int(self.rng.choice(legal))
-        q = self.q_values(obs)
+        if not self.use_eff:
+            q = self.q_values(obs)
         return int(legal[np.argmax(q[legal])])
 
     def observe(self, obs, action, reward, next_obs, terminated, info):
+        changed = not np.array_equal(obs, next_obs)
+        if self.use_eff and not changed:
+            self.noop.add((obs.tobytes(), int(action)))
         if not self.online:
             return
         import torch.nn.functional as F
@@ -92,7 +113,7 @@ class DQNPolicy(Policy):
             h = next_obs.tobytes()
             c = self.counts[h] = self.counts.get(h, 0) + 1
             reward = reward + self.beta / np.sqrt(c)
-        self.buf.append((obs, action, reward, next_obs, float(terminated)))
+        self.buf.append((obs, action, reward, next_obs, float(terminated), float(changed)))
         if len(self.buf) > o["buffer"]:
             self.buf.pop(0)
         self.n_obs += 1
@@ -106,10 +127,18 @@ class DQNPolicy(Policy):
         nob = torch.from_numpy(np.stack([x[3] for x in b]))
         d = torch.tensor([x[4] for x in b])
         self.net.train()
-        q = self.net(ob).gather(1, a[:, None])[:, 0]
+        if self.use_eff:
+            q_all, e_all = self.net.both(ob)
+            q = q_all.gather(1, a[:, None])[:, 0]
+            chg = torch.tensor([x[5] for x in b])
+            eff_loss = F.binary_cross_entropy_with_logits(e_all.gather(1, a[:, None])[:, 0], chg)
+        else:
+            q = self.net(ob).gather(1, a[:, None])[:, 0]
         with torch.no_grad():
             y = r + o["gamma"] * (1 - d) * self.tgt(nob).max(1).values
         loss = F.smooth_l1_loss(q, y)
+        if self.use_eff:
+            loss = loss + eff_loss
         self.opt.zero_grad(); loss.backward()
         torch.nn.utils.clip_grad_norm_(self.net.parameters(), 10.0)
         self.opt.step()

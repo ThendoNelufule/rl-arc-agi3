@@ -1,0 +1,8 @@
+{
+  "accel": "t4",
+  "jobs": [
+    "train_ppo.py --tag TEAM-20-ppo-base-s0 --seed 0 --steps 400000 --device cuda",
+    "train_ppo.py --tag TEAM-20-ppo-base-s1 --seed 1 --steps 400000 --device cuda",
+    "train_ppo.py --tag TEAM-20-ppo-base-s2 --seed 2 --steps 400000 --device cuda"
+  ]
+}

@@ -8,6 +8,14 @@
         "TEAM-10-dqn-base.pt",
         "TEAM-10-dqn-base.json"
       ]
+    },
+    "TEAM-11-dqn-novelty": {
+      "policy": "dqn-online",
+      "source": "experiments/train/TEAM-11-dqn-novelty-s0",
+      "files": [
+        "TEAM-11-dqn-novelty.pt",
+        "TEAM-11-dqn-novelty.json"
+      ]
     }
   },
   "submission_rule": "training seed 0 of each version (fixed before any Kaggle score)"

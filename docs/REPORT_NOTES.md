@@ -86,3 +86,40 @@ Unmeasured: gateway latency per action (check in the first real submission log).
 - Kaggle submission (2026-10-03): notebook thendonelufule/arc3-team-10-dqn-base v1, policy
   dqn-online, weights = training seed 0 (rule fixed before any Kaggle score: always seed 0),
   pinned image py3.12.13/torch 2.10. Commit-run smoke test OK. Public LB score: PENDING.
+
+## PPO chain eval-time convention (pre-registered 2026-10-03, BEFORE any TEAM-20 result)
+- TEAM-20-ppo-base = MaskablePPO (sb3-contrib 2.9.0) pretrained on the 15 train games, policy
+  `ppo`: actions SAMPLED from the masked policy; NOTHING adapts at eval time (no weight updates).
+  On-policy PPO updates within a 500-action budget would be a few tiny batches, so test-time
+  weight updates are not part of this chain; adaptation for PPO is instead studied through
+  memory (P3.3 recurrent policy: the LSTM state is what adapts within a game).
+- Same 15 train games, 400k env steps, episode cap 500, same nets.Encoder (SB3 linear actor and
+  critic heads on the 256-d global vector), n_steps 128 x 15 envs, batch 240, 4 epochs, lr 2.5e-4,
+  gamma 0.99, GAE 0.95, clip 0.2, ent 0.01. Training seeds 0,1,2 on Kaggle T4 (parallel jobs).
+
+## TEAM-11-dqn-novelty (P2.2) | 2026-10-03
+- Limitation observed (TEAM-10): ~6 rewards per 400k training steps -> flat Q; frozen policy
+  collapses onto one action (top-action share 0.77-0.93), online policy explores less than random.
+- Hypothesis: a dense, task-agnostic count-based novelty signal gives the Q-function something to
+  learn on every game, breaking the collapse and raising state coverage -> more levels found.
+- Intervention (stacked on TEAM-10, everything else identical): r_train = r_level + beta/sqrt(N(s')),
+  beta = 0.05, N = exact-frame visit count; training: counts reset every episode (episodic novelty);
+  eval (dqn-online): counts over the whole game, same bonus fed to the test-time TD updates.
+- Compute: 3 seeds x 400k on one Kaggle T4 kernel (3 parallel jobs), 0.43 h each. Eval local,
+  3 train seeds evaluated in parallel (2 threads each): ~21.6 min per seed online, ~1.2 min frozen.
+- Training: frame-change rate 0.67-0.68 (TEAM-10: 0.61); Q ~1.2 (bonus-driven); levels 5/5/6
+  (TEAM-10: 7/4/8) -> novelty changed behaviour in training but did not find more levels.
+- Results (dev, 3x3): official 0.0000 +- 0.0000, 0 levels. Frozen variant TEAM-11f: 0.0000, 0 levels.
+- Behaviour (online, s0/s1/s2): noop 0.39/0.45/0.41, distinct frac 0.36/0.33/0.33, top-action
+  0.50/0.58/0.54 (TEAM-10 0.34-0.40), entropy 1.8-2.3 -> collapse NOT fixed (slightly worse).
+- Key diagnostic (new metric, recordings): share of ALL actions that repeat a (state, action) pair
+  already observed to leave the frame unchanged: TEAM-11 0.27/0.33/0.27 (= 66-72% of its no-ops),
+  TEAM-10 0.22-0.39, frozen 0.32-0.37, random 0.07. Count bonus only penalises such repeats
+  slowly via TD, so a third of the 500-action budget is burnt on known no-ops.
+- Conclusion: novelty is not enough because the budget is dominated by repeated ineffective
+  actions; the agent needs to stop choosing actions it knows (or can predict) do nothing.
+  -> P2.3: action-effect masking (exact per-game no-op memory + learned effect predictor).
+- Failure cases / limitation: lp85 99.9% no-ops for EVERY agent incl. random (96.5%): none of the
+  64 click-cell centres hits an effective target -> 8x8 click resolution (design lock) is the
+  bottleneck there, not exploration.
+- Kaggle: notebook arc3-team-11-dqn-novelty v1 (seed 0 weights), smoke OK; public LB PENDING.

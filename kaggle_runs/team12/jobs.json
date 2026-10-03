@@ -1,0 +1,8 @@
+{
+  "accel": "t4",
+  "jobs": [
+    "train_dqn.py --tag TEAM-12-dqn-novelty-mask-s0 --seed 0 --steps 400000 --device cuda --novelty-beta 0.05 --effect-coef 1.0 --effect-tau 0.1",
+    "train_dqn.py --tag TEAM-12-dqn-novelty-mask-s1 --seed 1 --steps 400000 --device cuda --novelty-beta 0.05 --effect-coef 1.0 --effect-tau 0.1",
+    "train_dqn.py --tag TEAM-12-dqn-novelty-mask-s2 --seed 2 --steps 400000 --device cuda --novelty-beta 0.05 --effect-coef 1.0 --effect-tau 0.1"
+  ]
+}
