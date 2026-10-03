@@ -354,13 +354,74 @@ class GraphExplorePolicy(Policy):
         self.net.eval()
 
 
+class GraphStatsPolicy(GraphExplorePolicy):
+    """Graph v2: same state-graph frontier exploration, but untried actions are ranked by a
+    per-game ONLINE effect model instead of the pretrained effect head (which measured chance-level
+    AUC ~0.45-0.58 on dev games). Beta(1,1) posteriors over change rates, reset every game,
+    actions ranked by a Thompson sample:
+      simple action i : P(change | action i)           (counts over this game so far)
+      click cell k    : P(change | colour under the click point of k)
+    Optional prior (subclass): a pretrained PPO policy's pi(a|s) breaks ties between equally
+    promising actions. Only the observed frame is used."""
+    name = "graph-stats"
+    USE_EFFECT = False
+    PRIOR_W = 0.0
+
+    def __init__(self, ckpt=None, **kw):
+        super().__init__(None)
+        self.ckpt = ckpt
+        self.prior = None
+        if self.PRIOR_W > 0:
+            if ckpt is None:
+                raise SystemExit(f"{self.name} needs --ckpt (PPO model.pt) for its policy prior")
+            self.prior = PPOPolicy(ckpt)
+        from arc_gym import decode_action
+        self.click_xy = [decode_action(a)[1] for a in range(70)]
+
+    def reset(self, game_id, seed):
+        super().reset(game_id, seed)
+        self.stat = {}                      # key -> [changed, tried]
+
+    def key(self, obs, a):
+        xy = self.click_xy[a]
+        return ("s", a) if xy is None else ("c", int(obs[0, xy["y"], xy["x"]]))
+
+    def p_change(self, obs):
+        # Thompson sampling from Beta(changed+1, unchanged+1): a posterior MEAN made the most-tried
+        # movement action win every new state (ls20 smoke test: 95% one action); sampling keeps
+        # equally effective actions in rotation while still demoting reliably ineffective ones.
+        p = np.empty(70)
+        for a in range(70):
+            c, n = self.stat.get(self.key(obs, a), (0, 0))
+            p[a] = self.rng.beta(c + 1.0, n - c + 1.0)
+        if self.prior is not None:
+            with self.torch.no_grad():
+                o = self.torch.from_numpy(np.ascontiguousarray(obs[None]))
+                pi = self.prior.pi.get_distribution(o).distribution.probs[0].numpy()
+            p = p + self.PRIOR_W * pi / max(pi.max(), 1e-8)
+        return p
+
+    def observe(self, obs, action, reward, next_obs, terminated, info):
+        k = self.key(obs, int(action))
+        c = self.stat.setdefault(k, [0, 0])
+        c[0] += int(not np.array_equal(obs, next_obs)); c[1] += 1
+        super().observe(obs, action, reward, next_obs, terminated, info)
+
+
+class GraphStatsPPOPolicy(GraphStatsPolicy):
+    """Graph v2 + pretrained PPO (TEAM-21) policy prior for ordering untried actions."""
+    name = "graph-stats-ppo"
+    PRIOR_W = 0.3
+
+
 class GraphNoEffectPolicy(GraphExplorePolicy):
     """Ablation: same graph exploration, untried actions in random order (no effect head)."""
     name = "graph-noeff"
     USE_EFFECT = False
 
 
-POLICIES = {"graph": GraphExplorePolicy, "graph-noeff": GraphNoEffectPolicy, "random": RandomPolicy, "dqn": DQNPolicy, "dqn-online": DQNOnlinePolicy,
+POLICIES = {"graph": GraphExplorePolicy, "graph-noeff": GraphNoEffectPolicy,
+            "graph-stats": GraphStatsPolicy, "graph-stats-ppo": GraphStatsPPOPolicy, "random": RandomPolicy, "dqn": DQNPolicy, "dqn-online": DQNOnlinePolicy,
             "ppo": PPOPolicy, "ppo-lstm": PPOLSTMPolicy}
 
 

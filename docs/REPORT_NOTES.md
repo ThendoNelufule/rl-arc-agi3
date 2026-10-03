@@ -85,7 +85,8 @@ Unmeasured: gateway latency per action (check in the first real submission log).
   0.4-3% of greedy clicks change the frame (feeds P2.3 action-effect masking).
 - Kaggle submission (2026-10-03): notebook thendonelufule/arc3-team-10-dqn-base v1, policy
   dqn-online, weights = training seed 0 (rule fixed before any Kaggle score: always seed 0),
-  pinned image py3.12.13/torch 2.10. Commit-run smoke test OK. Public LB score: PENDING.
+  pinned image py3.12.13/torch 2.10. Commit-run smoke test OK. Public LB score: 0.00 (reported by
+  team 2026-10-04; consistent with dev 0.0000; random baseline on LB was 0.02).
 
 ## PPO chain eval-time convention (pre-registered 2026-10-03, BEFORE any TEAM-20 result)
 - TEAM-20-ppo-base = MaskablePPO (sb3-contrib 2.9.0) pretrained on the 15 train games, policy
@@ -196,3 +197,41 @@ Unmeasured: gateway latency per action (check in the first real submission log).
 - Kaggle: notebook arc3-team-21-ppo-rnd v1 (seed 0 weights), smoke OK; public LB PENDING.
 - Note on TEAM-22 timing: TEAM-22 training was launched before this result (to keep the GPU busy);
   its adoption as P3.3 is decided by the evidence above (memoryless repeats), as pre-planned.
+
+
+## Kaggle CPU re-runs of TEAM-10 / TEAM-11 (consistency) | 2026-10-04
+- TEAM-10 0.0000 (0 levels), TEAM-10f 0.0000, TEAM-11 0.0000, TEAM-11f 0.0000: identical to the
+  local results. Eval time on Kaggle CPU (1 thread): dqn-online ~1050-1190 s per train seed,
+  frozen ~50-60 s.
+- TEAM-10 Kaggle public LB: 0.00 (logged; not used for any decision).
+
+## GRAPH-v1 (exploratory, cross-chain): graph exploration + TEAM-12 pretrained effect head
+- Run before the "stronger algorithm" was known; uses DQN TEAM-12's effect head (3 train seeds).
+- Results (dev, 3x3): 0.0013 +- 0.0010, 4 levels (all lp85). Ablation without effect head
+  (graph-noeff, 3 eval seeds): 0.0002, 1 level. Random (Kaggle CPU): 0.0004, 1 level.
+- Behaviour: noop 0.26-0.31 (random 0.35), repeated known no-ops 0-4% (TEAM-12 head: graph
+  never re-tries a recorded no-op unless the state is exhausted). Eval ~860-920 s/seed (online BCE).
+- KEY DIAGNOSTIC: AUC of the pretrained TEAM-12 effect head on dev random transitions:
+  within-game 0.42-0.58 (chance; pooled 0.19-0.32 because base rates differ by game) for all
+  3 seeds. The pretrained effect predictor does NOT transfer to unseen games; GRAPH-v1's gain
+  comes from the exact graph memory + online fine-tuning, not from pretraining.
+  -> effect knowledge must be learned online per game, fast (graph v2 = TEAM-30/31).
+
+## TEAM-22-ppo-rnd-lstm (P3.3) | 2026-10-04 -- FAILED to improve
+- Limitation observed (TEAM-21): memoryless policy re-tries known no-ops (8-10% of actions).
+- Hypothesis: a recurrent policy can remember what it already tried within an episode.
+- Intervention (stacked on TEAM-21): masked RecurrentPPO (our masking via a mask observation
+  channel, rl/recurrent.py), LSTM 256, same RND (0.05) and PPO hyperparameters, 400k steps.
+  Eval `ppo-lstm`: frozen weights, LSTM state carried within an episode (reset at game start
+  and after GAME_OVER, as in training).
+- Compute: 3 seeds x 400k on one T4 kernel, 0.93-0.94 h each (2x TEAM-21). Eval Kaggle CPU
+  114-116 s per train seed.
+- Training: levels 5/5/8; entropy 3.45 -> 2.72-2.78 (TEAM-21 ~3.0).
+- Results (dev, 3x3): 0.0003 +- 0.0004, 1 level (lp85) vs TEAM-21 0.0247, 5 levels.
+- Behaviour: repeated known no-ops 0.059/0.094/0.138 of actions (TEAM-21 0.084-0.100): no
+  reduction -> the LSTM did not learn to use memory for "don't repeat what failed" from 400k steps
+  on 15 games; slightly more peaked policy, fewer lucky lp85 solves.
+- Conclusion: learned implicit memory fails here; explicit memory (state graph) is needed.
+  TEAM-21 remains the PPO-chain champion.
+- Launch-timing note: trained speculatively before TEAM-21's result to keep the GPU busy; the
+  adoption decision used TEAM-21's evidence (memoryless repeats) as pre-planned.

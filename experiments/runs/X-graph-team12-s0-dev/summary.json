@@ -1,0 +1,37 @@
+{
+  "tag": "X-graph-team12-s0-dev",
+  "policy": "graph",
+  "ckpt": "/kaggle/input/datasets/thendonelufule/arc3-rl-assets/weights/ckpt/TEAM-12-dqn-novelty-mask-s0.pt",
+  "split": "dev",
+  "games": [
+    "dc22",
+    "ka59",
+    "lf52",
+    "lp85",
+    "ls20"
+  ],
+  "seeds": 3,
+  "budget": 500,
+  "official_score_per_seed": {
+    "0": 0.0023036552392613,
+    "1": 0.0010888370466820988,
+    "2": 0.0012388545953360768
+  },
+  "official_score_mean": 0.0015437822937598251,
+  "official_score_std": 0.0005407904623202672,
+  "levels_per_seed": {
+    "0": 1,
+    "1": 1,
+    "2": 1
+  },
+  "mean_level_frac": 0.025,
+  "eval_seconds": 878.8,
+  "versions": {
+    "python": "3.13.15",
+    "arc_agi": "0.9.8",
+    "arcengine": "0.9.3",
+    "numpy": "2.1.3",
+    "gymnasium": "1.2.0",
+    "platform": "Linux-6.18.48+-x86_64-with-glibc2.39"
+  }
+}

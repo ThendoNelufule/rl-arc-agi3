@@ -1,0 +1,20 @@
+{
+  "tag": "TEAM-22-ppo-rnd-lstm-s0",
+  "steps": 400000,
+  "seed": 0,
+  "ep_len": 500,
+  "n_steps": 128,
+  "batch": 240,
+  "epochs": 4,
+  "lr": 0.00025,
+  "gamma": 0.99,
+  "gae": 0.95,
+  "clip": 0.2,
+  "ent": 0.01,
+  "log_every": 10000,
+  "rnd_coef": 0.05,
+  "recurrent": true,
+  "device": "cuda",
+  "threads": 0,
+  "overwrite": false
+}

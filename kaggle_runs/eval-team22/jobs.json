@@ -1,0 +1,10 @@
+{
+  "accel": "cpu",
+  "jobs": [
+    "evaluate.py --policy ppo-lstm --ckpt {ASSETS}/weights/ckpt/TEAM-22-ppo-rnd-lstm-s0.pt --split dev --seeds 3 --record --tag TEAM-22-ppo-rnd-lstm-s0-dev",
+    "evaluate.py --policy ppo-lstm --ckpt {ASSETS}/weights/ckpt/TEAM-22-ppo-rnd-lstm-s1.pt --split dev --seeds 3 --record --tag TEAM-22-ppo-rnd-lstm-s1-dev",
+    "evaluate.py --policy ppo-lstm --ckpt {ASSETS}/weights/ckpt/TEAM-22-ppo-rnd-lstm-s2.pt --split dev --seeds 3 --record --tag TEAM-22-ppo-rnd-lstm-s2-dev"
+  ],
+  "maxpar": 4,
+  "threads": 1
+}

@@ -1,0 +1,7 @@
+{
+  "algo": "recurrent_ppo",
+  "tag": "TEAM-22-ppo-rnd-lstm-s0",
+  "gdim": 256,
+  "deterministic": false,
+  "rnd_coef": 0.05
+}
