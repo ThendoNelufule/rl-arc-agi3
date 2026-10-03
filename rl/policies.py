@@ -581,6 +581,46 @@ class GraphPatchClickPriorPolicy(GraphPatchPolicy):
     PRIOR_CLICKS_ONLY = True
 
 
+class GraphInversePolicy(GraphPatchClickPriorPolicy):
+    """TEAM-37: TEAM-36 + online inverse-action inference. Evidence (TEAM-36 ls20 instrumentation):
+    ~75% of steps are spent trying untried moves in maze states; in every newly reached state one
+    of the ~4 moves predictably undoes the move that led there. Per game, count how often simple
+    action b immediately undoes simple action a (s -a-> s' -b-> s) and how often it does not; once
+    undo >= 2 and no counter-example, arriving at s' via a records (s', b) -> s as an assumed edge:
+    b is not re-tried there and the path search may use it (a wrong assumption only costs a failed
+    travel step; the real outcome is recorded when it happens)."""
+    name = "graph-inverse"
+
+    def reset(self, game_id, seed):
+        super().reset(game_id, seed)
+        self.inv_ok = {}; self.inv_bad = {}; self.last = None     # last = (s, a, s')
+
+    def inverse_of(self, a):
+        best = None
+        for (x, b), n in self.inv_ok.items():
+            if x == a and n >= 2 and self.inv_bad.get((x, b), 0) == 0:
+                best = b if best is None or n > self.inv_ok[(x, best)] else best
+        return best
+
+    def observe(self, obs, action, reward, next_obs, terminated, info):
+        hs, hn, a = self.h(obs), self.h(next_obs), int(action)
+        if self.last is not None and a < 6:
+            s0, a0, s1 = self.last
+            if s1 == hs and a0 < 6 and hn != hs:
+                key = (a0, a)
+                if hn == s0:
+                    self.inv_ok[key] = self.inv_ok.get(key, 0) + 1
+                else:
+                    self.inv_bad[key] = self.inv_bad.get(key, 0) + 1
+        GraphPatchClickPriorPolicy.observe(self, obs, action, reward, next_obs, terminated, info)
+        self.last = None if terminated or hn == hs else (hs, a, hn)
+        if self.last is not None and a < 6:
+            b = self.inverse_of(a)
+            if b is not None and b not in self.tried.get(hn, set()):
+                self.tried.setdefault(hn, set()).add(b)
+                self.edges.setdefault(hn, {})[b] = hs
+
+
 class GraphNoEffectPolicy(GraphExplorePolicy):
     """Ablation: same graph exploration, untried actions in random order (no effect head)."""
     name = "graph-noeff"
@@ -592,7 +632,8 @@ POLICIES = {"graph": GraphExplorePolicy, "graph-noeff": GraphNoEffectPolicy,
             "graph-clock": GraphClockPolicy, "graph-clock-prune": GraphClockPrunePolicy,
             "graph-timer": GraphTimerPolicy, "graph-patch": GraphPatchPolicy,
             "graph-patch-noprior": GraphPatchNoPriorPolicy,
-            "graph-patch-clickprior": GraphPatchClickPriorPolicy, "random": RandomPolicy, "dqn": DQNPolicy, "dqn-online": DQNOnlinePolicy,
+            "graph-patch-clickprior": GraphPatchClickPriorPolicy,
+            "graph-inverse": GraphInversePolicy, "random": RandomPolicy, "dqn": DQNPolicy, "dqn-online": DQNOnlinePolicy,
             "ppo": PPOPolicy, "ppo-lstm": PPOLSTMPolicy}
 
 

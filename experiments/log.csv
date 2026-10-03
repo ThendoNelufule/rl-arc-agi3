@@ -24,3 +24,4 @@ date,kernel,phase,games_set,seeds,local_score,kaggle_score,notes
 2026-10-04,SUPP-train-split,X,train,3,0.1209,,graph-patch-noprior on 15 train games (random 0.0111; graph-stats 0.0578)
 2026-10-04,TEAM-35n-graph-patch-noprior,X,dev,9 eval,0.4713,,prior ablation: 15 levels (ls20 6/9)
 2026-10-04,TEAM-36-graph-patch-clickprior,X,dev,3x3,0.4943,,prior on clicks only; BEST; 15 levels
+2026-10-04,TEAM-37-graph-inverse,X,dev,3x3,0.5041,,+ online inverse-action inference; BEST; 18 levels (ls20 9/9 at 128-287)

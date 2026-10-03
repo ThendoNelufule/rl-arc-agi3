@@ -33,12 +33,13 @@ Current phase: P2.3 TEAM-12-dqn-novelty-mask (training) + P3.1 TEAM-20-ppo-base 
 
 ## Submission queue (ranked by dev official score; Kaggle = 1 submission/day, never used for tuning)
 | rank | notebook (version) | dev official (3x3) | dev levels | Kaggle public |
-| 1 | arc3-team-36-graph-patch-clickprior (v1) | 0.4943 +- 0.0445 | 15 | pending |
-| 1b | arc3-team-35-graph-patch (v1) | 0.4929 +- 0.0445 | 9 | pending |
+| 1 | arc3-team-37-graph-inverse (v1) | 0.5041 +- 0.0445 | 18 | pending |
+| 2 | arc3-team-36-graph-patch-clickprior (v1) | 0.4943 +- 0.0445 | 15 | pending |
+| 3 | arc3-team-35-graph-patch (v1) | 0.4929 +- 0.0445 | 9 | pending |
 | 2 | arc3-team-33-graph-clock-prune (v1) | 0.4842 +- 0.0366 | 9 | pending |
 | 3 | arc3-team-31-graph-stats-ppo (v1) | 0.4611 +- 0.0379 | 9 | pending |
 | 4 | arc3-team-21-ppo-rnd (v1) | 0.0247 +- 0.0317 | 5 | pending |
 | 5 | arc3-team-20-ppo-base (v1) | 0.0004 +- 0.0006 | 1 | pending |
 | 6 | arc3-team-11-dqn-novelty (v1) | 0.0000 | 0 | pending |
 | - | arc3-team-10-dqn-base (v1) | 0.0000 | 0 | 0.00 |
-Note: graph versions are within noise on score; TEAM-36 has the best score AND the most levels (15).
+Note: graph versions are within noise on score; TEAM-37 has the best score AND the most levels (18).

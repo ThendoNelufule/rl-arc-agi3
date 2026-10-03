@@ -383,3 +383,19 @@ action; harness resets on GAME_OVER).
 - Results (dev, 3x3): 0.4943 +- 0.0445 (train seeds), all 9 runs 0.4943 +- 0.1000; 15 levels
   (5 per train seed): lp85 L1 every run (15-25 actions), ls20 L1 in 6/9 runs (367/473 actions).
 - Conclusion: dominates TEAM-35 (score) and TEAM-35n (score) with the most levels.
+
+## TEAM-37-graph-inverse | 2026-10-04  -- BEST ON DEV
+- Limitation observed (TEAM-36 ls20 instrumentation, 3 seeds): ~370/500 steps spent trying untried
+  moves, ~130 travelling to the frontier; ls20 L1 only after 367-473 actions or not at all. In every
+  newly reached maze state one of the ~4 moves predictably undoes the move that led there.
+- Hypothesis: learning inverse action pairs online and not re-trying the undo move cuts ~1/4 of the
+  exploration cost in navigation games.
+- Intervention (on TEAM-36): per game, count s -a-> s' -b-> s (undo) vs counter-examples for simple
+  actions; inverse(a) = b once undo >= 2 with zero counter-examples; on reaching s' via a, (s', b)
+  -> s is recorded as an assumed edge (not re-tried, usable by path search).
+  Learned pairs on dev: up<->down and left<->right (ls20, dc22, ka59); none on lp85 (clicks only).
+- Results (dev, 3x3): 0.5041 +- 0.0445 (train seeds), all 9 runs 0.5041 +- 0.1018; 18 levels:
+  lp85 L1 every run (15-25 actions) + ls20 L1 in 9/9 runs after 128/205/287 actions
+  (TEAM-36: 6/9 runs after 367/473).
+- Conclusion: biggest efficiency gain on navigation so far; still no level on dc22/ka59/lf52 and no
+  level 2 anywhere.
