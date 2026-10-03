@@ -16,6 +16,14 @@
         "TEAM-11-dqn-novelty.pt",
         "TEAM-11-dqn-novelty.json"
       ]
+    },
+    "TEAM-20-ppo-base": {
+      "policy": "ppo",
+      "source": "experiments/train/TEAM-20-ppo-base-s0",
+      "files": [
+        "TEAM-20-ppo-base.pt",
+        "TEAM-20-ppo-base.json"
+      ]
     }
   },
   "submission_rule": "training seed 0 of each version (fixed before any Kaggle score)"

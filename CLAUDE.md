@@ -9,6 +9,12 @@ Goal: 100%, incl. top of the class leaderboard (official Kaggle public score).
 
 ## How to work with us (MANDATORY)
 - Start AND end every session by stating the current phase, e.g. "We are at P2.1 (step 3/5)".
+- FULL AUTOPILOT until 2026-10-04 08:00 (hard stop; best dev version then = final agent).
+  Chains: TEAM-11->12 (DQN), TEAM-20->21->22 (PPO), then graph exploration on the stronger
+  algorithm, then further evidence-driven versions. Keep both Kaggle GPU slots busy; never start
+  a run that can't be trained + evaluated before 08:00. Dev results only for decisions; Kaggle
+  scores never for tuning. Kaggle: 1 submission/day -> push every notebook, keep ranked queue in
+  PROGRESS.md. "status" = short summary (done, results, running, which notebook to submit).
 - AUTONOMOUS MODE (since 2026-10-03): Claude runs every step itself, sub-phase after
   sub-phase (P1.4 -> P2 -> P3), without waiting for us between steps.
 - Only stop and ask us when: (a) something needs the Kaggle website ("Submit to Competition"
@@ -55,7 +61,7 @@ Each improvement must be motivated by the previous stage's evidence. Not hyperpa
   replace b'\x97' with b'-' in vendor/ARC-AGI-3-Agents/agents/__init__.py.
 - `2>/dev/null` hides sys.exit messages; use `2>&1 | tail` to see them.
 - Kaggle handle: thendonelufule; notebook builds via `make submit`, status via `make status`;
-  the final "Submit to Competition" click is manual on the website (5 submissions/day).
+  the final "Submit to Competition" click is manual on the website (1 submission/day).
 - Env speed: ~400-750 steps/sec locally.
 
 ## Known facts so far

@@ -23,6 +23,7 @@ from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.vec_env import DummyVecEnv
 
 from arc_gym import ArcGymEnv, get_arcade
+from rnd import RNDVecEnv
 from sb3_nets import POLICY_KWARGS
 from train_dqn import hardware
 
@@ -35,10 +36,18 @@ class LogCallback(BaseCallback):
         self.f = open(path, "w", newline="")
         self.w = csv.writer(self.f)
         self.w.writerow(["env_steps", "levels_total", "episodes", "frame_change_rate",
-                         "entropy", "value_loss", "approx_kl", "sps", "wall_s"])
+                         "entropy", "value_loss", "approx_kl", "sps", "wall_s", "intrinsic_per_step"])
         self.every, self.next, self.levels, self.eps = every, every, 0, 0
         self.chg, self.n, self.t0, self.prev = 0, 0, time.time(), None
         self.per_game = {}
+
+    def _intrinsic(self):
+        env = self.model.get_env()
+        if not isinstance(env, RNDVecEnv):
+            return 0.0
+        v = env.int_sum / max(env.int_n, 1)
+        env.int_sum, env.int_n = 0.0, 0
+        return round(v, 5)
 
     def _on_step(self):
         obs = self.locals["new_obs"]
@@ -48,6 +57,7 @@ class LogCallback(BaseCallback):
             self.chg += int(ch[~dones].sum()); self.n += int((~dones).sum())
         self.prev = obs.copy()
         for r, d, info in zip(rew, dones, infos):
+            r = info.get("r_ext", r)            # extrinsic only (RND adds intrinsic to rewards)
             g = info.get("game_id", "?")
             pg = self.per_game.setdefault(g, dict(levels=0, episodes=0))
             if r > 0:
@@ -61,10 +71,10 @@ class LogCallback(BaseCallback):
             row = [self.num_timesteps, self.levels, self.eps, round(self.chg / max(self.n, 1), 4),
                    round(-lg.get("train/entropy_loss", 0.0), 4), round(lg.get("train/value_loss", 0.0), 6),
                    round(lg.get("train/approx_kl", 0.0), 5), round(self.num_timesteps / wall, 1),
-                   round(wall, 1)]
+                   round(wall, 1), self._intrinsic()]
             self.w.writerow(row); self.f.flush()
             self.chg = self.n = 0
-            print("t={} levels={} eps={} chg={} ent={} vloss={} kl={} sps={} wall={}".format(*row),
+            print("t={} levels={} eps={} chg={} ent={} vloss={} kl={} sps={} wall={} int={}".format(*row),
                   flush=True)
         return True
 
@@ -88,6 +98,8 @@ def main():
     p.add_argument("--clip", type=float, default=0.2)
     p.add_argument("--ent", type=float, default=0.01)
     p.add_argument("--log-every", type=int, default=10_000)
+    p.add_argument("--rnd-coef", type=float, default=0.0,
+                   help="P3.2 RND intrinsic reward coefficient (0 = off)")
     p.add_argument("--device", default="cpu")
     p.add_argument("--threads", type=int, default=0)
     p.add_argument("--overwrite", action="store_true")
@@ -105,6 +117,8 @@ def main():
     games = json.loads((ROOT / "splits.json").read_text())["train"]
     venv = DummyVecEnv(make_env_fns(games, args.ep_len, get_arcade()))
     venv.seed(args.seed)
+    if args.rnd_coef > 0:
+        venv = RNDVecEnv(venv, coef=args.rnd_coef, device=args.device, seed=args.seed)
     model = MaskablePPO("CnnPolicy", venv, n_steps=args.n_steps, batch_size=args.batch,
                         n_epochs=args.epochs, learning_rate=args.lr, gamma=args.gamma,
                         gae_lambda=args.gae, clip_range=args.clip, ent_coef=args.ent,
@@ -116,7 +130,8 @@ def main():
 
     torch.save(model.policy.state_dict(), out / "model.pt")
     (out / "model.json").write_text(json.dumps(dict(
-        algo="maskable_ppo", tag=args.tag, gdim=256, deterministic=False), indent=2))
+        algo="maskable_ppo", tag=args.tag, gdim=256, deterministic=False,
+        rnd_coef=args.rnd_coef), indent=2))
     with open(out / "per_game.csv", "w", newline="") as f:
         w = csv.writer(f); w.writerow(["game", "levels", "episodes"])
         for g, s in sorted(cb.per_game.items()):

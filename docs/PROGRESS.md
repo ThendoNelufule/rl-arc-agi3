@@ -18,3 +18,11 @@ Current phase: P2.3 TEAM-12-dqn-novelty-mask (training) + P3.1 TEAM-20-ppo-base 
 - 2026-10-03 P2.2 done: TEAM-11-dqn-novelty dev 0.0000 +- 0.0000 (3x3, 0 levels); 27-33% of actions
   repeat known no-ops -> motivates P2.3. Submission notebook arc3-team-11-dqn-novelty v1 pushed.
   TEAM-12 (novelty + effect masking) and TEAM-20 (PPO base) training in parallel on T4s.
+- 2026-10-03 P3.1 done: TEAM-20-ppo-base dev 0.0004 +- 0.0006 (3x3, 1 level) = random level.
+  Notebook arc3-team-20-ppo-base v1 pushed. TEAM-21 (PPO+RND) training; TEAM-12 training.
+
+## Submission queue (ranked by dev official score; Kaggle = 1 submission/day, never used for tuning)
+| rank | notebook (version) | dev official (3x3) | dev levels | Kaggle public |
+| 1 | arc3-team-20-ppo-base (v1) | 0.0004 +- 0.0006 | 1 | pending |
+| 2 | arc3-team-10-dqn-base (v1) | 0.0000 | 0 | pending |
+| 3 | arc3-team-11-dqn-novelty (v1) | 0.0000 | 0 | pending |

@@ -123,3 +123,32 @@ Unmeasured: gateway latency per action (check in the first real submission log).
   64 click-cell centres hits an effective target -> 8x8 click resolution (design lock) is the
   bottleneck there, not exploration.
 - Kaggle: notebook arc3-team-11-dqn-novelty v1 (seed 0 weights), smoke OK; public LB PENDING.
+
+## TEAM-20-ppo-base (P3.1) | 2026-10-03
+- Limitation observed (random reference): sparse reward, ~35% no-op actions; DQN chain collapses
+  onto repeated actions (TEAM-10/11).
+- Hypothesis: an on-policy, entropy-regularised actor-critic (MaskablePPO) trained on the same 15
+  games learns transferable behaviour without the value-collapse seen in DQN.
+- Intervention: MaskablePPO, shared nets.Encoder, hyperparams pre-registered above; 400k steps.
+  Eval `ppo`: frozen policy, actions sampled from the masked distribution.
+- Compute: 3 seeds x 400k on one Kaggle T4 kernel (3 parallel jobs), 0.37 h each.
+  Eval local: ~80 s per train seed (3 eval seeds), 3 seeds in parallel.
+- Training: levels 3/5/5 in 400k steps; policy entropy 3.49 -> 2.87-3.04 nats (max over legal
+  ~3.5-4.2) -> the policy barely moved from uniform; frame-change rate 0.63-0.65.
+- Results (dev, 3x3): official 0.0004 +- 0.0006 (train seeds), all 9 runs 0.0004 +- 0.0011;
+  1 level total (lp85, train seed 0, eval seed 2). Random: 0.0004, 1 level -> indistinguishable.
+- Behaviour: noop 0.36, distinct frac 0.37-0.44, top-action 0.15, entropy 4.5-4.7 bits
+  (random 0.35 / 0.44 / 0.08 / 5.2) -> near-random behaviour, no collapse.
+- Conclusion: PPO does not collapse like DQN but learns essentially nothing: with ~4 extrinsic
+  rewards per 400k steps the only gradient is the entropy bonus. -> P3.2: intrinsic motivation
+  (RND), a learned novelty signal that, unlike TEAM-11's exact counts, generalises across
+  near-identical frames.
+- Kaggle: notebook arc3-team-20-ppo-base v1 (seed 0), smoke OK; public LB PENDING.
+
+## RND implementation notes (P3.2 development, before any TEAM-21 result)
+- First smoke tests: RND bonus collapsed to ~1e-4 within 4k steps. Debugging showed the random
+  target's features barely vary across ARC frames (mostly identical background): predictor error
+  fell 2e-3 -> 1e-6 in ~90 updates. Fixes: orthogonal init (gain sqrt 2) for the target, running
+  per-dimension standardisation of target features, bonus normalised by an EMA of the mean error
+  (alpha 0.01) so the average bonus stays ~coef per step. After the fix the raw error plateaus at
+  ~0.1 and the bonus at 0.02-0.05/step. coef = 0.05 (same scale as TEAM-11's beta).
