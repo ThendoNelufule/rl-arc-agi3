@@ -77,7 +77,9 @@ class MyAgent(Agent):
         if latest_frame.state in (GameState.NOT_PLAYED, GameState.GAME_OVER):
             if learn and self.prev is not None and latest_frame.state is GameState.GAME_OVER:
                 o, a, _ = self.prev
-                self.policy.observe(o, a, 0.0, frame_to_grid(latest_frame)[None], True, {})
+                self.policy.observe(o, a, 0.0, frame_to_grid(latest_frame)[None], True,
+                                    {"game_id": self.gid, "state": "GAME_OVER",
+                                     "levels_completed": latest_frame.levels_completed})
             self.prev = None
             return GameAction.RESET
         obs = frame_to_grid(latest_frame)[None]

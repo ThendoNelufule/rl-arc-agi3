@@ -235,3 +235,65 @@ Unmeasured: gateway latency per action (check in the first real submission log).
   TEAM-21 remains the PPO-chain champion.
 - Launch-timing note: trained speculatively before TEAM-21's result to keep the GPU busy; the
   adoption decision used TEAM-21's evidence (memoryless repeats) as pre-planned.
+
+## TEAM-12-dqn-novelty-mask (P2.3) | 2026-10-04
+- Limitation observed (TEAM-11): 27-33% of all actions repeat a (state, action) already seen to do
+  nothing; novelty alone cannot stop it fast enough.
+- Hypothesis: predicting and masking ineffective actions removes that waste.
+- Intervention (stacked on TEAM-11): QEffNet = QNet + action-effect head (same encoder; MLP for
+  simple actions, spatial 1x1 conv for clicks) trained with BCE (weight 1.0) on "frame changed";
+  actions with p(change) < 0.1 masked in training and eval (never all); eval also keeps an exact
+  per-game no-op memory and fine-tunes the effect head online with the TD update.
+- Compute: 3 seeds x 400k on one T4 kernel, 0.49-0.50 h each. Eval Kaggle CPU 1 thread:
+  ~1334-1382 s per train seed online, ~55 s frozen.
+- Training: frame-change rate 0.77-0.82 (TEAM-11 0.67, TEAM-10 0.61); levels 4/6/4.
+- Results (dev, 3x3): official 0.0044 +- 0.0063, 3 levels (TEAM-11: 0.0000, 0 levels).
+  Frozen variant TEAM-12f: 0.0036 +- 0.0033, 6 levels.
+- Behaviour (online): repeated known no-ops 0.169/0.012/0.042 (TEAM-11 0.27-0.33) -> reduced
+  strongly in 2 of 3 seeds; noop 0.19-0.36.
+- Conclusion: masking ineffective actions is the first DQN-chain change that produces levels on
+  dev; but the pretrained effect head itself is chance-level on unseen games (GRAPH-v1 note), so
+  the gain comes from the exact no-op memory + online fine-tuning. DQN chain champion = TEAM-12.
+- Kaggle: notebook not pushed yet (DQN chain far below graph track; queued if requested).
+
+## EXTRA IMPROVEMENT: model-based graph exploration on the stronger algorithm (PPO)
+Credit: the action-effect idea (predict which actions change the frame, prefer those) follows the
+ARC-AGI-3 preview winner "Stochastic Goose" (Dries Smit / Tufa Labs, 2025), which trained a CNN
+online to predict frame-changing actions. Implemented by us (rl/policies.py GraphExplorePolicy,
+GraphStatsPolicy): exact frame-hash state graph, recorded (s,a)->s' edges, never re-trying
+recorded no-ops/deadly actions, BFS to the nearest frontier state with untried actions, graph
+cleared per level, ranking of untried actions by an effect model; Thompson-sampled per-game
+online effect statistics keyed by action (simple) / colour under the click point (clicks);
+optional pretrained-PPO prior. No undo/reset beyond the frozen action space (ACTION7 is just an
+action; harness resets on GAME_OVER).
+
+## TEAM-30-graph-stats | 2026-10-04
+- Limitation observed (GRAPH-v1 + TEAM-12 diagnostic): pretrained effect heads are chance-level
+  (AUC 0.42-0.58) on unseen games; learned memory (TEAM-22) failed -> knowledge must be explicit and
+  acquired online per game.
+- Hypothesis: explicit state-graph memory + a fast, per-game, online effect model (Beta-Thompson
+  over action / clicked colour) explores far more efficiently than any trained policy here.
+- Intervention: graph exploration (above) with online stats only; no trained weights at all.
+- Compute: no training. Eval Kaggle CPU 1 thread: 96 s for 9 eval seeds (~14 ms/action incl. env).
+- Results (dev, 9 eval seeds; no training seeds exist): official 0.3895 +- 0.1488 (over 9 runs),
+  9 levels: lp85 level 1 in EVERY run after 16-72 actions (median 20).
+- Behaviour: noop 0.25 overall; dc22 0.15 (random 0.46), ka59 0.11 (0.34); lp85 0.986:
+  after L1 all 64 click-cell centres are exhausted with no effect, and the agent spends the rest
+  of the budget re-trying them (repeated-known-no-op share 0.164, almost all on lp85).
+- Smoke-test note: posterior MEAN ranking made one movement action win every new state (ls20 95%
+  one action); switched to Thompson sampling before the dev eval.
+
+## TEAM-31-graph-stats-ppo | 2026-10-04  -- CURRENT BEST
+- Limitation observed (TEAM-30): ties among untried actions broken randomly; on movement games
+  the agent wanders.
+- Hypothesis: the best trained policy (TEAM-21 PPO+RND) carries weak but useful priors over which
+  actions matter; adding pi(a|s) to the online effect sample orders the frontier better.
+- Intervention: TEAM-30 + 0.3 * pi(a|s)/max pi from TEAM-21 (each train seed's own weights).
+- Compute: training = TEAM-21 (0.45 h/seed T4). Eval Kaggle CPU 108-112 s per train seed.
+- Results (dev, 3 train seeds x 3 eval seeds): official 0.4611 +- 0.0379 (train seeds),
+  all 9 runs 0.4611 +- 0.0942; 9 levels (lp85 L1 every run after 12-24 actions).
+- Behaviour: ls20/dc22 become directed (top-action 0.89, distinct 0.92-0.93) but still 0 levels.
+- Conclusion: best agent so far by a wide margin. Remaining blockers: (1) click games stall once
+  the 64 click centres are exhausted (design lock: 8x8 click grid) -> asked the team;
+  (2) move games: no level within 500 actions despite high coverage.
+- Kaggle: notebook arc3-team-31-graph-stats-ppo v1 (TEAM-21 seed-0 prior), smoke OK, ~14 ms/action.
