@@ -31,3 +31,4 @@ kaggle_verify/out/
 experiments/train/*/model.pt
 experiments/train/*/train.log
 kaggle_runs/*/out/
+kaggle_dataset/weights/ckpt/*.pt

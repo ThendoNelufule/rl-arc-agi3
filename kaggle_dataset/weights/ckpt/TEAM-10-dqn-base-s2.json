@@ -1,0 +1,7 @@
+{
+  "algo": "dqn",
+  "arch": "QNet",
+  "arch_kwargs": {},
+  "eval_eps": 0.05,
+  "tag": "TEAM-10-dqn-base-s2"
+}

@@ -1,0 +1,7 @@
+{
+  "algo": "maskable_ppo",
+  "tag": "TEAM-21-ppo-rnd-s2",
+  "gdim": 256,
+  "deterministic": false,
+  "rnd_coef": 0.05
+}

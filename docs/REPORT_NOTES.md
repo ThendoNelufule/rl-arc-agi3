@@ -152,3 +152,18 @@ Unmeasured: gateway latency per action (check in the first real submission log).
   per-dimension standardisation of target features, bonus normalised by an EMA of the mean error
   (alpha 0.01) so the average bonus stays ~coef per step. After the fix the raw error plateaus at
   ~0.1 and the bonus at 0.02-0.05/step. coef = 0.05 (same scale as TEAM-11's beta).
+
+## PROTOCOL CHANGE: evaluation moved to Kaggle CPU kernels (approved by team, 2026-10-04 00:00)
+- Why: the local laptop (7.3 GB RAM, ~6 GB held by other apps) OOM-killed a batch of 6 parallel
+  local evals (TEAM-12 online + graph explorer; none finished, partial outputs deleted).
+- What changed: WHERE evaluation runs, not HOW. rl/evaluate.py protocol is unchanged (500-action
+  budget across deaths, 3 eval seeds, fresh scorecard per seed, everything logged, held-out guarded).
+  Runs on Kaggle CPU script kernels (4 vCPU Xeon, ~30 GB RAM, no internet), up to 4 eval jobs in
+  parallel per kernel at 1 OMP thread each, arcade in OFFLINE mode (local scorecard; verified
+  identical to NORMAL mode locally: same seeds -> same score 0.0016 and levels on lp85,ls20).
+  Checkpoints for every training seed are in the dataset (arc3-rl-assets/weights/ckpt/).
+- Consistency: TEAM-10, TEAM-11, TEAM-20 and the random reference were RE-RUN on Kaggle CPU, so
+  every reported version is evaluated on identical hardware. The earlier local results are kept in
+  experiments/runs/_local_superseded/ (TEAM-10/11 0.0000, TEAM-20 0.0004 locally) and are only
+  used as a cross-check. Eval wall-clock times from now on refer to Kaggle CPU (1 thread per job).
+- Every run folder pulled from Kaggle carries evaluated_on.txt naming its kernel.

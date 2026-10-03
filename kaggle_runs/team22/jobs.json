@@ -1,0 +1,8 @@
+{
+  "accel": "t4",
+  "jobs": [
+    "train_ppo.py --tag TEAM-22-ppo-rnd-lstm-s0 --seed 0 --steps 400000 --device cuda --rnd-coef 0.05 --recurrent",
+    "train_ppo.py --tag TEAM-22-ppo-rnd-lstm-s1 --seed 1 --steps 400000 --device cuda --rnd-coef 0.05 --recurrent",
+    "train_ppo.py --tag TEAM-22-ppo-rnd-lstm-s2 --seed 2 --steps 400000 --device cuda --rnd-coef 0.05 --recurrent"
+  ]
+}

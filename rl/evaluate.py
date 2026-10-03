@@ -11,7 +11,7 @@ Protocol (fixed for every agent in the project):
 Usage:
   .venv/bin/python rl/evaluate.py --policy random --split dev --tag NAME [--record]
 """
-import argparse, csv, json, logging, platform, sys, time
+import argparse, csv, json, logging, os, platform, sys, time
 from importlib.metadata import version
 from pathlib import Path
 
@@ -135,7 +135,8 @@ def main():
     rows, curves, seed_scores = [], [], {}
     t_all = time.time()
     for seed in range(args.seeds):
-        arc = arc_agi.Arcade(operation_mode=OperationMode.NORMAL)
+        # ARC3_ARCADE_MODE=offline on internet-less Kaggle eval kernels (scorecard is local)
+        arc = arc_agi.Arcade(operation_mode=OperationMode(os.environ.get("ARC3_ARCADE_MODE", "normal")))
         policy = make_policy(args.policy, ckpt=args.ckpt)
         for g in games:
             row, curve = play_game(arc, g, policy, seed, args.budget, rec)

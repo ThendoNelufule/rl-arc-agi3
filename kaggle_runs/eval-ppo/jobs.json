@@ -1,0 +1,13 @@
+{
+  "accel": "cpu",
+  "jobs": [
+    "evaluate.py --policy ppo --ckpt {ASSETS}/weights/ckpt/TEAM-20-ppo-base-s0.pt --split dev --seeds 3 --record --tag TEAM-20-ppo-base-s0-dev",
+    "evaluate.py --policy ppo --ckpt {ASSETS}/weights/ckpt/TEAM-20-ppo-base-s1.pt --split dev --seeds 3 --record --tag TEAM-20-ppo-base-s1-dev",
+    "evaluate.py --policy ppo --ckpt {ASSETS}/weights/ckpt/TEAM-20-ppo-base-s2.pt --split dev --seeds 3 --record --tag TEAM-20-ppo-base-s2-dev",
+    "evaluate.py --policy ppo --ckpt {ASSETS}/weights/ckpt/TEAM-21-ppo-rnd-s0.pt --split dev --seeds 3 --record --tag TEAM-21-ppo-rnd-s0-dev",
+    "evaluate.py --policy ppo --ckpt {ASSETS}/weights/ckpt/TEAM-21-ppo-rnd-s1.pt --split dev --seeds 3 --record --tag TEAM-21-ppo-rnd-s1-dev",
+    "evaluate.py --policy ppo --ckpt {ASSETS}/weights/ckpt/TEAM-21-ppo-rnd-s2.pt --split dev --seeds 3 --record --tag TEAM-21-ppo-rnd-s2-dev"
+  ],
+  "maxpar": 4,
+  "threads": 1
+}

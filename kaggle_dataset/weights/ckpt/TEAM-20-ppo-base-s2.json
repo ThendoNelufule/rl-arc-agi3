@@ -1,0 +1,6 @@
+{
+  "algo": "maskable_ppo",
+  "tag": "TEAM-20-ppo-base-s2",
+  "gdim": 256,
+  "deterministic": false
+}

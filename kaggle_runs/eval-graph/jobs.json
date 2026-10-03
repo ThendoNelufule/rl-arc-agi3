@@ -1,0 +1,12 @@
+{
+  "accel": "cpu",
+  "jobs": [
+    "evaluate.py --policy graph --ckpt {ASSETS}/weights/ckpt/TEAM-12-dqn-novelty-mask-s0.pt --split dev --seeds 3 --record --tag X-graph-team12-s0-dev",
+    "evaluate.py --policy graph --ckpt {ASSETS}/weights/ckpt/TEAM-12-dqn-novelty-mask-s1.pt --split dev --seeds 3 --record --tag X-graph-team12-s1-dev",
+    "evaluate.py --policy graph --ckpt {ASSETS}/weights/ckpt/TEAM-12-dqn-novelty-mask-s2.pt --split dev --seeds 3 --record --tag X-graph-team12-s2-dev",
+    "evaluate.py --policy graph-noeff --split dev --seeds 3 --record --tag X-graph-noeff-dev",
+    "evaluate.py --policy random --split dev --seeds 3 --record --tag REF-random-dev"
+  ],
+  "maxpar": 4,
+  "threads": 1
+}

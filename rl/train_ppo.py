@@ -18,11 +18,12 @@ import torch
 
 sys.path.insert(0, str(Path(__file__).parent))
 logging.disable(logging.INFO)
-from sb3_contrib import MaskablePPO
+from sb3_contrib import MaskablePPO, RecurrentPPO
 from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.vec_env import DummyVecEnv
 
 from arc_gym import ArcGymEnv, get_arcade
+from recurrent import MaskChannel, MaskedRecurrentPolicy, RPOLICY_KWARGS
 from rnd import RNDVecEnv
 from sb3_nets import POLICY_KWARGS
 from train_dqn import hardware
@@ -52,6 +53,7 @@ class LogCallback(BaseCallback):
     def _on_step(self):
         obs = self.locals["new_obs"]
         rew, dones, infos = self.locals["rewards"], self.locals["dones"], self.locals["infos"]
+        obs = obs[:, :1]                         # frame channel only (recurrent obs has a mask channel)
         if self.prev is not None:
             ch = ~np.all(obs.reshape(len(obs), -1) == self.prev.reshape(len(obs), -1), axis=1)
             self.chg += int(ch[~dones].sum()); self.n += int((~dones).sum())
@@ -79,7 +81,9 @@ class LogCallback(BaseCallback):
         return True
 
 
-def make_env_fns(games, ep_len, arc):
+def make_env_fns(games, ep_len, arc, mask_channel=False):
+    if mask_channel:
+        return [(lambda g=g: MaskChannel(ArcGymEnv(g, max_steps=ep_len, arcade=arc))) for g in games]
     return [(lambda g=g: ArcGymEnv(g, max_steps=ep_len, arcade=arc)) for g in games]
 
 
@@ -100,6 +104,8 @@ def main():
     p.add_argument("--log-every", type=int, default=10_000)
     p.add_argument("--rnd-coef", type=float, default=0.0,
                    help="P3.2 RND intrinsic reward coefficient (0 = off)")
+    p.add_argument("--recurrent", action="store_true",
+                   help="P3.3 masked RecurrentPPO (LSTM 256) instead of MaskablePPO")
     p.add_argument("--device", default="cpu")
     p.add_argument("--threads", type=int, default=0)
     p.add_argument("--overwrite", action="store_true")
@@ -115,14 +121,16 @@ def main():
         torch.set_num_threads(args.threads)
     torch.manual_seed(args.seed)
     games = json.loads((ROOT / "splits.json").read_text())["train"]
-    venv = DummyVecEnv(make_env_fns(games, args.ep_len, get_arcade()))
+    venv = DummyVecEnv(make_env_fns(games, args.ep_len, get_arcade(), mask_channel=args.recurrent))
     venv.seed(args.seed)
     if args.rnd_coef > 0:
         venv = RNDVecEnv(venv, coef=args.rnd_coef, device=args.device, seed=args.seed)
-    model = MaskablePPO("CnnPolicy", venv, n_steps=args.n_steps, batch_size=args.batch,
-                        n_epochs=args.epochs, learning_rate=args.lr, gamma=args.gamma,
-                        gae_lambda=args.gae, clip_range=args.clip, ent_coef=args.ent,
-                        policy_kwargs=POLICY_KWARGS, seed=args.seed, device=args.device, verbose=0)
+    algo_cls, pol, kw = ((RecurrentPPO, MaskedRecurrentPolicy, RPOLICY_KWARGS) if args.recurrent
+                         else (MaskablePPO, "CnnPolicy", POLICY_KWARGS))
+    model = algo_cls(pol, venv, n_steps=args.n_steps, batch_size=args.batch,
+                     n_epochs=args.epochs, learning_rate=args.lr, gamma=args.gamma,
+                     gae_lambda=args.gae, clip_range=args.clip, ent_coef=args.ent,
+                     policy_kwargs=kw, seed=args.seed, device=args.device, verbose=0)
     cb = LogCallback(out / "metrics.csv", args.log_every)
     t0 = time.time()
     model.learn(args.steps, callback=cb)
@@ -130,7 +138,7 @@ def main():
 
     torch.save(model.policy.state_dict(), out / "model.pt")
     (out / "model.json").write_text(json.dumps(dict(
-        algo="maskable_ppo", tag=args.tag, gdim=256, deterministic=False,
+        algo="recurrent_ppo" if args.recurrent else "maskable_ppo", tag=args.tag, gdim=256, deterministic=False,
         rnd_coef=args.rnd_coef), indent=2))
     with open(out / "per_game.csv", "w", newline="") as f:
         w = csv.writer(f); w.writerow(["game", "levels", "episodes"])

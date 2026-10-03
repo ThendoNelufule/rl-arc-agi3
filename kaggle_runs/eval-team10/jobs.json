@@ -1,0 +1,13 @@
+{
+  "accel": "cpu",
+  "jobs": [
+    "evaluate.py --policy dqn-online --ckpt {ASSETS}/weights/ckpt/TEAM-10-dqn-base-s0.pt --split dev --seeds 3 --record --tag TEAM-10-dqn-base-s0-dev",
+    "evaluate.py --policy dqn-online --ckpt {ASSETS}/weights/ckpt/TEAM-10-dqn-base-s1.pt --split dev --seeds 3 --record --tag TEAM-10-dqn-base-s1-dev",
+    "evaluate.py --policy dqn-online --ckpt {ASSETS}/weights/ckpt/TEAM-10-dqn-base-s2.pt --split dev --seeds 3 --record --tag TEAM-10-dqn-base-s2-dev",
+    "evaluate.py --policy dqn --ckpt {ASSETS}/weights/ckpt/TEAM-10-dqn-base-s0.pt --split dev --seeds 3 --record --tag TEAM-10f-dqn-frozen-s0-dev",
+    "evaluate.py --policy dqn --ckpt {ASSETS}/weights/ckpt/TEAM-10-dqn-base-s1.pt --split dev --seeds 3 --record --tag TEAM-10f-dqn-frozen-s1-dev",
+    "evaluate.py --policy dqn --ckpt {ASSETS}/weights/ckpt/TEAM-10-dqn-base-s2.pt --split dev --seeds 3 --record --tag TEAM-10f-dqn-frozen-s2-dev"
+  ],
+  "maxpar": 4,
+  "threads": 1
+}
