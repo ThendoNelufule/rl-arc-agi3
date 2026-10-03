@@ -18,3 +18,6 @@ date,kernel,phase,games_set,seeds,local_score,kaggle_score,notes
 2026-10-04,TEAM-31-graph-stats-ppo,X,dev,3x3,0.4611,,TEAM-30 + TEAM-21 PPO prior; BEST; lp85 L1 in 12-24 actions
 2026-10-04,TEAM-32-graph-clock,X,dev,3x3,0.4615,,+ online ticker-row masking; 11 levels (ls20 x2 at ~415 actions)
 2026-10-04,TEAM-33-graph-clock-prune,X,dev,3x3,0.4842,,+ prune confidently ineffective actions; within noise of TEAM-31/32
+2026-10-04,TEAM-34-graph-timer,X,dev,3x3,0.4842,,+ timer-aware deaths; identical to TEAM-33 (null)
+2026-10-04,TEAM-23-effect-model,X,diag,-,,,PPO-experience effect model: within-game AUC ~chance on dev (negative)
+2026-10-04,TEAM-35-graph-patch,X,dev,3x3,0.4929,,+ visual click equivalence; best on dev (within noise)

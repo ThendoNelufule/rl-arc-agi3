@@ -1,0 +1,7 @@
+{
+  "algo": "effect_model",
+  "arch": "QEffNet",
+  "arch_kwargs": {},
+  "tag": "TEAM-23-ppo-rnd-effect-s1",
+  "note": "effect head only (Q heads untrained)"
+}

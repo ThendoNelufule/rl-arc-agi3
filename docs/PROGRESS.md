@@ -28,10 +28,16 @@ Current phase: P2.3 TEAM-12-dqn-novelty-mask (training) + P3.1 TEAM-20-ppo-base 
 - 2026-10-04 00:40 P2 + P3 v1 complete. DQN champion TEAM-12 (0.0044); PPO champion TEAM-21 (0.0247);
   TEAM-22 LSTM failed (0.0003). Graph track: TEAM-30 0.3895, TEAM-31 0.4611 (best).
 
+- 2026-10-04 01:00 graph track: TEAM-32 0.4615, TEAM-33 0.4842, TEAM-34 0.4842 (null), TEAM-35 0.4929
+  (best; all within noise). TEAM-23 effect model: negative diagnostic. Plateau = lp85 L1 only.
+
 ## Submission queue (ranked by dev official score; Kaggle = 1 submission/day, never used for tuning)
-| rank | notebook (version) | dev official | dev levels | Kaggle public |
-| 1 | arc3-team-31-graph-stats-ppo (v1) | 0.4611 +- 0.0379 (3x3) | 9 | pending |
-| 2 | arc3-team-21-ppo-rnd (v1) | 0.0247 +- 0.0317 (3x3) | 5 | pending |
-| 3 | arc3-team-20-ppo-base (v1) | 0.0004 +- 0.0006 (3x3) | 1 | pending |
-| 4 | arc3-team-11-dqn-novelty (v1) | 0.0000 (3x3) | 0 | pending |
-| - | arc3-team-10-dqn-base (v1) | 0.0000 (3x3) | 0 | 0.00 |
+| rank | notebook (version) | dev official (3x3) | dev levels | Kaggle public |
+| 1 | arc3-team-35-graph-patch (v1) | 0.4929 +- 0.0445 | 9 | pending |
+| 2 | arc3-team-33-graph-clock-prune (v1) | 0.4842 +- 0.0366 | 9 | pending |
+| 3 | arc3-team-31-graph-stats-ppo (v1) | 0.4611 +- 0.0379 | 9 | pending |
+| 4 | arc3-team-21-ppo-rnd (v1) | 0.0247 +- 0.0317 | 5 | pending |
+| 5 | arc3-team-20-ppo-base (v1) | 0.0004 +- 0.0006 | 1 | pending |
+| 6 | arc3-team-11-dqn-novelty (v1) | 0.0000 | 0 | pending |
+| - | arc3-team-10-dqn-base (v1) | 0.0000 | 0 | 0.00 |
+Note: ranks 1-3 are within noise on dev; TEAM-35 is the most complete agent (all fixes).

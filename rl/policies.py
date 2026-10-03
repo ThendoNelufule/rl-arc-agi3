@@ -524,6 +524,45 @@ class GraphTimerPolicy(GraphClockPrunePolicy):
         GraphClockPrunePolicy.observe(self, obs, action, reward, next_obs, terminated, info)
 
 
+class GraphPatchPolicy(GraphTimerPolicy):
+    """TEAM-35: TEAM-34 + visual click equivalence. Evidence (TEAM-34 recordings): mixed games burn
+    the budget on clicks (dc22 398/500, lf52 477/500 actions are clicks) while discovering almost no
+    new states (dc22: 22 states, ~1 new per 100 steps after step 100): every one of the 64 click
+    cells is tried separately in every state although most cells show identical content.
+    Within a state, click cells whose 8x8 patch (ticker rows masked) is pixel-identical form one
+    group: only one representative per untried group is offered, and a group counts as tried once
+    any member was tried in that state. Simple actions are unaffected."""
+    name = "graph-patch"
+
+    def clear_graph(self):
+        super().clear_graph()
+        self.tried_groups = {}
+
+    def groups(self, obs):
+        o = self.masked(obs)[0]
+        return [None] * 6 + [o[r * 8:(r + 1) * 8, c * 8:(c + 1) * 8].tobytes()
+                             for r in range(8) for c in range(8)]
+
+    def untried(self, hs):
+        cand = super().untried(hs)
+        obs = self.obs_of.get(hs)
+        if obs is None:
+            return cand
+        g, done, out, seen = self.groups(obs), self.tried_groups.get(hs, set()), [], set()
+        for a in cand:
+            if g[a] is None:
+                out.append(a); continue
+            if g[a] in done or g[a] in seen:
+                continue
+            seen.add(g[a]); out.append(a)
+        return out
+
+    def observe(self, obs, action, reward, next_obs, terminated, info):
+        if int(action) >= 6:
+            self.tried_groups.setdefault(self.h(obs), set()).add(self.groups(obs)[int(action)])
+        GraphTimerPolicy.observe(self, obs, action, reward, next_obs, terminated, info)
+
+
 class GraphNoEffectPolicy(GraphExplorePolicy):
     """Ablation: same graph exploration, untried actions in random order (no effect head)."""
     name = "graph-noeff"
@@ -533,7 +572,7 @@ class GraphNoEffectPolicy(GraphExplorePolicy):
 POLICIES = {"graph": GraphExplorePolicy, "graph-noeff": GraphNoEffectPolicy,
             "graph-stats": GraphStatsPolicy, "graph-stats-ppo": GraphStatsPPOPolicy,
             "graph-clock": GraphClockPolicy, "graph-clock-prune": GraphClockPrunePolicy,
-            "graph-timer": GraphTimerPolicy, "random": RandomPolicy, "dqn": DQNPolicy, "dqn-online": DQNOnlinePolicy,
+            "graph-timer": GraphTimerPolicy, "graph-patch": GraphPatchPolicy, "random": RandomPolicy, "dqn": DQNPolicy, "dqn-online": DQNOnlinePolicy,
             "ppo": PPOPolicy, "ppo-lstm": PPOLSTMPolicy}
 
 

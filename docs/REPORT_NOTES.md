@@ -327,3 +327,34 @@ action; harness resets on GAME_OVER).
   budget (lives ~129/125/100/65 steps on ls20/dc22/ka59/lf52 under random, PPO and graph agents;
   identical death counts across agents) -> banning the last (s,a) before each death is wrong.
 - Kaggle: notebook arc3-team-33-graph-clock-prune v1 pushed (TEAM-21 seed-0 prior).
+
+## TEAM-34-graph-timer | 2026-10-04 -- null result
+- Limitation observed (TEAM-33 diagnostic): GAME_OVER on all dev move/mixed games is a fixed
+  per-life step budget, yet the graph banned the last (s,a) before every death.
+- Intervention (on TEAM-33): ban a (s,a) as deadly only after it caused GAME_OVER twice.
+- Results (dev, 3x3): 0.4842 +- 0.0366, 9 levels -- identical to TEAM-33 (same lp85 solves;
+  no new levels on move games). Behaviour essentially unchanged (noop 0.30, distinct 0.59-0.63).
+- Conclusion: correct but not the bottleneck; kept (it is strictly more sensible for timer games).
+
+## TEAM-23 effect model (PPO-experience action-effect predictor) -- negative diagnostic
+- Trained alongside TEAM-21's PPO config (3 seeds, T4 0.48-0.49 h each) to give the PPO chain an
+  effect model for graph exploration. Within-game AUC on dev random transitions: dc22 0.48-0.50,
+  ka59 0.46-0.54, lp85 0.39-0.51 (chance), ls20 0.36-1.00 (trivial: movement changes the frame).
+  Same conclusion as for the DQN head: pretrained effect prediction does not transfer to unseen
+  games under either algorithm. Not evaluated as an agent (superseded by online statistics).
+
+## TEAM-35-graph-patch | 2026-10-04  -- BEST ON DEV (within noise of TEAM-31..34)
+- Limitation observed (TEAM-34 recordings): mixed games burn the budget on clicks (dc22 398/500,
+  lf52 477/500 actions) while finding almost no new states (dc22 22 states; ~1 new per 100 steps
+  after step 100): all 64 click cells are tried separately in every state.
+- Intervention (on TEAM-34): visual click equivalence within a state: click cells with a pixel-
+  identical 8x8 patch (ticker rows masked) form one group; one representative per untried group;
+  a group counts as tried once any member was tried in that state.
+- Results (dev, 3x3): 0.4929 +- 0.0445 (train seeds), all 9 runs 0.4929 +- 0.1000; 9 levels
+  (lp85 L1 every run, 15-25 actions). Behaviour: noop 0.30, distinct 0.62-0.63 (TEAM-34 0.59-0.63).
+  Seed-0 diagnostic: dc22 distinct states 22 -> 30, lf52 9 -> 18; clicks still dominate.
+- Plateau analysis: ALL graph-track score comes from lp85 level 1. Remaining blockers:
+  (1) click resolution (design lock, 8x8 cell centres): lp85 L2+ has zero effective centres; dc22
+      and lf52 spend 78-95% of actions on clicks with almost no discoveries;
+  (2) ls20: ~110-120 distinct states in 500 actions (4 timer-limited lives of ~129 steps).
+- Kaggle: notebook arc3-team-35-graph-patch v1 (TEAM-21 seed-0 prior).
