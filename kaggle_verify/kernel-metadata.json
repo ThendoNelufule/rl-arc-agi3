@@ -1,0 +1,15 @@
+{
+  "id": "thendonelufule/arc3-offline-verify",
+  "title": "arc3-offline-verify",
+  "code_file": "verify.py",
+  "language": "python",
+  "kernel_type": "script",
+  "is_private": true,
+  "enable_gpu": false,
+  "enable_tpu": false,
+  "enable_internet": false,
+  "dataset_sources": ["thendonelufule/arc3-rl-assets"],
+  "kernel_sources": [],
+  "competition_sources": ["arc-prize-2026-arc-agi-3"],
+  "model_sources": []
+}

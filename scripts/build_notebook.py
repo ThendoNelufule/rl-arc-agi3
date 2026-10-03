@@ -43,6 +43,9 @@ AGENT_SRC = ROOT / "agent" / "my_agent.py"
 NOTEBOOK_PATH = ROOT / "notebooks" / "submission.ipynb"
 METADATA_PATH = ROOT / "notebooks" / "kernel-metadata.json"
 
+# Private Kaggle dataset with offline wheels + trained weights (kaggle_dataset/).
+ASSETS_SLUG = "thendonelufule/arc3-rl-assets"
+
 
 def code_cell(source: str) -> dict:
     return {
@@ -63,11 +66,36 @@ def build() -> dict:
         raise SystemExit(f"Could not find {AGENT_SRC}")
     agent_body = AGENT_SRC.read_text()
 
-    install_cell = code_cell(
-        "!pip install --no-index --find-links \\\n"
-        "    /kaggle/input/competitions/arc-prize-2026-arc-agi-3/arc_agi_3_wheels \\\n"
-        "    arc-agi python-dotenv"
-    )
+    # Offline install: competition wheels (arc-agi) + our assets dataset
+    # (SB3 wheels, weights). Verified internet-OFF in P1.4 (arc3-offline-verify).
+    # Mount paths differ between Kaggle images (/kaggle/input/<slug> on older
+    # pinned images, /kaggle/input/datasets/<user>/<slug> on newer), so glob.
+    install_cell = code_cell(dedent(
+        f"""\
+        import glob, os, subprocess, sys, platform
+        def _find(name):
+            for pat in ('/kaggle/input/' + name, '/kaggle/input/*/' + name,
+                        '/kaggle/input/*/*/' + name, '/kaggle/input/*/*/*/' + name):
+                hits = sorted(glob.glob(pat))
+                if hits:
+                    return hits[0]
+            raise FileNotFoundError(name)
+        ASSETS = _find('{ASSETS_SLUG.split('/')[1]}')
+        COMP_WHEELS = _find('arc_agi_3_wheels')
+        os.environ['ARC3_ASSETS'] = ASSETS   # read by the agent to locate weights
+        print('ASSETS', ASSETS, '| COMP_WHEELS', COMP_WHEELS)
+        r = subprocess.run([sys.executable, '-m', 'pip', 'install', '--no-index',
+                            '--find-links', COMP_WHEELS, '--find-links', ASSETS + '/wheels',
+                            'arc-agi', 'python-dotenv', 'stable-baselines3', 'sb3-contrib'],
+                           capture_output=True, text=True)
+        print(r.stdout[-800:], r.stderr[-800:])
+        assert r.returncode == 0, 'offline pip install failed'
+        import torch, numpy, gymnasium, stable_baselines3
+        print('ENV python', platform.python_version(), '| torch', torch.__version__,
+              '| numpy', numpy.__version__, '| gymnasium', gymnasium.__version__,
+              '| sb3', stable_baselines3.__version__, '| threads', torch.get_num_threads())
+        """
+    ))
 
     # We write the agent to /tmp/ (not /kaggle/working/) so it does NOT appear
     # as a notebook output. Otherwise the "Submit to Competition" UI would
@@ -208,11 +236,17 @@ def main() -> None:
     if METADATA_PATH.exists():
         meta = json.loads(METADATA_PATH.read_text())
         wanted = _ACCELERATORS[ACCELERATOR]["gpu"]
+        changed = False
+        if ASSETS_SLUG not in meta.get("dataset_sources", []):
+            meta["dataset_sources"] = meta.get("dataset_sources", []) + [ASSETS_SLUG]
+            changed = True
+            print(f"[build_notebook] Attached dataset {ASSETS_SLUG}")
         if meta.get("enable_gpu") != wanted:
             meta["enable_gpu"] = wanted
+            changed = True
+            print(f"[build_notebook] Synced enable_gpu={wanted}")
+        if changed:
             METADATA_PATH.write_text(json.dumps(meta, indent=2) + "\n")
-            print(f"[build_notebook] Synced enable_gpu={wanted} in "
-                  f"{METADATA_PATH.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

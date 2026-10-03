@@ -1,0 +1,10 @@
+# Wheels shipped in wheels/ (pure python, py3-none-any). Downloaded with:
+#   pip download <pkg> --no-deps --only-binary=:all: --platform manylinux2014_x86_64 \
+#       --python-version 3.13 --implementation cp
+stable-baselines3==2.9.0
+sb3-contrib==2.9.0
+# Preinstalled on the submission image (Python 3.12.13; deps satisfied, do NOT ship):
+#   torch 2.10.0+cpu | numpy 2.0.2 | gymnasium 1.2.0 | cloudpickle | pandas | matplotlib
+# (Latest Kaggle image, probe 2026-10-03: Python 3.13.15, torch 2.11.0, numpy 2.1.3,
+#  gymnasium 1.2.0 -> same wheels also install there; verified in arc3-offline-verify.)
+# arc-agi 0.9.8 / arcengine 0.9.3 come from the competition's arc_agi_3_wheels.

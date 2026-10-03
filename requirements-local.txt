@@ -1,0 +1,8 @@
+# Local venv pinned to the SUBMISSION kernel's image (pinned docker sha in
+# thendonelufule/arc-prize-2026-arc-agi-3-starter; read from its commit log 2026-10-03):
+# Python 3.12.13, 2 CPU threads. Weights are saved as torch state_dict + JSON only.
+torch==2.10.0  # --index-url https://download.pytorch.org/whl/cpu
+numpy==2.0.2
+gymnasium==1.2.0
+stable-baselines3==2.9.0
+sb3-contrib==2.9.0

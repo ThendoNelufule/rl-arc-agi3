@@ -9,17 +9,25 @@ Goal: 100%, incl. top of the class leaderboard (official Kaggle public score).
 
 ## How to work with us (MANDATORY)
 - Start AND end every session by stating the current phase, e.g. "We are at P2.1 (step 3/5)".
-- One sub-phase at a time. Give every step and command; wait for our confirmation before moving on.
-- Terminal for everything (Git Bash). Create folders/files via terminal.
-- Casual, direct, concise.
-- After each evaluated agent version, update docs/PROGRESS.md, docs/REPORT_NOTES.md and
-  experiments/log.csv, then commit.
+- AUTONOMOUS MODE (since 2026-10-03): Claude runs every step itself, sub-phase after
+  sub-phase (P1.4 -> P2 -> P3), without waiting for us between steps.
+- Only stop and ask us when: (a) something needs the Kaggle website ("Submit to Competition"
+  click, accepting rules); (b) changing a design lock below; (c) touching held-out games
+  (--final); (d) something fails and 2 serious fix attempts didn't work.
+- Train locally on CPU unless clearly too slow; then propose Kaggle GPU (ask first).
+- Log training time/hardware separately from eval time for every run.
+- Each improvement must be motivated by the previous stage's evidence.
+- After EVERY sub-phase: update docs/PROGRESS.md, docs/REPORT_NOTES.md, experiments/log.csv,
+  commit AND push. When a kernel is ready to submit, push it and tell us exactly which
+  kernel/version to click "Submit to Competition" on.
+- End each sub-phase with a 3-line status: phase | result | what's next.
+- Terminal for everything (Git Bash). Casual, direct, concise.
 - When we say "handover", print a paste-ready summary: phase status, new results (tags +
   numbers), decisions, open problems. We paste it to our planning chat.
 
 ## Phase tracker
 P0 IGNITION: done (team on Kaggle leaderboard, random = 0.02).
-P1 SPINE: P1.1 adapter done | P1.2 splits done | P1.3 eval harness done | P1.4 Kaggle weights dataset: TODO
+P1 SPINE: P1.1 adapter done | P1.2 splits done | P1.3 eval harness done | P1.4 Kaggle weights dataset: done
 P2 DQN: P2.1 TEAM-10-dqn-base | P2.2 TEAM-11-dqn-novelty (count-based intrinsic reward)
         | P2.3 TEAM-12-dqn-novelty-mask (action-effect masking)
 P3 PPO: P3.1 TEAM-20-ppo-base (SB3) | P3.2 TEAM-21-ppo-rnd (RND) | P3.3 TEAM-22-ppo-rnd-lstm (recurrent)

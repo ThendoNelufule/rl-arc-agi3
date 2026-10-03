@@ -20,3 +20,10 @@ reference/
 .DS_Store
 .idea/
 .vscode/
+
+# Kaggle assets dataset: binaries live on Kaggle, metadata tracked in git
+kaggle_dataset/wheels/
+kaggle_dataset/weights/*
+!kaggle_dataset/weights/MANIFEST.json
+kaggle_probe/out/
+kaggle_verify/out/

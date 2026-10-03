@@ -1,0 +1,4 @@
+{
+  "format": "torch state_dict (.pt, weights_only) + JSON config per agent",
+  "agents": {}
+}

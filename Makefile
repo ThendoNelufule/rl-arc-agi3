@@ -20,7 +20,7 @@ COMP_SLUG       := arc-prize-2026-arc-agi-3
 GAME            ?=
 STEPS           ?= 200
 
-.PHONY: help setup play-local pull-sample notebook submit status verify-local clean _check-kaggle
+.PHONY: help setup play-local pull-sample notebook submit status verify-local clean _check-kaggle dataset-push
 
 _check-kaggle:
 	@if [ ! -s .kaggle/access_token ]; then \
@@ -83,3 +83,6 @@ status: _check-kaggle ## Show the status of your most recent Kaggle kernel run
 clean: ## Remove generated artefacts (venv, downloaded games, vendored repos)
 	rm -rf $(VENV) vendor environment_files recordings notebooks/submission.ipynb \
 	       reference logs.log __pycache__ .pytest_cache
+
+dataset-push: _check-kaggle ## New version of the assets dataset (wheels + weights): make dataset-push MSG="..."
+	$(KAGGLE) datasets version -p kaggle_dataset --dir-mode zip -m "$(if $(MSG),$(MSG),update)"
