@@ -66,7 +66,7 @@ pull-sample: _check-kaggle ## Download the official Stochastic Goose sample note
 	@echo "Open reference/stochastic-goose/*.ipynb for the canonical pattern."
 
 notebook: ## Build notebooks/submission.ipynb (POLICY=dqn-online WEIGHTS=<tag> to pick the agent)
-	$(VENV_PY) scripts/build_notebook.py $(if $(POLICY),--policy $(POLICY)) $(if $(WEIGHTS),--weights $(WEIGHTS))
+	$(VENV_PY) scripts/build_notebook.py $(if $(POLICY),--policy $(POLICY)) $(if $(WEIGHTS),--weights $(WEIGHTS)) $(if $(SLUG),--slug $(SLUG))
 
 submit: notebook _check-kaggle ## Build notebook and push to Kaggle (one-line submission)
 	@grep -q REPLACE_WITH_YOUR_USERNAME notebooks/kernel-metadata.json && { \

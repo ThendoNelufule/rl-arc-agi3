@@ -13,3 +13,5 @@ Current phase: P2.2 TEAM-11-dqn-novelty
   frozen variant 0.0000 and collapses to one action. Training moved to Kaggle T4 (4.5x faster);
   infra: rl/nets.py, replay.py, train_dqn.py, train_ppo.py, policies (dqn, dqn-online, ppo),
   analyze_run.py, aggregate.py, scripts/kaggle_train.py, agent wrapper + 9h wall-clock guard.
+- 2026-10-03 Submissions: one notebook per version (arc3-<slug>, image pinned), weights = seed 0.
+  arc3-team-10-dqn-base v1 pushed + smoke OK; awaiting manual "Submit to Competition".

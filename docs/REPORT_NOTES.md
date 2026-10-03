@@ -83,3 +83,6 @@ Unmeasured: gateway latency per action (check in the first real submission log).
   capacity. -> P2.2: dense, task-agnostic exploration signal (count-based novelty bonus).
 - Failure cases: lp85 (click game) 99.9% no-op actions; dc22 ~49% no-ops; ft09 during training
   0.4-3% of greedy clicks change the frame (feeds P2.3 action-effect masking).
+- Kaggle submission (2026-10-03): notebook thendonelufule/arc3-team-10-dqn-base v1, policy
+  dqn-online, weights = training seed 0 (rule fixed before any Kaggle score: always seed 0),
+  pinned image py3.12.13/torch 2.10. Commit-run smoke test OK. Public LB score: PENDING.

@@ -1,4 +1,14 @@
 {
   "format": "torch state_dict (.pt, weights_only) + JSON config per agent",
-  "agents": {}
+  "agents": {
+    "TEAM-10-dqn-base": {
+      "policy": "dqn-online",
+      "source": "experiments/train/TEAM-10-dqn-base-s0",
+      "files": [
+        "TEAM-10-dqn-base.pt",
+        "TEAM-10-dqn-base.json"
+      ]
+    }
+  },
+  "submission_rule": "training seed 0 of each version (fixed before any Kaggle score)"
 }

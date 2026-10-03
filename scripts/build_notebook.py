@@ -46,6 +46,10 @@ METADATA_PATH = ROOT / "notebooks" / "kernel-metadata.json"
 # Private Kaggle dataset with offline wheels + trained weights (kaggle_dataset/).
 ASSETS_SLUG = "thendonelufule/arc3-rl-assets"
 # rl/ modules the agent imports; written to /tmp/rl on Kaggle (same code as local eval).
+# Image of the original starter kernel (py3.12.13, torch 2.10.0+cpu, numpy 2.0.2), verified in P1.4.
+# Pinned on every per-version submission kernel so all versions run in the same environment.
+DOCKER_IMAGE = ("gcr.io/kaggle-images/python@sha256:"
+                "dafd4ce5668bbf1ad422e4c109e0f18c9623c3a7c7f48b0235f13142755c40b9")
 RL_MODULES = ["arc_gym.py", "nets.py", "replay.py", "sb3_nets.py", "policies.py"]
 
 
@@ -265,6 +269,7 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--policy", default="random")
     ap.add_argument("--weights", default=None, help="run tag; needs weights/<tag>.pt in the dataset")
+    ap.add_argument("--slug", default=None, help="per-version kernel, e.g. team-10-dqn-base -> arc3-team-10-dqn-base")
     a = ap.parse_args()
     if a.weights and not (ROOT / "kaggle_dataset" / "weights" / f"{a.weights}.pt").exists():
         raise SystemExit(f"kaggle_dataset/weights/{a.weights}.pt missing: copy it and `make dataset-push` first")
@@ -279,6 +284,12 @@ def main() -> None:
         meta = json.loads(METADATA_PATH.read_text())
         wanted = _ACCELERATORS[ACCELERATOR]["gpu"]
         changed = False
+        if a.slug:
+            meta["id"] = f"thendonelufule/arc3-{a.slug}"
+            meta["title"] = f"arc3-{a.slug}"
+            meta["docker_image"] = DOCKER_IMAGE
+            changed = True
+            print(f"[build_notebook] Kernel {meta['id']} (image pinned)")
         if ASSETS_SLUG not in meta.get("dataset_sources", []):
             meta["dataset_sources"] = meta.get("dataset_sources", []) + [ASSETS_SLUG]
             changed = True

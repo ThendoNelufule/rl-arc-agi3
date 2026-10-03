@@ -1,6 +1,6 @@
 {
-  "id": "thendonelufule/arc-prize-2026-arc-agi-3-starter",
-  "title": "ARC Prize 2026 \u2014 ARC-AGI-3 Starter",
+  "id": "thendonelufule/arc3-team-10-dqn-base",
+  "title": "arc3-team-10-dqn-base",
   "code_file": "submission.ipynb",
   "language": "python",
   "kernel_type": "notebook",
@@ -16,5 +16,6 @@
   "competition_sources": [
     "arc-prize-2026-arc-agi-3"
   ],
-  "model_sources": []
+  "model_sources": [],
+  "docker_image": "gcr.io/kaggle-images/python@sha256:dafd4ce5668bbf1ad422e4c109e0f18c9623c3a7c7f48b0235f13142755c40b9"
 }

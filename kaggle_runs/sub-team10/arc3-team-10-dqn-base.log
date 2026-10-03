@@ -1,0 +1,48 @@
+[{"stream_name":"stderr","time":9.950335767,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":9.950387616,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":9.95039426,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":9.950398493,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stderr","time":10.821602657,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":10.821639737,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":10.821645336,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":10.821649896,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stdout","time":12.505317894000001,"data":"ASSETS /kaggle/input/datasets/thendonelufule/arc3-rl-assets | COMP_WHEELS /kaggle/input/competitions/arc-prize-2026-arc-agi-3/arc_agi_3_wheels\n"}
+,{"stream_name":"stdout","time":21.558413929,"data":"equirement already satisfied: fsspec\u003e=0.8.5 in /usr/local/lib/python3.12/dist-packages (from torch\u003c3.0,\u003e=2.8-\u003estable-baselines3) (2025.3.0)\n"}
+,{"stream_name":"stdout","time":21.558453554,"data":"Requirement already satisfied: six\u003e=1.5 in /usr/local/lib/python3.12/dist-packages (from python-dateutil\u003e=2.7-\u003ematplotlib\u003e=3.7.0-\u003earc-agi) (1.17.0)\n"}
+,{"stream_name":"stdout","time":21.558460234,"data":"Requirement already satisfied: mpmath\u003c1.4,\u003e=1.1.0 in /usr/local/lib/python3.12/dist-packages (from sympy\u003e=1.13.3-\u003etorch\u003c3.0,\u003e=2.8-\u003estable-baselines3) (1.3.0)\n"}
+,{"stream_name":"stdout","time":21.558466405,"data":"Installing collected packages: pillow, stable-baselines3, arcengine, sb3-contrib, arc-agi\n"}
+,{"stream_name":"stdout","time":21.558470712,"data":"  Attempting uninstall: pillow\n"}
+,{"stream_name":"stdout","time":21.558473328,"data":"    Found existing installation: pillow 11.3.0\n"}
+,{"stream_name":"stdout","time":21.558476031,"data":"    Uninstalling pillow-11.3.0:\n"}
+,{"stream_name":"stdout","time":21.55847845,"data":"      Successfully uninstalled pillow-11.3.0\n"}
+,{"stream_name":"stdout","time":21.558480864,"data":"Successfully installed arc-agi-0.9.8 arcengine-0.9.3 pillow-12.2.0 sb3-contrib-2.9.0 stable-baselines3-2.9.0\n"}
+,{"stream_name":"stdout","time":21.558483416,"data":" ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.\n"}
+,{"stream_name":"stdout","time":21.558486416,"data":"dopamine-rl 4.1.2 requires gym\u003c=0.25.2, but you have gym 0.26.2 which is incompatible.\n"}
+,{"stream_name":"stdout","time":21.558489092,"data":"gradio 5.50.0 requires pillow\u003c12.0,\u003e=8.0, but you have pillow 12.2.0 which is incompatible.\n"}
+,{"stream_name":"stdout","time":21.558491664,"data":"\n"}
+,{"stream_name":"stdout","time":49.072418389,"data":"ENV python 3.12.13 | torch 2.10.0+cpu | numpy 2.0.2 | gymnasium 1.2.0 | sb3 2.9.0 | threads 2\n"}
+,{"stream_name":"stderr","time":49.073687878,"data":"Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.\n"}
+,{"stream_name":"stderr","time":49.073713295,"data":"Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.\n"}
+,{"stream_name":"stderr","time":49.073734286,"data":"Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.\n"}
+,{"stream_name":"stderr","time":49.073739442,"data":"See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.\n"}
+,{"stream_name":"stderr","time":49.07374383,"data":"\n"}
+,{"stream_name":"stderr","time":49.073747977,"data":"Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.\n"}
+,{"stream_name":"stderr","time":49.073752221,"data":"Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.\n"}
+,{"stream_name":"stderr","time":49.073756469,"data":"Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.\n"}
+,{"stream_name":"stderr","time":49.07376071,"data":"See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.\n"}
+,{"stream_name":"stdout","time":49.090900261,"data":"Writing /tmp/rl/arc_gym.py\n"}
+,{"stream_name":"stdout","time":49.106177684,"data":"Writing /tmp/rl/nets.py\n"}
+,{"stream_name":"stdout","time":49.12137813,"data":"Writing /tmp/rl/replay.py\n"}
+,{"stream_name":"stdout","time":49.13574363,"data":"Writing /tmp/rl/sb3_nets.py\n"}
+,{"stream_name":"stdout","time":49.153558753,"data":"Writing /tmp/rl/policies.py\n"}
+,{"stream_name":"stdout","time":56.909645863,"data":"SMOKE OK policy=dqn-online weights=TEAM-10-dqn-base last_action 5\n"}
+,{"stream_name":"stdout","time":56.928331487,"data":"Writing /tmp/my_agent.py\n"}
+,{"stream_name":"stderr","time":63.262350751,"data":"/usr/local/lib/python3.12/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":63.262388863,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":63.469525846,"data":"/usr/local/lib/python3.12/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":63.469556044,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":64.310671353,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to notebook\n"}
+,{"stream_name":"stderr","time":64.707474852,"data":"[NbConvertApp] Writing 41767 bytes to __notebook__.ipynb\n"}
+,{"stream_name":"stderr","time":67.849736133,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to html\n"}
+,{"stream_name":"stderr","time":69.018934664,"data":"[NbConvertApp] Writing 411629 bytes to __results__.html\n"}
+]
