@@ -621,6 +621,77 @@ class GraphInversePolicy(GraphPatchClickPriorPolicy):
                 self.edges.setdefault(hn, {})[b] = hs
 
 
+class GraphPatchStatsPolicy(GraphInversePolicy):
+    """TEAM-38: TEAM-37 with click effect statistics keyed by the clicked cell's 8x8 PATCH (ticker
+    rows masked) instead of the colour under the click point, and pruning after 2 ineffective tries.
+    Evidence (TEAM-37 recordings, ticker masked): 71% of dc22 and 53% of ka59 actions change nothing,
+    mostly clicks; colour keys mix effective and ineffective cells of the same colour, so pruning
+    rarely fires. A patch that did nothing twice (in any state) is predicted to do nothing anywhere."""
+    name = "graph-patchstats"
+    PRUNE_N = 2
+
+    def key(self, obs, a):
+        if self.click_xy[a] is None:
+            return ("s", a)
+        r, c = divmod(a - 6, 8)
+        return ("p", self.masked(obs)[0, r * 8:(r + 1) * 8, c * 8:(c + 1) * 8].tobytes())
+
+
+class GraphValuePolicy(GraphInversePolicy):
+    """TEAM-39: TEAM-37 + value-aware frontier choice. Evidence (TEAM-37/38 recordings): in mixed
+    games the agent stays in a state trying low-value click groups (dc22 ~400/500 clicks, 71% of
+    actions change nothing) while nearby states still have untried actions that usually work.
+    Posterior-mean effect m(a) = (changed+1)/(tried+2) per key. If the best untried action here has
+    m < LOW and a state within MAX_D known steps has an untried action with m >= best_here + MARGIN,
+    travel there first (BFS over known changing edges); otherwise act here as before."""
+    name = "graph-value"
+    LOW, MARGIN, MAX_D = 0.3, 0.3, 10
+
+    def mean_p(self, obs, a):
+        c, n = self.stat.get(self.key(obs, a), (0, 0))
+        return (c + 1.0) / (n + 2.0)
+
+    def best_untried(self, hs):
+        obs = self.obs_of.get(hs)
+        cand = self.untried(hs)
+        if obs is None or not cand:
+            return None, -1.0
+        vals = [self.mean_p(obs, a) for a in cand]
+        i = int(np.argmax(vals))
+        return cand[i], vals[i]
+
+    def act(self, obs, mask, info) -> int:
+        lv = info.get("levels_completed", 0)
+        if self.levels is not None and lv > self.levels:
+            self.clear_graph()
+        self.levels = lv
+        hs = self.h(obs)
+        self.obs_of[hs] = obs
+        self.legal[hs] = [int(a) for a in np.flatnonzero(mask)]
+        _, here = self.best_untried(hs)
+        if 0 <= here < self.LOW:
+            from collections import deque
+            q, first = deque([(hs, 0)]), {hs: None}
+            while q:
+                u, d = q.popleft()
+                if u != hs and self.best_untried(u)[1] >= here + self.MARGIN:
+                    while first[u][0] != hs:
+                        u = first[u][0]
+                    return int(first[u][1])
+                if d >= self.MAX_D:
+                    continue
+                for a, v in self.edges.get(u, {}).items():
+                    if v not in first and (u, a) not in self.bad:
+                        first[v] = (u, a); q.append((v, d + 1))
+        return GraphInversePolicy.act(self, obs, mask, info)
+
+
+class GraphInverseNoPriorPolicy(GraphInversePolicy):
+    """TEAM-37 without the PPO prior (training-free; for unbiased train-split checks)."""
+    name = "graph-inverse-noprior"
+    PRIOR_W = 0.0
+
+
 class GraphNoEffectPolicy(GraphExplorePolicy):
     """Ablation: same graph exploration, untried actions in random order (no effect head)."""
     name = "graph-noeff"
@@ -633,7 +704,8 @@ POLICIES = {"graph": GraphExplorePolicy, "graph-noeff": GraphNoEffectPolicy,
             "graph-timer": GraphTimerPolicy, "graph-patch": GraphPatchPolicy,
             "graph-patch-noprior": GraphPatchNoPriorPolicy,
             "graph-patch-clickprior": GraphPatchClickPriorPolicy,
-            "graph-inverse": GraphInversePolicy, "random": RandomPolicy, "dqn": DQNPolicy, "dqn-online": DQNOnlinePolicy,
+            "graph-inverse": GraphInversePolicy, "graph-patchstats": GraphPatchStatsPolicy,
+            "graph-value": GraphValuePolicy, "graph-inverse-noprior": GraphInverseNoPriorPolicy, "random": RandomPolicy, "dqn": DQNPolicy, "dqn-online": DQNOnlinePolicy,
             "ppo": PPOPolicy, "ppo-lstm": PPOLSTMPolicy}
 
 

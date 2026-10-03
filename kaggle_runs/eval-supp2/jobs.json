@@ -1,0 +1,8 @@
+{
+  "accel": "cpu",
+  "jobs": [
+    "evaluate.py --policy graph-inverse-noprior --split train --seeds 3 --record --tag SUPP-graph-inverse-noprior-train"
+  ],
+  "maxpar": 4,
+  "threads": 1
+}

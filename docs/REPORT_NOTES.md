@@ -399,3 +399,24 @@ action; harness resets on GAME_OVER).
   (TEAM-36: 6/9 runs after 367/473).
 - Conclusion: biggest efficiency gain on navigation so far; still no level on dc22/ka59/lf52 and no
   level 2 anywhere.
+
+## TEAM-38-graph-patchstats | 2026-10-04 -- FAILED (regression)
+- Limitation observed (TEAM-37, ticker masked): 71% of dc22 and 53% of ka59 actions change nothing,
+  mostly clicks; colour-keyed statistics mix effective/ineffective cells of the same colour.
+- Intervention (on TEAM-37): click statistics keyed by the clicked 8x8 patch; prune after 2 fails.
+- Results (dev, 3x3): 0.1237 +- 0.0813, 18 levels, but lp85 L1 slowed from 15-25 to 17-220 actions
+  (patch keys share no evidence between cells, so the Thompson ranking loses its colour prior).
+  dc22 clicks unchanged (~397/500). Not adopted.
+
+## TEAM-39-graph-value | 2026-10-04 -- no improvement
+- Limitation observed: agent stays in a state trying low-value click groups while nearby states
+  still have promising untried actions.
+- Intervention (on TEAM-37): if best untried here has posterior-mean effect < 0.3 and a state within
+  10 known steps offers >= +0.3, travel there first.
+- Results (dev, 3x3): 0.4971 +- 0.0445, 18 levels; ka59 clicks drop (seed 0: ~190 -> 28) but ls20
+  L1 slower (205/378/421 vs 128/205/287) and dc22 unchanged. Not adopted (TEAM-37 stays best).
+
+## Headroom analysis (human baseline actions per level, from the arc-agi environment info)
+- lp85 L1 baseline 17 (we: 15-25 -> at/above human); ls20 L1 baseline 22 (we: 128-287 -> ~1-3% of
+  that level's score). Later levels have larger weights (level index) -> remaining score must come
+  from MORE levels, not faster L1. Main blocker for more levels: click resolution (design lock).

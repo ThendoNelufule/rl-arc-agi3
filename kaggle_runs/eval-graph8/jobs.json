@@ -1,0 +1,10 @@
+{
+  "accel": "cpu",
+  "jobs": [
+    "evaluate.py --policy graph-patchstats --ckpt {ASSETS}/weights/ckpt/TEAM-21-ppo-rnd-s0.pt --split dev --seeds 3 --record --tag TEAM-38-graph-patchstats-s0-dev",
+    "evaluate.py --policy graph-patchstats --ckpt {ASSETS}/weights/ckpt/TEAM-21-ppo-rnd-s1.pt --split dev --seeds 3 --record --tag TEAM-38-graph-patchstats-s1-dev",
+    "evaluate.py --policy graph-patchstats --ckpt {ASSETS}/weights/ckpt/TEAM-21-ppo-rnd-s2.pt --split dev --seeds 3 --record --tag TEAM-38-graph-patchstats-s2-dev"
+  ],
+  "maxpar": 4,
+  "threads": 1
+}
