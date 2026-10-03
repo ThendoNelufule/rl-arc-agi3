@@ -31,6 +31,10 @@ Current phase: P2.3 TEAM-12-dqn-novelty-mask (training) + P3.1 TEAM-20-ppo-base 
 - 2026-10-04 01:00 graph track: TEAM-32 0.4615, TEAM-33 0.4842, TEAM-34 0.4842 (null), TEAM-35 0.4929
   (best; all within noise). TEAM-23 effect model: negative diagnostic. Plateau = lp85 L1 only.
 
+- 2026-10-04 01:45 graph track continued: TEAM-36 0.4943, TEAM-37 0.5041 (BEST, 18 levels), TEAM-38 0.1237 (failed),
+  TEAM-39 0.4971, TEAM-40 0.5032 (no gain). Budget 1000/2000 = no change. Remaining blocker = click
+  action space (design lock) -> asked team. FINAL AGENT if nothing changes by 08:00: TEAM-37.
+
 ## Submission queue (ranked by dev official score; Kaggle = 1 submission/day, never used for tuning)
 | rank | notebook (version) | dev official (3x3) | dev levels | Kaggle public |
 | 1 | arc3-team-37-graph-inverse (v1) | 0.5041 +- 0.0445 | 18 | pending |

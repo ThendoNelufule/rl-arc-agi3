@@ -27,3 +27,5 @@ date,kernel,phase,games_set,seeds,local_score,kaggle_score,notes
 2026-10-04,TEAM-37-graph-inverse,X,dev,3x3,0.5041,,+ online inverse-action inference; BEST; 18 levels (ls20 9/9 at 128-287)
 2026-10-04,TEAM-38-graph-patchstats,X,dev,3x3,0.1237,,patch-keyed click stats; FAILED (lp85 L1 much slower)
 2026-10-04,TEAM-39-graph-value,X,dev,3x3,0.4971,,value-aware frontier; no gain vs TEAM-37
+2026-10-04,SUPP-TEAM-37-budget,X,dev,3x3,0.5041,,budget 1000/2000 identical to 500: agent stuck (frontier exhausted)
+2026-10-04,TEAM-40-graph-relax,X,dev,3x3,0.5032,,pruning as priority when stuck; no gain; relaxed clicks find nothing new

@@ -320,8 +320,15 @@ class GraphExplorePolicy(Policy):
         step = self.path_to_frontier(hs)
         if step is not None:
             return int(step)
+        step = self.on_stuck(obs, hs)
+        if step is not None:
+            return int(step)
         ok = [a for a in self.legal[hs] if (hs, a) not in self.bad] or self.legal[hs]
         return int(self.rng.choice(ok))
+
+    def on_stuck(self, obs, hs):
+        """Hook when no untried action is reachable (subclasses may relax their filters)."""
+        return None
 
     def observe(self, obs, action, reward, next_obs, terminated, info):
         hs, hn = self.h(obs), self.h(next_obs)
@@ -486,11 +493,13 @@ class GraphClockPrunePolicy(GraphClockPolicy):
     name = "graph-clock-prune"
     PRUNE_N = 3
 
+    no_prune = False
+
     def untried(self, hs):
         out = []
         obs = self.obs_of.get(hs)
         for a in super().untried(hs):
-            if obs is not None:
+            if obs is not None and not self.no_prune:
                 c, n = self.stat.get(self.key(obs, a), (0, 0))
                 if n >= self.PRUNE_N and c == 0:
                     continue
@@ -692,6 +701,27 @@ class GraphInverseNoPriorPolicy(GraphInversePolicy):
     PRIOR_W = 0.0
 
 
+class GraphRelaxPolicy(GraphInversePolicy):
+    """TEAM-40: TEAM-37 with pruning as a PRIORITY, not a ban. Evidence (2000-step instrumentation):
+    the agent became permanently stuck (no reachable untried action) on ka59 after ~300 steps and on
+    dc22 almost immediately, while pruning hid 3895/3895 (ka59) and 682/703 (dc22) untried actions
+    (5 click colours declared ineffective after 3 failures each). When no pruned frontier is
+    reachable, the search is repeated without pruning (click grouping kept) before falling back to
+    random actions."""
+    name = "graph-relax"
+
+    def on_stuck(self, obs, hs):
+        self.no_prune = True
+        try:
+            cand = self.untried(hs)
+            if cand:
+                pc = self.p_change(obs)
+                return int(cand[int(np.argmax(pc[cand] + self.rng.random(len(cand)) * 1e-3))])
+            return self.path_to_frontier(hs)
+        finally:
+            self.no_prune = False
+
+
 class GraphNoEffectPolicy(GraphExplorePolicy):
     """Ablation: same graph exploration, untried actions in random order (no effect head)."""
     name = "graph-noeff"
@@ -705,7 +735,7 @@ POLICIES = {"graph": GraphExplorePolicy, "graph-noeff": GraphNoEffectPolicy,
             "graph-patch-noprior": GraphPatchNoPriorPolicy,
             "graph-patch-clickprior": GraphPatchClickPriorPolicy,
             "graph-inverse": GraphInversePolicy, "graph-patchstats": GraphPatchStatsPolicy,
-            "graph-value": GraphValuePolicy, "graph-inverse-noprior": GraphInverseNoPriorPolicy, "random": RandomPolicy, "dqn": DQNPolicy, "dqn-online": DQNOnlinePolicy,
+            "graph-value": GraphValuePolicy, "graph-relax": GraphRelaxPolicy, "graph-inverse-noprior": GraphInverseNoPriorPolicy, "random": RandomPolicy, "dqn": DQNPolicy, "dqn-online": DQNOnlinePolicy,
             "ppo": PPOPolicy, "ppo-lstm": PPOLSTMPolicy}
 
 

@@ -420,3 +420,27 @@ action; harness resets on GAME_OVER).
 - lp85 L1 baseline 17 (we: 15-25 -> at/above human); ls20 L1 baseline 22 (we: 128-287 -> ~1-3% of
   that level's score). Later levels have larger weights (level index) -> remaining score must come
   from MORE levels, not faster L1. Main blocker for more levels: click resolution (design lock).
+
+## Budget check (supplementary, NOT the protocol): TEAM-37 at 1000 / 2000 actions per game
+- Identical to 500: 0.5041, the same 18 levels at the same action counts. The budget is not the
+  bottleneck -> deployed Kaggle budget stays 500 (= protocol).
+- 2000-step instrumentation (seed 1): the agent runs out of frontier ("stuck": no reachable untried
+  action) -- ls20 after L1 at 77 states (~step 700 onwards), ka59 at 74 states (~step 300), dc22 at
+  21-27 states (almost immediately); random fallback then finds no new states either.
+
+## TEAM-40-graph-relax | 2026-10-04 -- no gain
+- Limitation observed: when stuck, pruning hid 3895/3895 (ka59) and 682/703 (dc22) untried actions.
+- Intervention (on TEAM-37): when no pruned frontier is reachable, repeat the search without pruning
+  (click grouping kept) before random fallback.
+- Results (dev, 3x3): 0.5032 +- 0.0445, 18 levels (ls20 one seed slower: 458 vs 287 actions).
+  Relaxed clicks discover NO new states on ka59 / dc22 / lf52 -> those clicks are genuinely
+  ineffective: the reachable state space under the 8x8 click-centre action set is exhausted.
+- ls20 rows 61-62 contain timer bar + lives indicator (588588588 -> 588588533 after a death) + a static
+  block; masking them is correct (positions match across lives). ls20 L2: frontier genuinely exhausted.
+
+## State of the art at 01:45 and the remaining blocker
+- Best on dev: TEAM-37-graph-inverse 0.5041 +- 0.0445 (3x3), 18 levels (lp85 L1 9/9 at 15-25 actions,
+  human 17; ls20 L1 9/9 at 128-287, human 22).
+- Every remaining failure mode traced to the action space: lp85 L2+ (no effective click centre),
+  ka59 / dc22 / lf52 (reachable space under 64 click centres exhausted, clicks dominate). Fixing it
+  requires changing the Discrete(70) design lock -> requested from the team (object-centroid clicks).

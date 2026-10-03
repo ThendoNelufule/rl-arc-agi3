@@ -1,0 +1,37 @@
+{
+  "tag": "SUPP-TEAM-37-b2000-s0-dev",
+  "policy": "graph-inverse",
+  "ckpt": "/kaggle/input/datasets/thendonelufule/arc3-rl-assets/weights/ckpt/TEAM-21-ppo-rnd-s0.pt",
+  "split": "dev",
+  "games": [
+    "dc22",
+    "ka59",
+    "lf52",
+    "lp85",
+    "ls20"
+  ],
+  "seeds": 3,
+  "budget": 2000,
+  "official_score_per_seed": {
+    "0": 0.26102813872682534,
+    "1": 0.5766562810019841,
+    "2": 0.5637022773416401
+  },
+  "official_score_mean": 0.46712889902348315,
+  "official_score_std": 0.14583116744796215,
+  "levels_per_seed": {
+    "0": 2,
+    "1": 2,
+    "2": 2
+  },
+  "mean_level_frac": 0.05358,
+  "eval_seconds": 251.4,
+  "versions": {
+    "python": "3.13.15",
+    "arc_agi": "0.9.8",
+    "arcengine": "0.9.3",
+    "numpy": "2.1.3",
+    "gymnasium": "1.2.0",
+    "platform": "Linux-6.18.48+-x86_64-with-glibc2.39"
+  }
+}
