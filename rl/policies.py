@@ -4,6 +4,9 @@ Persistence (declared for the report): one Policy object lives for one seed's
 whole run across all games; reset() is called at the start of each game.
 observe() is the online-adaptation hook (no-op unless an agent learns at eval time).
 """
+import json
+from pathlib import Path
+
 import numpy as np
 
 
@@ -31,7 +34,130 @@ class RandomPolicy(Policy):
         return int(self.rng.choice(np.flatnonzero(mask)))
 
 
-POLICIES = {"random": RandomPolicy}
+class DQNPolicy(Policy):
+    """Pretrained Q-network (rl/train_dqn.py), epsilon-greedy over legal actions.
+    ckpt = path to model.pt; model.json next to it holds arch + eval config.
+    Frozen: weights fixed during evaluation."""
+    name = "dqn"
+    online = False
+    # test-time TD learning (dqn-online only); weights restored to pretrained at every game
+    ONLINE = dict(lr=1e-4, batch=32, start=32, gamma=0.99, target_every=100, buffer=1000)
+
+    def __init__(self, ckpt=None, **kw):
+        super().__init__(ckpt)
+        import torch
+        from nets import QNet
+        if ckpt is None:
+            raise SystemExit("dqn policies need --ckpt path/to/model.pt")
+        p = Path(ckpt)
+        cfg_path = p.with_suffix(".json")
+        self.cfg = json.loads(cfg_path.read_text()) if cfg_path.exists() else {}
+        self.eps = float(self.cfg.get("eval_eps", 0.05))
+        self.torch = torch
+        self.sd = torch.load(p, weights_only=True, map_location="cpu")
+        self.net = QNet(**self.cfg.get("arch_kwargs", {}))
+        self.net.load_state_dict(self.sd)
+        self.net.eval()
+
+    def reset(self, game_id, seed):
+        super().reset(game_id, seed)
+        self.torch.manual_seed(seed)
+        if self.online:
+            from nets import QNet
+            self.net.load_state_dict(self.sd)
+            self.tgt = QNet(**self.cfg.get("arch_kwargs", {}))
+            self.tgt.load_state_dict(self.sd)
+            self.opt = self.torch.optim.Adam(self.net.parameters(), lr=self.ONLINE["lr"])
+            self.buf, self.n_obs = [], 0
+        self.counts = {}            # per-game visit counts for the novelty bonus (P2.2)
+        self.beta = float(self.cfg.get("novelty_beta", 0.0))
+
+    def q_values(self, obs):
+        with self.torch.no_grad():
+            return self.net(self.torch.from_numpy(np.ascontiguousarray(obs[None])))[0].numpy()
+
+    def act(self, obs, mask, info) -> int:
+        legal = np.flatnonzero(mask)
+        if self.rng.random() < self.eps:
+            return int(self.rng.choice(legal))
+        q = self.q_values(obs)
+        return int(legal[np.argmax(q[legal])])
+
+    def observe(self, obs, action, reward, next_obs, terminated, info):
+        if not self.online:
+            return
+        import torch.nn.functional as F
+        torch, o = self.torch, self.ONLINE
+        if self.beta > 0:             # same bonus as in training, counts over the whole game
+            h = next_obs.tobytes()
+            c = self.counts[h] = self.counts.get(h, 0) + 1
+            reward = reward + self.beta / np.sqrt(c)
+        self.buf.append((obs, action, reward, next_obs, float(terminated)))
+        if len(self.buf) > o["buffer"]:
+            self.buf.pop(0)
+        self.n_obs += 1
+        if len(self.buf) < o["start"]:
+            return
+        idx = self.rng.integers(0, len(self.buf), o["batch"])
+        b = [self.buf[i] for i in idx]
+        ob = torch.from_numpy(np.stack([x[0] for x in b]))
+        a = torch.tensor([x[1] for x in b])
+        r = torch.tensor([x[2] for x in b], dtype=torch.float32)
+        nob = torch.from_numpy(np.stack([x[3] for x in b]))
+        d = torch.tensor([x[4] for x in b])
+        self.net.train()
+        q = self.net(ob).gather(1, a[:, None])[:, 0]
+        with torch.no_grad():
+            y = r + o["gamma"] * (1 - d) * self.tgt(nob).max(1).values
+        loss = F.smooth_l1_loss(q, y)
+        self.opt.zero_grad(); loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.net.parameters(), 10.0)
+        self.opt.step()
+        self.net.eval()
+        if self.n_obs % o["target_every"] == 0:
+            self.tgt.load_state_dict(self.net.state_dict())
+
+
+class DQNOnlinePolicy(DQNPolicy):
+    """Same as dqn, plus test-time TD learning on the game being played (observe() hook)."""
+    name = "dqn-online"
+    online = True
+
+
+class PPOPolicy(Policy):
+    """Pretrained MaskablePPO actor (rl/train_ppo.py), sampling from the masked policy.
+    ckpt = model.pt (policy state_dict); rebuilt from sb3_nets.POLICY_KWARGS, no pickles."""
+    name = "ppo"
+
+    def __init__(self, ckpt=None, **kw):
+        super().__init__(ckpt)
+        import torch
+        from sb3_contrib.common.maskable.policies import MaskableActorCriticPolicy
+        from sb3_nets import ACT_SPACE, OBS_SPACE, POLICY_KWARGS
+        if ckpt is None:
+            raise SystemExit("ppo policies need --ckpt path/to/model.pt")
+        p = Path(ckpt)
+        cfg_path = p.with_suffix(".json")
+        self.cfg = json.loads(cfg_path.read_text()) if cfg_path.exists() else {}
+        self.torch = torch
+        self.pi = MaskableActorCriticPolicy(OBS_SPACE, ACT_SPACE, lambda _: 0.0, **POLICY_KWARGS)
+        self.pi.load_state_dict(torch.load(p, weights_only=True, map_location="cpu"))
+        self.pi.set_training_mode(False)
+
+    def reset(self, game_id, seed):
+        super().reset(game_id, seed)
+        self.torch.manual_seed(seed)
+
+    def act(self, obs, mask, info) -> int:
+        with self.torch.no_grad():
+            o = self.torch.from_numpy(np.ascontiguousarray(obs[None]))
+            dist = self.pi.get_distribution(o, action_masks=mask[None])
+            a = dist.mode() if self.cfg.get("deterministic") else dist.sample()
+        return int(a[0])
+
+
+POLICIES = {"random": RandomPolicy, "dqn": DQNPolicy, "dqn-online": DQNOnlinePolicy,
+            "ppo": PPOPolicy}
 
 
 def make_policy(name, **kw):

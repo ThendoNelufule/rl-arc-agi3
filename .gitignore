@@ -27,3 +27,8 @@ kaggle_dataset/weights/*
 !kaggle_dataset/weights/MANIFEST.json
 kaggle_probe/out/
 kaggle_verify/out/
+
+# Training artefacts: weights live on the Kaggle dataset, not git
+experiments/train/*/model.pt
+experiments/train/*/train.log
+kaggle_runs/*/out/

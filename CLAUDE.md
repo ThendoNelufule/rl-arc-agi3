@@ -14,7 +14,8 @@ Goal: 100%, incl. top of the class leaderboard (official Kaggle public score).
 - Only stop and ask us when: (a) something needs the Kaggle website ("Submit to Competition"
   click, accepting rules); (b) changing a design lock below; (c) touching held-out games
   (--final); (d) something fails and 2 serious fix attempts didn't work.
-- Train locally on CPU unless clearly too slow; then propose Kaggle GPU (ask first).
+- ALL training runs on Kaggle T4s (scripts/kaggle_train.py; seeds as parallel jobs in one kernel).
+  Local machine (7.3 GB RAM, OOM-killed a local run) is for evaluation only.
 - Log training time/hardware separately from eval time for every run.
 - Each improvement must be motivated by the previous stage's evidence.
 - After EVERY sub-phase: update docs/PROGRESS.md, docs/REPORT_NOTES.md, experiments/log.csv,
@@ -62,3 +63,8 @@ Each improvement must be motivated by the previous stage's evidence. Not hyperpa
   (dc22, ka59, lf52 die identically across seeds).
 - Random on dev (p13-random-dev): official 0.0004 +- 0.0006, 1 level total across 3 seeds.
 - 8x8 click grid may be too coarse for small-target click games (possible improvement).
+- Official score per level = (baseline/actions)^2*100 (cap 115), level-index weighted; unfinished = 0.
+- Kaggle: 110 private games (55 public / 55 private LB), notebook <= 9 h, Swarm runs games in
+  parallel threads. Submission image: py3.12, torch 2.10 cpu, numpy 2.0.2, gymnasium 1.2.0.
+- Baseline convention (pre-registered): TEAM-10 = dqn-online (pretrain + test-time TD);
+  frozen = variant. 3 training seeds x 3 eval seeds per version; 400k steps for DQN and PPO.

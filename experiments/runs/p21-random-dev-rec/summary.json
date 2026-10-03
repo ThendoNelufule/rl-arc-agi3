@@ -1,0 +1,37 @@
+{
+  "tag": "p21-random-dev-rec",
+  "policy": "random",
+  "ckpt": null,
+  "split": "dev",
+  "games": [
+    "dc22",
+    "ka59",
+    "lf52",
+    "lp85",
+    "ls20"
+  ],
+  "seeds": 3,
+  "budget": 500,
+  "official_score_per_seed": {
+    "0": 0.0,
+    "1": 0.0012958060720844812,
+    "2": 0.0
+  },
+  "official_score_mean": 0.00043193535736149374,
+  "official_score_std": 0.0006108488404490939,
+  "levels_per_seed": {
+    "0": 0,
+    "1": 1,
+    "2": 0
+  },
+  "mean_level_frac": 0.008333333333333333,
+  "eval_seconds": 56.4,
+  "versions": {
+    "python": "3.12.10",
+    "arc_agi": "0.9.9",
+    "arcengine": "0.9.3",
+    "numpy": "2.0.2",
+    "gymnasium": "1.2.0",
+    "platform": "Windows-11-10.0.26200-SP0"
+  }
+}

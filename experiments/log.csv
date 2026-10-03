@@ -2,3 +2,6 @@ date,kernel,phase,games_set,seeds,local_score,kaggle_score,notes
 2026-09-18,TEAM-00-random,P0,hidden,1,0.19,0.02,pipeline verified
 2026-10-03,p13-random-dev,P1.3,dev,3,0.0004,,random baseline on dev (1 level total)
 2026-10-03,infra-p14-assets,P1.4,-,-,,,assets dataset + offline install verified (no agent eval)
+2026-10-03,p21-random-train,P2.1,train,3,0.0111,,random on train split for reward density (4 levels)
+2026-10-03,TEAM-10-dqn-base,P2.1,dev,3x3,0.0000,,dqn-online; 0 levels; 3 train seeds x 3 eval seeds; T4 0.3h/seed
+2026-10-03,TEAM-10f-dqn-frozen,P2.1,dev,3x3,0.0000,,frozen variant of TEAM-10; collapses to one action (top 0.77-0.93)

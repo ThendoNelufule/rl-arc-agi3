@@ -17,6 +17,7 @@ Semantics (documented for the report):
 from __future__ import annotations
 
 import logging
+import os
 from typing import Any, Optional
 
 import gymnasium as gym
@@ -48,7 +49,9 @@ def get_arcade():
     global _ARCADE
     if _ARCADE is None:
         logging.getLogger("arc_agi").setLevel(logging.WARNING)
-        _ARCADE = arc_agi.Arcade(operation_mode=OperationMode.NORMAL)
+        # ARC3_ARCADE_MODE=offline for internet-less Kaggle training kernels
+        mode = OperationMode(os.environ.get("ARC3_ARCADE_MODE", "normal"))
+        _ARCADE = arc_agi.Arcade(operation_mode=mode)
     return _ARCADE
 
 
@@ -80,6 +83,20 @@ def available_ids(raw) -> set[int]:
     return {int(getattr(a, "value", a)) for a in raw.available_actions}
 
 
+def mask_from_raw(raw) -> np.ndarray:
+    """Legal-action mask over Discrete(70); shared by ArcGymEnv and the Kaggle agent."""
+    av = available_ids(raw)
+    if not av:
+        return np.ones(N_ACTIONS, dtype=bool)
+    m = np.zeros(N_ACTIONS, dtype=bool)
+    for i, a in enumerate(SIMPLE):
+        m[i] = int(a.value) in av
+    m[N_SIMPLE:] = int(GameAction.ACTION6.value) in av
+    if not m.any():
+        m[:] = True
+    return m
+
+
 class ArcGymEnv(gym.Env):
     metadata = {"render_modes": []}
 
@@ -109,16 +126,7 @@ class ArcGymEnv(gym.Env):
         }
 
     def action_masks(self) -> np.ndarray:
-        av = available_ids(self._last)
-        if not av:
-            return np.ones(N_ACTIONS, dtype=bool)
-        m = np.zeros(N_ACTIONS, dtype=bool)
-        for i, a in enumerate(SIMPLE):
-            m[i] = int(a.value) in av
-        m[N_SIMPLE:] = int(GameAction.ACTION6.value) in av
-        if not m.any():
-            m[:] = True
-        return m
+        return mask_from_raw(self._last)
 
     # ---- gym API -------------------------------------------------------
     def reset(self, *, seed=None, options=None):

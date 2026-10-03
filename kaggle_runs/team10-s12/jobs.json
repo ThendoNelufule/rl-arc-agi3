@@ -1,0 +1,7 @@
+{
+  "accel": "t4",
+  "jobs": [
+    "train_dqn.py --tag TEAM-10-dqn-base-s1 --seed 1 --steps 400000 --device cuda",
+    "train_dqn.py --tag TEAM-10-dqn-base-s2 --seed 2 --steps 400000 --device cuda"
+  ]
+}

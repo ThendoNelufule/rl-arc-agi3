@@ -1,87 +1,96 @@
-"""Your ARC-AGI-3 agent. This is the *only* file you should normally edit.
+"""Kaggle / framework wrapper around any rl/policies.py Policy.
 
-`scripts/build_notebook.py` splices the contents of this file into the
-Kaggle submission notebook, so your local dev loop and your Kaggle
-submission stay in lock-step:
+Same code path as rl/evaluate.py: frame -> (1,64,64) grid (arc_gym.frame_to_grid), legality
+mask (arc_gym.mask_from_raw), Policy.act -> Discrete(70) index -> GameAction (arc_gym.decode_action).
+Online policies get observe() with reward = level delta, exactly as in the eval harness.
+Only the observable frame is used (no game-specific code, no hidden state).
 
-    [edit my_agent.py] → [make play-local] → [make submit]
-
-The default body below is a port of the Stochastic Goose / random_agent
-sample — a known-good baseline that produces a valid submission and
-proves your end-to-end pipeline works. Replace `choose_action` with your
-real strategy.
-
-Contract (enforced by the ARC-AGI-3-Agents framework):
-  - Subclass `agents.agent.Agent`.
-  - Class must be named `MyAgent` (the notebook's __init__.py registers it).
-  - Implement `is_done(frames, latest_frame) -> bool`.
-  - Implement `choose_action(frames, latest_frame) -> GameAction`.
+Pick the agent with the three constants below; scripts/build_notebook.py ships rl/*.py
+to /tmp/rl on Kaggle and the weights come from the arc3-rl-assets dataset.
 """
 from __future__ import annotations
 
-import random
+import os
+import sys
 import time
+import zlib
+from pathlib import Path
 from typing import Any
 
-from arcengine import FrameData, GameAction, GameState
+POLICY = os.environ.get("ARC3_POLICY", "random")   # name in rl/policies.py POLICIES
+WEIGHTS = os.environ.get("ARC3_WEIGHTS") or None   # run tag, e.g. "TEAM-10-dqn-base"
+BUDGET = 500        # actions per game, same as the eval protocol
+# Kaggle wall-clock guard (notebook limit 9 h for 110 parallel games), measured from import:
+LEARN_DEADLINE_S = 6.5 * 3600   # after this, no more test-time learning (act only)
+STOP_DEADLINE_S = 8.0 * 3600    # after this, every game stops (is_done -> True)
 
-# When run inside the ARC-AGI-3-Agents framework (locally or on Kaggle)
-# the `agents` package is on sys.path, so this import resolves.
-from agents.agent import Agent
+_RL_DIR = os.environ.get("ARC3_RL_DIR") or str(Path(__file__).resolve().parents[1] / "rl")
+if _RL_DIR not in sys.path:
+    sys.path.insert(0, _RL_DIR)
+
+from arcengine import FrameData, GameAction, GameState  # noqa: E402
+
+from agents.agent import Agent  # noqa: E402
+from arc_gym import decode_action, frame_to_grid, mask_from_raw  # noqa: E402
+from policies import make_policy  # noqa: E402
+
+_T0 = time.time()
+
+
+def _elapsed() -> float:
+    return time.time() - _T0
+
+
+def _weights_path():
+    if WEIGHTS is None:
+        return None
+    assets = os.environ.get("ARC3_ASSETS")
+    if assets:                                   # Kaggle: dataset copy
+        return str(Path(assets) / "weights" / f"{WEIGHTS}.pt")
+    return str(Path(_RL_DIR).parent / "experiments" / "train" / WEIGHTS / "model.pt")
 
 
 class MyAgent(Agent):
-    """Picks legal actions uniformly at random. Replace with your strategy."""
-
-    # Upper bound on actions per game; the framework also enforces global limits.
-    MAX_ACTIONS = 80
+    MAX_ACTIONS = BUDGET
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        # Seed per game_id so replays from the same game are reproducible but
-        # different games explore independently.
-        seed = int(time.time() * 1_000_000) + hash(self.game_id) % 1_000_000
-        random.seed(seed)
+        try:                      # one thread per game: the framework runs games in parallel
+            import torch
+            torch.set_num_threads(1)
+        except ImportError:
+            pass
+        self.gid = self.game_id.split("-")[0]
+        self.policy = make_policy(POLICY, ckpt=_weights_path())
+        self.policy.reset(self.gid, zlib.crc32(self.gid.encode()))
+        self.prev = None          # (obs, action, levels_completed) of the last real action
 
     @property
     def name(self) -> str:
-        return f"{super().name}.{self.MAX_ACTIONS}"
+        return f"{super().name}.{POLICY}.{self.MAX_ACTIONS}"
 
     def is_done(self, frames: list[FrameData], latest_frame: FrameData) -> bool:
-        # Stop once we win. Don't stop on GAME_OVER — we want to RESET and retry.
-        return latest_frame.state is GameState.WIN
+        return latest_frame.state is GameState.WIN or _elapsed() > STOP_DEADLINE_S
 
-    def choose_action(
-        self, frames: list[FrameData], latest_frame: FrameData
-    ) -> GameAction:
-        # First call or after a death → reset the level.
+    def choose_action(self, frames: list[FrameData], latest_frame: FrameData) -> GameAction:
+        learn = _elapsed() < LEARN_DEADLINE_S
         if latest_frame.state in (GameState.NOT_PLAYED, GameState.GAME_OVER):
+            if learn and self.prev is not None and latest_frame.state is GameState.GAME_OVER:
+                o, a, _ = self.prev
+                self.policy.observe(o, a, 0.0, frame_to_grid(latest_frame)[None], True, {})
+            self.prev = None
             return GameAction.RESET
-
-        # ── Per-game strategy fork ───────────────────────────────────────────
-        # By default every game uses the same uniformly-random strategy in the
-        # `else` branch below. This `if` shows ONE example of giving a single
-        # game its own heuristic: on LS20 we bias the random pick so ACTION4
-        # is twice as likely as any other action. Add more `elif` branches to
-        # specialize other games.
-        #
-        # `self.game_id` is set by the framework. It may be the short id
-        # ("ls20") or include a version suffix ("ls20-9607627b"), so we
-        # compare on the prefix to be safe.
-        candidate_actions = [a for a in GameAction if a is not GameAction.RESET]
-        if self.game_id.split("-")[0] == "ls20":
-            weights = [2 if a is GameAction.ACTION4 else 1 for a in candidate_actions]
-            action = random.choices(candidate_actions, weights=weights, k=1)[0]
-        else:
-            action = random.choice(candidate_actions)
-        # ────────────────────────────────────────────────────────────────────
-
-        if action.is_complex():
-            # ACTION6 takes (x, y) coordinates on a 64×64 grid.
-            action.set_data(
-                {"x": random.randint(0, 63), "y": random.randint(0, 63)}
-            )
-            action.reasoning = {"why": "random complex action"}
-        else:
-            action.reasoning = f"random simple action: {action.value}"
+        obs = frame_to_grid(latest_frame)[None]
+        info = {"game_id": self.gid, "levels_completed": latest_frame.levels_completed,
+                "state": latest_frame.state.name}
+        if learn and self.prev is not None:
+            o, a, lv = self.prev
+            r = float(max(0, latest_frame.levels_completed - lv))
+            self.policy.observe(o, a, r, obs, False, info)
+        idx = self.policy.act(obs, mask_from_raw(latest_frame), info)
+        action, data = decode_action(idx)
+        if data is not None:
+            action.set_data(data)
+        action.reasoning = {"policy": POLICY, "index": int(idx)}
+        self.prev = (obs, idx, latest_frame.levels_completed)
         return action

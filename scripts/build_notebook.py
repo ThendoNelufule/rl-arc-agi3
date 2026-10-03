@@ -45,6 +45,8 @@ METADATA_PATH = ROOT / "notebooks" / "kernel-metadata.json"
 
 # Private Kaggle dataset with offline wheels + trained weights (kaggle_dataset/).
 ASSETS_SLUG = "thendonelufule/arc3-rl-assets"
+# rl/ modules the agent imports; written to /tmp/rl on Kaggle (same code as local eval).
+RL_MODULES = ["arc_gym.py", "nets.py", "replay.py", "sb3_nets.py", "policies.py"]
 
 
 def code_cell(source: str) -> dict:
@@ -61,10 +63,39 @@ def markdown_cell(source: str) -> dict:
     return {"cell_type": "markdown", "metadata": {}, "source": source}
 
 
-def build() -> dict:
+def pin_agent(body: str, policy: str, weights: str | None) -> str:
+    """Freeze the agent's POLICY/WEIGHTS constants for this submission."""
+    out = []
+    for line in body.splitlines(keepends=True):
+        if line.startswith("POLICY = "):
+            line = f"POLICY = {policy!r}\n"
+        elif line.startswith("WEIGHTS = "):
+            line = f"WEIGHTS = {weights!r}\n"
+        out.append(line)
+    return "".join(out)
+
+
+def build(policy: str = "random", weights: str | None = None) -> dict:
     if not AGENT_SRC.exists():
         raise SystemExit(f"Could not find {AGENT_SRC}")
-    agent_body = AGENT_SRC.read_text()
+    agent_body = pin_agent(AGENT_SRC.read_text(), policy, weights)
+    rl_cells = [code_cell(f"%%writefile /tmp/rl/{m}\n" + (ROOT / "rl" / m).read_text())
+                for m in RL_MODULES]
+    smoke_cell = code_cell(dedent(
+        f"""\
+        # Commit-time smoke test: the submitted policy + weights load and act offline.
+        import sys, numpy as np
+        sys.path.insert(0, '/tmp/rl')
+        from policies import make_policy
+        _w = {weights!r}
+        _ck = (os.environ['ARC3_ASSETS'] + '/weights/' + _w + '.pt') if _w else None
+        _p = make_policy({policy!r}, ckpt=_ck); _p.reset('smoke', 0)
+        _o = np.zeros((1, 64, 64), np.uint8); _m = np.ones(70, bool)
+        for _ in range(40):
+            _a = _p.act(_o, _m, {{}}); _p.observe(_o, _a, 0.0, _o, False, {{}})
+        print('SMOKE OK policy={policy} weights={weights} last_action', _a)
+        """
+    ))
 
     # Offline install: competition wheels (arc-agi) + our assets dataset
     # (SB3 wheels, weights). Verified internet-OFF in P1.4 (arc3-offline-verify).
@@ -83,6 +114,8 @@ def build() -> dict:
         ASSETS = _find('{ASSETS_SLUG.split('/')[1]}')
         COMP_WHEELS = _find('arc_agi_3_wheels')
         os.environ['ARC3_ASSETS'] = ASSETS   # read by the agent to locate weights
+        os.environ['ARC3_RL_DIR'] = '/tmp/rl'  # rl/*.py written by the next cells
+        os.makedirs('/tmp/rl', exist_ok=True)
         print('ASSETS', ASSETS, '| COMP_WHEELS', COMP_WHEELS)
         r = subprocess.run([sys.executable, '-m', 'pip', 'install', '--no-index',
                             '--find-links', COMP_WHEELS, '--find-links', ASSETS + '/wheels',
@@ -217,6 +250,8 @@ def build() -> dict:
                 "`make submit`."
             ),
             install_cell,
+            *rl_cells,
+            smoke_cell,
             write_agent_cell,
             run_cell,
             dummy_submission_cell,
@@ -226,10 +261,17 @@ def build() -> dict:
 
 
 def main() -> None:
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--policy", default="random")
+    ap.add_argument("--weights", default=None, help="run tag; needs weights/<tag>.pt in the dataset")
+    a = ap.parse_args()
+    if a.weights and not (ROOT / "kaggle_dataset" / "weights" / f"{a.weights}.pt").exists():
+        raise SystemExit(f"kaggle_dataset/weights/{a.weights}.pt missing: copy it and `make dataset-push` first")
     NOTEBOOK_PATH.parent.mkdir(parents=True, exist_ok=True)
-    NOTEBOOK_PATH.write_text(json.dumps(build(), indent=1))
+    NOTEBOOK_PATH.write_text(json.dumps(build(a.policy, a.weights), indent=1))
     print(f"[build_notebook] Wrote {NOTEBOOK_PATH.relative_to(ROOT)}  "
-          f"(accelerator: {ACCELERATOR})")
+          f"(accelerator: {ACCELERATOR}, policy: {a.policy}, weights: {a.weights})")
 
     # Keep notebooks/kernel-metadata.json in sync so the user never has to
     # edit it just to flip CPU ↔ GPU.

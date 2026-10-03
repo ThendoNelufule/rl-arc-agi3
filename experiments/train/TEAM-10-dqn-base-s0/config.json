@@ -1,0 +1,21 @@
+{
+  "tag": "TEAM-10-dqn-base-s0",
+  "steps": 400000,
+  "seed": 0,
+  "ep_len": 500,
+  "buffer": 100000,
+  "batch": 32,
+  "lr": 0.0001,
+  "gamma": 0.99,
+  "train_freq": 4,
+  "learning_starts": 20000,
+  "target_update": 10000,
+  "eps_start": 1.0,
+  "eps_end": 0.05,
+  "eps_frac": 0.5,
+  "eval_eps": 0.05,
+  "log_every": 10000,
+  "device": "cuda",
+  "threads": 0,
+  "overwrite": false
+}
