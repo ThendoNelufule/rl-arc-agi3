@@ -16,3 +16,5 @@ date,kernel,phase,games_set,seeds,local_score,kaggle_score,notes
 2026-10-04,TEAM-12-dqn-novelty-mask,P2.3,dev,3x3,0.0044,,novelty + effect masking; 3 levels; frozen variant 0.0036 (6 levels)
 2026-10-04,TEAM-30-graph-stats,X,dev,9 eval,0.3895,,graph + online Thompson effect stats; lp85 L1 every run (median 20 actions)
 2026-10-04,TEAM-31-graph-stats-ppo,X,dev,3x3,0.4611,,TEAM-30 + TEAM-21 PPO prior; BEST; lp85 L1 in 12-24 actions
+2026-10-04,TEAM-32-graph-clock,X,dev,3x3,0.4615,,+ online ticker-row masking; 11 levels (ls20 x2 at ~415 actions)
+2026-10-04,TEAM-33-graph-clock-prune,X,dev,3x3,0.4842,,+ prune confidently ineffective actions; within noise of TEAM-31/32

@@ -401,10 +401,13 @@ class GraphStatsPolicy(GraphExplorePolicy):
             p = p + self.PRIOR_W * pi / max(pi.max(), 1e-8)
         return p
 
+    def changed(self, obs, next_obs):
+        return not np.array_equal(obs, next_obs)
+
     def observe(self, obs, action, reward, next_obs, terminated, info):
         k = self.key(obs, int(action))
         c = self.stat.setdefault(k, [0, 0])
-        c[0] += int(not np.array_equal(obs, next_obs)); c[1] += 1
+        c[0] += int(self.changed(obs, next_obs)); c[1] += 1
         super().observe(obs, action, reward, next_obs, terminated, info)
 
 
@@ -414,6 +417,113 @@ class GraphStatsPPOPolicy(GraphStatsPolicy):
     PRIOR_W = 0.3
 
 
+class GraphClockPolicy(GraphStatsPPOPolicy):
+    """TEAM-32: TEAM-31 + online "ticker row" abstraction. Evidence: every dev move/mixed game has a
+    step-counter bar that advances 1 pixel per action (ls20 rows 61-62, dc22/ka59 row 63, lf52 row
+    0), so every frame was unique (graph never recognised revisits) and in lf52 every action looked
+    effective. Learned per game from observed frames only: after >= 10 frame-changing steps, a row is
+    a ticker if it changed in >= 50% of changing steps, with median <= 2 changed pixels in that row,
+    caused by >= 3 distinct actions. Ticker rows are zeroed before hashing and change detection.
+    The ticker set only grows (an earlier flapping version kept wiping the graph: dc22 no-ops 0.15 ->
+    0.40 in a smoke test); each addition rebuilds graph + effect statistics (early in a game)."""
+    name = "graph-clock"
+    MIN_STEPS, MIN_FRAC, MAX_PX, MIN_ACTS = 10, 0.5, 2, 3
+
+    def reset(self, game_id, seed):
+        super().reset(game_id, seed)
+        self.r_cnt = np.zeros(64); self.r_px = [[] for _ in range(64)]
+        self.r_acts = [set() for _ in range(64)]; self.n_chg = 0
+        self.ticker = np.zeros(64, bool)
+        self.rebuilds = 0
+
+    def masked(self, obs):
+        if not self.ticker.any():
+            return obs
+        o = obs.copy()
+        o[0, self.ticker] = 0
+        return o
+
+    def h(self, obs):
+        return GraphExplorePolicy.h(self.masked(obs))
+
+    def changed(self, obs, next_obs):
+        return not np.array_equal(self.masked(obs), self.masked(next_obs))
+
+    def update_ticker(self, obs, action, next_obs):
+        d = obs[0] != next_obs[0]
+        if not d.any():
+            return
+        self.n_chg += 1
+        rows = np.flatnonzero(d.any(1))
+        for r in rows:
+            self.r_cnt[r] += 1; self.r_px[r].append(int(d[r].sum())); self.r_acts[r].add(int(action))
+        if self.n_chg < self.MIN_STEPS:
+            return
+        new = np.array([self.r_cnt[r] / self.n_chg >= self.MIN_FRAC and len(self.r_px[r]) > 0 and
+                        np.median(self.r_px[r]) <= self.MAX_PX and len(self.r_acts[r]) >= self.MIN_ACTS
+                        for r in range(64)])
+        new |= self.ticker                  # monotone: a ticker row stays a ticker (no flapping)
+        if (new != self.ticker).any():
+            self.ticker = new
+            self.rebuilds += 1
+            self.clear_graph(); self.stat = {}
+
+    def observe(self, obs, action, reward, next_obs, terminated, info):
+        self.update_ticker(obs, action, next_obs)
+        super().observe(obs, action, reward, next_obs, terminated, info)
+
+
+class GraphClockPrunePolicy(GraphClockPolicy):
+    """TEAM-33: TEAM-32 + pruning of confidently ineffective actions. Evidence (TEAM-32 seed-0
+    diagnostic): once ticker rows are masked, states genuinely recur and the frontier search tries
+    ALL ~70 legal actions in every recurring state (dc22 raw no-ops 0.15 -> 0.40). An untried action
+    is skipped when this game's statistics for its key (simple action / clicked colour) show
+    >= PRUNE_N tries with zero effect; if nothing promising is left, the agent moves to the frontier."""
+    name = "graph-clock-prune"
+    PRUNE_N = 3
+
+    def untried(self, hs):
+        out = []
+        obs = self.obs_of.get(hs)
+        for a in super().untried(hs):
+            if obs is not None:
+                c, n = self.stat.get(self.key(obs, a), (0, 0))
+                if n >= self.PRUNE_N and c == 0:
+                    continue
+            out.append(a)
+        return out
+
+    def act(self, obs, mask, info):
+        self.obs_of[self.h(obs)] = obs
+        return super().act(obs, mask, info)
+
+    def clear_graph(self):
+        super().clear_graph()
+        self.obs_of = {}
+
+
+class GraphTimerPolicy(GraphClockPrunePolicy):
+    """TEAM-34: TEAM-33 + timer-aware death handling. Evidence: on every dev move/mixed game GAME_OVER
+    comes from a fixed per-life step budget (lives of ~129/125/100/65 steps on ls20/dc22/ka59/lf52
+    under ANY policy; identical death counts for random, PPO and graph agents), so banning the last
+    (state, action) before each death removed arbitrary, often useful edges. Now a (state, action)
+    is banned as deadly only after it has led to GAME_OVER twice (real hazards repeat, timer deaths
+    don't); a single death edge is kept as a normal (non-changing) edge."""
+    name = "graph-timer"
+
+    def clear_graph(self):
+        super().clear_graph()
+        self.deaths = {}
+
+    def observe(self, obs, action, reward, next_obs, terminated, info):
+        if terminated and info.get("state") == "GAME_OVER":
+            k = (self.h(obs), int(action))
+            self.deaths[k] = self.deaths.get(k, 0) + 1
+            if self.deaths[k] < 2:
+                info = dict(info, state="TIMEOUT_SUSPECTED")     # not banned by the base class
+        GraphClockPrunePolicy.observe(self, obs, action, reward, next_obs, terminated, info)
+
+
 class GraphNoEffectPolicy(GraphExplorePolicy):
     """Ablation: same graph exploration, untried actions in random order (no effect head)."""
     name = "graph-noeff"
@@ -421,7 +531,9 @@ class GraphNoEffectPolicy(GraphExplorePolicy):
 
 
 POLICIES = {"graph": GraphExplorePolicy, "graph-noeff": GraphNoEffectPolicy,
-            "graph-stats": GraphStatsPolicy, "graph-stats-ppo": GraphStatsPPOPolicy, "random": RandomPolicy, "dqn": DQNPolicy, "dqn-online": DQNOnlinePolicy,
+            "graph-stats": GraphStatsPolicy, "graph-stats-ppo": GraphStatsPPOPolicy,
+            "graph-clock": GraphClockPolicy, "graph-clock-prune": GraphClockPrunePolicy,
+            "graph-timer": GraphTimerPolicy, "random": RandomPolicy, "dqn": DQNPolicy, "dqn-online": DQNOnlinePolicy,
             "ppo": PPOPolicy, "ppo-lstm": PPOLSTMPolicy}
 
 

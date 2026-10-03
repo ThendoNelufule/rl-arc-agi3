@@ -297,3 +297,33 @@ action; harness resets on GAME_OVER).
   the 64 click centres are exhausted (design lock: 8x8 click grid) -> asked the team;
   (2) move games: no level within 500 actions despite high coverage.
 - Kaggle: notebook arc3-team-31-graph-stats-ppo v1 (TEAM-21 seed-0 prior), smoke OK, ~14 ms/action.
+
+## TEAM-32-graph-clock | 2026-10-04
+- Limitation observed (TEAM-31 recordings): every dev move/mixed game shows a step-counter bar that
+  advances 1 pixel per action (ls20 rows 61-62 changed in 99-100% of steps, dc22 row 63 77-83%,
+  ka59 row 63 64%, lf52 row 0 100% and NOTHING else changes in lf52) -> every frame is unique, the
+  graph never recognises revisited positions, and in lf52 every action looks "effective".
+- Hypothesis: masking these rows restores state identity -> real graph search on move games.
+- Intervention (on TEAM-31): online per-game "ticker row" detection from observed frames only
+  (>=10 changing steps; row changed in >=50% of them; median <=2 changed px in that row; caused
+  by >=3 distinct actions); ticker rows zeroed before hashing and change detection; ticker set is
+  monotone (a flapping first version kept wiping the graph). Detected exactly the bar rows on all
+  4 games, none on lp85, one rebuild per game.
+- Results (dev, 3x3): 0.4615 +- 0.0377, 11 levels: lp85 L1 every run + ls20 L1 twice (after
+  413/416 actions -> tiny score). Eval 2-3 min per train seed (Kaggle CPU).
+- Behaviour: noop 0.33 (TEAM-31 0.23): with real state identity the frontier search now tries
+  all ~70 legal actions in every recurring state (dc22 seed-0 raw no-ops 0.15 -> 0.40).
+
+## TEAM-33-graph-clock-prune | 2026-10-04
+- Limitation observed (TEAM-32 seed-0 diagnostic, confirmed by its full eval): exhaustive trying of
+  every legal action in recurring states.
+- Intervention (on TEAM-32): an untried action is skipped if this game's statistics for its key
+  (simple action / clicked colour) show >= 3 tries with zero effect.
+- Results (dev, 3x3): 0.4842 +- 0.0366, 9 levels (lp85 L1 every run, 12-20 actions).
+- Behaviour: noop 0.30, distinct frac 0.58-0.63 (TEAM-32 0.55-0.57).
+- Honest reading: TEAM-31/32/33 (0.461/0.462/0.484, std ~0.037 over train seeds) are within
+  noise of each other; differences come from the number of clicks lp85 L1 takes (12-24).
+- Diagnostic for next step: deaths on all move/mixed dev games come from a FIXED per-life step
+  budget (lives ~129/125/100/65 steps on ls20/dc22/ka59/lf52 under random, PPO and graph agents;
+  identical death counts across agents) -> banning the last (s,a) before each death is wrong.
+- Kaggle: notebook arc3-team-33-graph-clock-prune v1 pushed (TEAM-21 seed-0 prior).

@@ -1,0 +1,13 @@
+{
+  "accel": "cpu",
+  "jobs": [
+    "evaluate.py --policy graph-clock --ckpt {ASSETS}/weights/ckpt/TEAM-21-ppo-rnd-s0.pt --split dev --seeds 3 --record --tag TEAM-32-graph-clock-s0-dev",
+    "evaluate.py --policy graph-clock --ckpt {ASSETS}/weights/ckpt/TEAM-21-ppo-rnd-s1.pt --split dev --seeds 3 --record --tag TEAM-32-graph-clock-s1-dev",
+    "evaluate.py --policy graph-clock --ckpt {ASSETS}/weights/ckpt/TEAM-21-ppo-rnd-s2.pt --split dev --seeds 3 --record --tag TEAM-32-graph-clock-s2-dev",
+    "evaluate.py --policy graph-clock-prune --ckpt {ASSETS}/weights/ckpt/TEAM-21-ppo-rnd-s0.pt --split dev --seeds 3 --record --tag TEAM-33-graph-clock-prune-s0-dev",
+    "evaluate.py --policy graph-clock-prune --ckpt {ASSETS}/weights/ckpt/TEAM-21-ppo-rnd-s1.pt --split dev --seeds 3 --record --tag TEAM-33-graph-clock-prune-s1-dev",
+    "evaluate.py --policy graph-clock-prune --ckpt {ASSETS}/weights/ckpt/TEAM-21-ppo-rnd-s2.pt --split dev --seeds 3 --record --tag TEAM-33-graph-clock-prune-s2-dev"
+  ],
+  "maxpar": 4,
+  "threads": 1
+}
