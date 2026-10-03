@@ -1,0 +1,50 @@
+[{"stream_name":"stderr","time":9.740326073,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":9.740382223,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":9.740413208,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":9.740417985,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stderr","time":10.534677166,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":10.534715021,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":10.534720854,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":10.53472355,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stdout","time":12.147015063,"data":"ASSETS /kaggle/input/datasets/thendonelufule/arc3-rl-assets | COMP_WHEELS /kaggle/input/competitions/arc-prize-2026-arc-agi-3/arc_agi_3_wheels\n"}
+,{"stream_name":"stdout","time":20.527237809,"data":"equirement already satisfied: fsspec\u003e=0.8.5 in /usr/local/lib/python3.12/dist-packages (from torch\u003c3.0,\u003e=2.8-\u003estable-baselines3) (2025.3.0)\n"}
+,{"stream_name":"stdout","time":20.527275727,"data":"Requirement already satisfied: six\u003e=1.5 in /usr/local/lib/python3.12/dist-packages (from python-dateutil\u003e=2.7-\u003ematplotlib\u003e=3.7.0-\u003earc-agi) (1.17.0)\n"}
+,{"stream_name":"stdout","time":20.527281247,"data":"Requirement already satisfied: mpmath\u003c1.4,\u003e=1.1.0 in /usr/local/lib/python3.12/dist-packages (from sympy\u003e=1.13.3-\u003etorch\u003c3.0,\u003e=2.8-\u003estable-baselines3) (1.3.0)\n"}
+,{"stream_name":"stdout","time":20.527292726,"data":"Installing collected packages: pillow, stable-baselines3, arcengine, sb3-contrib, arc-agi\n"}
+,{"stream_name":"stdout","time":20.527296791,"data":"  Attempting uninstall: pillow\n"}
+,{"stream_name":"stdout","time":20.527300488,"data":"    Found existing installation: pillow 11.3.0\n"}
+,{"stream_name":"stdout","time":20.527303926,"data":"    Uninstalling pillow-11.3.0:\n"}
+,{"stream_name":"stdout","time":20.527307626,"data":"      Successfully uninstalled pillow-11.3.0\n"}
+,{"stream_name":"stdout","time":20.527311147,"data":"Successfully installed arc-agi-0.9.8 arcengine-0.9.3 pillow-12.2.0 sb3-contrib-2.9.0 stable-baselines3-2.9.0\n"}
+,{"stream_name":"stdout","time":20.527315139,"data":" ERROR: pip's dependency resolver does not currently take into account all the packages that are installed. This behaviour is the source of the following dependency conflicts.\n"}
+,{"stream_name":"stdout","time":20.527319501,"data":"dopamine-rl 4.1.2 requires gym\u003c=0.25.2, but you have gym 0.26.2 which is incompatible.\n"}
+,{"stream_name":"stdout","time":20.527323177,"data":"gradio 5.50.0 requires pillow\u003c12.0,\u003e=8.0, but you have pillow 12.2.0 which is incompatible.\n"}
+,{"stream_name":"stdout","time":20.527327075,"data":"\n"}
+,{"stream_name":"stdout","time":49.622563106,"data":"ENV python 3.12.13 | torch 2.10.0+cpu | numpy 2.0.2 | gymnasium 1.2.0 | sb3 2.9.0 | threads 2\n"}
+,{"stream_name":"stderr","time":49.623899396,"data":"Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.\n"}
+,{"stream_name":"stderr","time":49.623931027,"data":"Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.\n"}
+,{"stream_name":"stderr","time":49.62396735,"data":"Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.\n"}
+,{"stream_name":"stderr","time":49.623972844,"data":"See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.\n"}
+,{"stream_name":"stderr","time":49.62397715,"data":"\n"}
+,{"stream_name":"stderr","time":49.623980975,"data":"Gym has been unmaintained since 2022 and does not support NumPy 2.0 amongst other critical functionality.\n"}
+,{"stream_name":"stderr","time":49.623984968,"data":"Please upgrade to Gymnasium, the maintained drop-in replacement of Gym, or contact the authors of your software and request that they upgrade.\n"}
+,{"stream_name":"stderr","time":49.623988895,"data":"Users of this version of Gym should be able to simply replace 'import gym' with 'import gymnasium as gym' in the vast majority of cases.\n"}
+,{"stream_name":"stderr","time":49.623992836,"data":"See the migration guide at https://gymnasium.farama.org/introduction/migration_guide/ for additional information.\n"}
+,{"stream_name":"stdout","time":49.642451903,"data":"Writing /tmp/rl/arc_gym.py\n"}
+,{"stream_name":"stdout","time":49.660372592,"data":"Writing /tmp/rl/nets.py\n"}
+,{"stream_name":"stdout","time":49.678269935,"data":"Writing /tmp/rl/replay.py\n"}
+,{"stream_name":"stdout","time":49.695282681,"data":"Writing /tmp/rl/sb3_nets.py\n"}
+,{"stream_name":"stdout","time":49.713930325,"data":"Writing /tmp/rl/recurrent.py\n"}
+,{"stream_name":"stdout","time":49.733253154,"data":"Writing /tmp/rl/effect.py\n"}
+,{"stream_name":"stdout","time":49.76577792,"data":"Writing /tmp/rl/policies.py\n"}
+,{"stream_name":"stdout","time":57.541213691,"data":"SMOKE OK policy=graph-patch-clickprior weights=TEAM-21-ppo-rnd last_action 30\n"}
+,{"stream_name":"stdout","time":57.561422041,"data":"Writing /tmp/my_agent.py\n"}
+,{"stream_name":"stderr","time":63.892889992,"data":"/usr/local/lib/python3.12/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":63.892933551,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":64.099718471,"data":"/usr/local/lib/python3.12/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":64.099747841,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":64.970869672,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to notebook\n"}
+,{"stream_name":"stderr","time":65.362425169,"data":"[NbConvertApp] Writing 77030 bytes to __notebook__.ipynb\n"}
+,{"stream_name":"stderr","time":68.494537887,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to html\n"}
+,{"stream_name":"stderr","time":69.71042652,"data":"[NbConvertApp] Writing 551766 bytes to __results__.html\n"}
+]

@@ -358,3 +358,28 @@ action; harness resets on GAME_OVER).
       and lf52 spend 78-95% of actions on clicks with almost no discoveries;
   (2) ls20: ~110-120 distinct states in 500 actions (4 timer-limited lives of ~129 steps).
 - Kaggle: notebook arc3-team-35-graph-patch v1 (TEAM-21 seed-0 prior).
+
+## Supplementary generalisation check on the 15 TRAIN games (training-free agents only)
+- Purpose: the dev set has only 5 games; training-free graph agents never saw the train games,
+  so the train split is an unbiased extra test bed FOR THEM (not used for the PPO-prior agents,
+  whose prior was trained there). Supplementary evidence only; decisions remain dev-based.
+- Results (train split, 3 eval seeds): random 0.0111 (4 levels: r11l x3, ft09); graph-stats
+  (TEAM-30 logic) 0.0578 (4 levels: g50t, m0r0 x2, ft09); graph-patch-noprior (TEAM-35 logic,
+  no prior) 0.1209 (7 levels on 6 games: sp80, m0r0 x3, r11l, cn04, ft09).
+- Reading: the ticker/prune/click-equivalence fixes generalise beyond dev (2x graph-stats, 11x
+  random on unseen games).
+
+## TEAM-35n-graph-patch-noprior (ablation of TEAM-35's PPO prior) | 2026-10-04
+- Results (dev, 9 eval seeds; training-free): 0.4713 +- 0.0729 (over runs), 15 levels:
+  lp85 L1 every run (15-21 actions) + ls20 L1 in 6/9 runs (297-473 actions).
+- vs TEAM-35 (with prior): 0.4929, 9 levels, ls20 0/9 -> the PPO prior slightly speeds up lp85
+  clicks but biases movement and kills ls20 exploration.
+
+## TEAM-36-graph-patch-clickprior | 2026-10-04  -- BEST ON DEV (score and levels)
+- Limitation observed (TEAM-35 vs TEAM-35n): the PPO prior helps click ordering but hurts
+  movement exploration.
+- Intervention (on TEAM-35): prior added to click actions only; simple actions ranked by the
+  online effect statistics alone.
+- Results (dev, 3x3): 0.4943 +- 0.0445 (train seeds), all 9 runs 0.4943 +- 0.1000; 15 levels
+  (5 per train seed): lp85 L1 every run (15-25 actions), ls20 L1 in 6/9 runs (367/473 actions).
+- Conclusion: dominates TEAM-35 (score) and TEAM-35n (score) with the most levels.

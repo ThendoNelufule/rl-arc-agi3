@@ -1,0 +1,11 @@
+{
+  "accel": "cpu",
+  "jobs": [
+    "evaluate.py --policy graph-stats --split train --seeds 3 --record --tag SUPP-graph-stats-train",
+    "evaluate.py --policy graph-patch-noprior --split train --seeds 3 --record --tag SUPP-graph-patch-noprior-train",
+    "evaluate.py --policy graph-patch-noprior --split dev --seeds 9 --record --tag TEAM-35n-graph-patch-noprior-dev",
+    "evaluate.py --policy random --split train --seeds 3 --record --tag SUPP-random-train"
+  ],
+  "maxpar": 4,
+  "threads": 1
+}

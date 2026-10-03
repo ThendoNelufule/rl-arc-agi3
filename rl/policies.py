@@ -366,6 +366,7 @@ class GraphStatsPolicy(GraphExplorePolicy):
     name = "graph-stats"
     USE_EFFECT = False
     PRIOR_W = 0.0
+    PRIOR_CLICKS_ONLY = False
 
     def __init__(self, ckpt=None, **kw):
         super().__init__(None)
@@ -398,7 +399,10 @@ class GraphStatsPolicy(GraphExplorePolicy):
             with self.torch.no_grad():
                 o = self.torch.from_numpy(np.ascontiguousarray(obs[None]))
                 pi = self.prior.pi.get_distribution(o).distribution.probs[0].numpy()
-            p = p + self.PRIOR_W * pi / max(pi.max(), 1e-8)
+            prior = self.PRIOR_W * pi / max(pi.max(), 1e-8)
+            if self.PRIOR_CLICKS_ONLY:
+                prior[:6] = 0.0
+            p = p + prior
         return p
 
     def changed(self, obs, next_obs):
@@ -563,6 +567,20 @@ class GraphPatchPolicy(GraphTimerPolicy):
         GraphTimerPolicy.observe(self, obs, action, reward, next_obs, terminated, info)
 
 
+class GraphPatchNoPriorPolicy(GraphPatchPolicy):
+    """TEAM-35 without the PPO prior: fully training-free (used for unbiased train-split checks)."""
+    name = "graph-patch-noprior"
+    PRIOR_W = 0.0
+
+
+class GraphPatchClickPriorPolicy(GraphPatchPolicy):
+    """TEAM-36: TEAM-35 with the PPO prior applied to CLICK actions only. Evidence (TEAM-35 vs its
+    prior-free twin TEAM-35n on dev): the prior speeds up lp85 clicks slightly but biases movement
+    (ls20 L1 solved in 6/9 runs without the prior, 0/9 with it)."""
+    name = "graph-patch-clickprior"
+    PRIOR_CLICKS_ONLY = True
+
+
 class GraphNoEffectPolicy(GraphExplorePolicy):
     """Ablation: same graph exploration, untried actions in random order (no effect head)."""
     name = "graph-noeff"
@@ -572,7 +590,9 @@ class GraphNoEffectPolicy(GraphExplorePolicy):
 POLICIES = {"graph": GraphExplorePolicy, "graph-noeff": GraphNoEffectPolicy,
             "graph-stats": GraphStatsPolicy, "graph-stats-ppo": GraphStatsPPOPolicy,
             "graph-clock": GraphClockPolicy, "graph-clock-prune": GraphClockPrunePolicy,
-            "graph-timer": GraphTimerPolicy, "graph-patch": GraphPatchPolicy, "random": RandomPolicy, "dqn": DQNPolicy, "dqn-online": DQNOnlinePolicy,
+            "graph-timer": GraphTimerPolicy, "graph-patch": GraphPatchPolicy,
+            "graph-patch-noprior": GraphPatchNoPriorPolicy,
+            "graph-patch-clickprior": GraphPatchClickPriorPolicy, "random": RandomPolicy, "dqn": DQNPolicy, "dqn-online": DQNOnlinePolicy,
             "ppo": PPOPolicy, "ppo-lstm": PPOLSTMPolicy}
 
 

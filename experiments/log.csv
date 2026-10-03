@@ -21,3 +21,6 @@ date,kernel,phase,games_set,seeds,local_score,kaggle_score,notes
 2026-10-04,TEAM-34-graph-timer,X,dev,3x3,0.4842,,+ timer-aware deaths; identical to TEAM-33 (null)
 2026-10-04,TEAM-23-effect-model,X,diag,-,,,PPO-experience effect model: within-game AUC ~chance on dev (negative)
 2026-10-04,TEAM-35-graph-patch,X,dev,3x3,0.4929,,+ visual click equivalence; best on dev (within noise)
+2026-10-04,SUPP-train-split,X,train,3,0.1209,,graph-patch-noprior on 15 train games (random 0.0111; graph-stats 0.0578)
+2026-10-04,TEAM-35n-graph-patch-noprior,X,dev,9 eval,0.4713,,prior ablation: 15 levels (ls20 6/9)
+2026-10-04,TEAM-36-graph-patch-clickprior,X,dev,3x3,0.4943,,prior on clicks only; BEST; 15 levels
