@@ -37,11 +37,13 @@ Current phase: P2.3 TEAM-12-dqn-novelty-mask (training) + P3.1 TEAM-20-ppo-base 
 - 2026-10-04 02:10 object clicks approved: TEAM-41 0.4698 (26 lv), TEAM-42 0.3789 (28 lv), TEAM-43 0.5445 (27 lv) = BEST.
   FINAL AGENT if nothing changes by 08:00: TEAM-43.
 - 2026-10-04 02:20 TEAM-44 (adaptive object promotion) 0.5682 = BEST. FINAL if nothing changes: TEAM-44.
+- 2026-10-04 02:30 TEAM-45 (one click per component) 0.7913 = BEST. FINAL if nothing changes: TEAM-45.
 
 ## Submission queue (ranked by dev official score; Kaggle = 1 submission/day, never used for tuning)
 | rank | notebook (version) | dev official (3x3) | dev levels | Kaggle public |
-| 1 | arc3-team-44-graph-objpromote (v1) | 0.5682 +- 0.0627 | 27 | pending |
-| 1b | arc3-team-43-graph-objfallback (v1) | 0.5445 +- 0.0787 | 27 | pending |
+| 1 | arc3-team-45-graph-components (v1) | 0.7913 +- 0.0874 | 27 | pending |
+| 2 | arc3-team-44-graph-objpromote (v1) | 0.5682 +- 0.0627 | 27 | pending |
+| 3 | arc3-team-43-graph-objfallback (v1) | 0.5445 +- 0.0787 | 27 | pending |
 | 2 | arc3-team-37-graph-inverse (v1) | 0.5041 +- 0.0445 | 18 | pending |
 | 3 | arc3-team-36-graph-patch-clickprior (v1) | 0.4943 +- 0.0445 | 15 | pending |
 | 4 | arc3-team-35-graph-patch (v1) | 0.4929 +- 0.0445 | 9 | pending |

@@ -576,7 +576,12 @@ class GraphPatchPolicy(GraphTimerPolicy):
 
     def observe(self, obs, action, reward, next_obs, terminated, info):
         if int(action) >= 6:
-            self.tried_groups.setdefault(self.h(obs), set()).add(self.groups(obs)[int(action)])
+            g, a = self.groups(obs), int(action)
+            # an object index can be absent if the component cache was rebuilt (ticker set changed
+            # between act and observe): skip the bookkeeping instead of crashing (TEAM-45 seed-0 crash)
+            grp = g.get(a) if isinstance(g, dict) else (g[a] if a < len(g) else None)
+            if grp is not None:
+                self.tried_groups.setdefault(self.h(obs), set()).add(grp)
         GraphTimerPolicy.observe(self, obs, action, reward, next_obs, terminated, info)
 
 
@@ -941,6 +946,38 @@ class GraphObjectPromotePolicy(GraphObjectFallbackPolicy):
         super().observe(obs, action, reward, next_obs, terminated, info)
 
 
+class GraphComponentClickPolicy(GraphObjectPolicy):
+    """TEAM-45: ONE click system: one click per connected same-colour component (all sizes, at the
+    pixel closest to its centroid) REPLACES the 64 cell centres. Evidence: TEAM-41 (centres + all
+    components) found the most levels incl. lf52 L2 but was diluted by redundant clicks; TEAM-43/44
+    (small objects as fallback) avoid dilution but cannot reach lf52 L2 (TEAM-44 seed 0: 695 clicks
+    in 11 states after L1). Components-only removes the redundancy at the source. Statistics keyed
+    by ("c", colour) as for centres; identical components grouped; PPO prior of the containing cell.
+    If a frame has no components (impossible for a non-empty frame) the centres are used."""
+    name = "graph-components"
+
+    def legal_actions(self, obs, mask):
+        base = GraphExplorePolicy.legal_actions(self, obs, mask)
+        if not mask[6]:
+            return base
+        objs = self.objects(obs)[0]
+        if not objs:
+            return base
+        return [a for a in base if a < 6] + objs
+
+    def key(self, obs, a):
+        if a >= 70:
+            xy = self.click_point(a)
+            return ("c", int(self.masked(obs)[0, xy["y"], xy["x"]]))
+        return GraphInversePolicy.key(self, obs, a)
+
+    def p_change(self, obs):
+        if 6 not in self.legal.get(self.h(obs), []) and not any(
+                a >= 70 for a in self.legal.get(self.h(obs), [])):
+            return GraphInversePolicy.p_change(self, obs)
+        return super().p_change(obs)
+
+
 class GraphNoEffectPolicy(GraphExplorePolicy):
     """Ablation: same graph exploration, untried actions in random order (no effect head)."""
     name = "graph-noeff"
@@ -957,7 +994,8 @@ POLICIES = {"graph": GraphExplorePolicy, "graph-noeff": GraphNoEffectPolicy,
             "graph-value": GraphValuePolicy, "graph-relax": GraphRelaxPolicy,
             "graph-object": GraphObjectPolicy, "graph-smallobj": GraphSmallObjectPolicy,
             "graph-objfallback": GraphObjectFallbackPolicy,
-            "graph-objpromote": GraphObjectPromotePolicy, "graph-inverse-noprior": GraphInverseNoPriorPolicy, "random": RandomPolicy, "dqn": DQNPolicy, "dqn-online": DQNOnlinePolicy,
+            "graph-objpromote": GraphObjectPromotePolicy,
+            "graph-components": GraphComponentClickPolicy, "graph-inverse-noprior": GraphInverseNoPriorPolicy, "random": RandomPolicy, "dqn": DQNPolicy, "dqn-online": DQNOnlinePolicy,
             "ppo": PPOPolicy, "ppo-lstm": PPOLSTMPolicy}
 
 

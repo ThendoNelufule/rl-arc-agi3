@@ -487,3 +487,20 @@ action; harness resets on GAME_OVER).
   lp85/ls20 identical to TEAM-43; lf52 L1 9/9 at 46-295 actions (median ~89; TEAM-43 median ~143).
 - Open: no level 2 anywhere (TEAM-41 reached lf52 L2 2/9 with objects always on), ka59 only in
   TEAM-42 (1/9), dc22 never.
+
+## TEAM-45-graph-components | 2026-10-04  -- BEST ON DEV
+- Limitation observed (TEAM-41 vs TEAM-43/44): two overlapping click systems. Centres + all objects
+  (TEAM-41) reach the most levels (incl. lf52 L2) but are diluted; objects-as-fallback (TEAM-43/44)
+  avoid dilution but stall after L1 (TEAM-44 lf52 seed 0: 695 clicks in 11 states after L1).
+- Hypothesis: one click per connected component (all sizes) is a complete, non-redundant click set:
+  every visible object and background region gets exactly one click.
+- Intervention (on TEAM-41's object machinery, TEAM-37 graph): 64 cell centres REPLACED by one click
+  per 4-connected same-colour component (pixel closest to centroid; <= 96, smallest first);
+  statistics keyed by ("c", colour); identical components grouped; PPO prior of the containing cell.
+- Bug fix during evaluation: train seed 0 crashed (KeyError in click-group bookkeeping when the
+  component cache was rebuilt between act and observe after a ticker-set change); fixed defensively
+  (skip bookkeeping if absent) and seed 0 re-run; seeds 1-2 never hit that path (identical code path).
+- Results (dev, 3x3): 0.7913 +- 0.0874 (train seeds), all 9 runs 0.7913 +- 0.1050; 27 levels:
+  lp85 L1 9/9 (14-30 actions, human 17), lf52 L1 9/9 (24-56, human 32), ls20 L1 9/9 (128-287).
+- Conclusion: biggest single gain since graph v2 (+39% over TEAM-44); efficiency on lf52 now at
+  human level. Remaining: no level 2, ka59/dc22 unsolved.

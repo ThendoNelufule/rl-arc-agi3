@@ -1,0 +1,8 @@
+{
+  "accel": "cpu",
+  "jobs": [
+    "evaluate.py --policy graph-components --ckpt {ASSETS}/weights/ckpt/TEAM-21-ppo-rnd-s0.pt --split dev --seeds 3 --record --tag TEAM-45-graph-components-s0-dev"
+  ],
+  "maxpar": 4,
+  "threads": 1
+}
