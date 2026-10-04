@@ -1,0 +1,37 @@
+{
+  "tag": "TEAM-44-graph-objpromote-s1-dev",
+  "policy": "graph-objpromote",
+  "ckpt": "/kaggle/input/datasets/thendonelufule/arc3-rl-assets/weights/ckpt/TEAM-21-ppo-rnd-s1.pt",
+  "split": "dev",
+  "games": [
+    "dc22",
+    "ka59",
+    "lf52",
+    "lp85",
+    "ls20"
+  ],
+  "seeds": 3,
+  "budget": 500,
+  "official_score_per_seed": {
+    "0": 0.7356700588734713,
+    "1": 0.6187979329218163,
+    "2": 0.6107119524285782
+  },
+  "official_score_mean": 0.6550599814079553,
+  "official_score_std": 0.05709544180219424,
+  "levels_per_seed": {
+    "0": 3,
+    "1": 3,
+    "2": 3
+  },
+  "mean_level_frac": 0.07357999999999999,
+  "eval_seconds": 285.1,
+  "versions": {
+    "python": "3.13.15",
+    "arc_agi": "0.9.8",
+    "arcengine": "0.9.3",
+    "numpy": "2.1.3",
+    "gymnasium": "1.2.0",
+    "platform": "Linux-6.18.48+-x86_64-with-glibc2.39"
+  }
+}

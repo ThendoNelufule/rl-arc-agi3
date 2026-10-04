@@ -905,6 +905,42 @@ class GraphObjectFallbackPolicy(GraphSmallObjectPolicy):
             self.use_objects = False
 
 
+class GraphObjectPromotePolicy(GraphObjectFallbackPolicy):
+    """TEAM-44: TEAM-43 + adaptive promotion. Evidence (TEAM-43 dev runs): lf52 L1 needs object clicks
+    but takes 52-349 actions (human 32) because objects unlock only after tier 1 is exhausted, and this
+    repeats on every new level. Once any object click has changed the (ticker-masked) frame in this
+    game, object clicks join tier 1 for the rest of the game (all later levels). Games where object
+    clicks never worked keep TEAM-43 behaviour exactly."""
+    name = "graph-objpromote"
+
+    def reset(self, game_id, seed):
+        super().reset(game_id, seed)
+        self.promoted = False
+
+    def untried(self, hs):
+        if self.promoted and not self.use_objects:
+            self.use_objects = True
+            try:
+                return super().untried(hs)
+            finally:
+                self.use_objects = False
+        return super().untried(hs)
+
+    def p_change(self, obs):
+        if self.promoted and not self.use_objects:
+            self.use_objects = True
+            try:
+                return super().p_change(obs)
+            finally:
+                self.use_objects = False
+        return super().p_change(obs)
+
+    def observe(self, obs, action, reward, next_obs, terminated, info):
+        if int(action) >= 70 and self.changed(obs, next_obs):
+            self.promoted = True
+        super().observe(obs, action, reward, next_obs, terminated, info)
+
+
 class GraphNoEffectPolicy(GraphExplorePolicy):
     """Ablation: same graph exploration, untried actions in random order (no effect head)."""
     name = "graph-noeff"
@@ -920,7 +956,8 @@ POLICIES = {"graph": GraphExplorePolicy, "graph-noeff": GraphNoEffectPolicy,
             "graph-inverse": GraphInversePolicy, "graph-patchstats": GraphPatchStatsPolicy,
             "graph-value": GraphValuePolicy, "graph-relax": GraphRelaxPolicy,
             "graph-object": GraphObjectPolicy, "graph-smallobj": GraphSmallObjectPolicy,
-            "graph-objfallback": GraphObjectFallbackPolicy, "graph-inverse-noprior": GraphInverseNoPriorPolicy, "random": RandomPolicy, "dqn": DQNPolicy, "dqn-online": DQNOnlinePolicy,
+            "graph-objfallback": GraphObjectFallbackPolicy,
+            "graph-objpromote": GraphObjectPromotePolicy, "graph-inverse-noprior": GraphInverseNoPriorPolicy, "random": RandomPolicy, "dqn": DQNPolicy, "dqn-online": DQNOnlinePolicy,
             "ppo": PPOPolicy, "ppo-lstm": PPOLSTMPolicy}
 
 

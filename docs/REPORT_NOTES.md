@@ -477,3 +477,13 @@ action; harness resets on GAME_OVER).
   lp85 L1 9/9 (15-25, identical to TEAM-37), ls20 L1 9/9 (128/205/287, identical), lf52 L1 9/9
   (52-349 actions). Eval Kaggle CPU ~2-3 min per train seed; framework path verified locally.
 - Conclusion: strictly adds to TEAM-37 (same solves, +9 lf52 levels). Best agent so far.
+
+## TEAM-44-graph-objpromote | 2026-10-04  -- BEST ON DEV
+- Limitation observed (TEAM-43): lf52 L1 needs object clicks but takes 52-349 actions (human 32):
+  objects unlock only once tier 1 is exhausted, again on every level.
+- Intervention (on TEAM-43): once any object click changed the (ticker-masked) frame in this game,
+  object clicks join tier 1 for the rest of the game.
+- Results (dev, 3x3): 0.5682 +- 0.0627 (train seeds), all 9 runs 0.5682 +- 0.1394; 27 levels:
+  lp85/ls20 identical to TEAM-43; lf52 L1 9/9 at 46-295 actions (median ~89; TEAM-43 median ~143).
+- Open: no level 2 anywhere (TEAM-41 reached lf52 L2 2/9 with objects always on), ka59 only in
+  TEAM-42 (1/9), dc22 never.
