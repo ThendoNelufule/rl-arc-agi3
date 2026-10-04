@@ -978,6 +978,72 @@ class GraphComponentClickPolicy(GraphObjectPolicy):
         return super().p_change(obs)
 
 
+class GraphComponentNoPriorPolicy(GraphComponentClickPolicy):
+    """TEAM-45 without the PPO prior (training-free; for unbiased train-split checks)."""
+    name = "graph-components-noprior"
+    PRIOR_W = 0.0
+
+
+class GraphComponentCentreFallbackPolicy(GraphComponentClickPolicy):
+    """TEAM-46: TEAM-45 + the 64 cell centres as a FALLBACK tier. Evidence: dev -- ls20 L2 stuck with
+    an exhausted frontier, any stuck state can only gain from extra actions; supplementary train split
+    -- components-only (TEAM-45n logic) solves 12 levels on 6 games vs 6 on 4 with centres, but loses
+    ft09, where WHERE inside a large component one clicks matters. Tier 1 = TEAM-45 (simple actions +
+    one click per component); when no tier-1 untried action is reachable, the 64 cell centres are
+    unlocked for the current state and the frontier search (grouped by identical patch)."""
+    name = "graph-components-fb"
+    use_centres = False
+
+    def legal_actions(self, obs, mask):
+        tier1 = super().legal_actions(obs, mask)
+        if not mask[6]:
+            return tier1
+        return tier1 + [a for a in range(6, 70) if mask[a]]
+
+    def untried(self, hs):
+        cand = super().untried(hs)
+        if self.use_centres:
+            return cand
+        return [a for a in cand if not (6 <= a < 70)]
+
+    def on_stuck(self, obs, hs):
+        self.use_centres = True
+        try:
+            cand = self.untried(hs)
+            if cand:
+                pc = self.p_change(obs)
+                return int(cand[int(np.argmax(pc[cand] + self.rng.random(len(cand)) * 1e-3))])
+            return self.path_to_frontier(hs)
+        finally:
+            self.use_centres = False
+
+
+class GraphComponentFBNoPriorPolicy(GraphComponentCentreFallbackPolicy):
+    """TEAM-46 without the PPO prior (training-free; train-split check)."""
+    name = "graph-components-fb-noprior"
+    PRIOR_W = 0.0
+
+
+class GraphComponentSizePolicy(GraphComponentClickPolicy):
+    """TEAM-47: TEAM-45 + a weak size prior for component clicks. Evidence: with uniform Beta priors the
+    first component clicks of a new game are in effectively random order; dev click games are solved by
+    clicking small distinctive objects (lp85 L1 14-30 actions, human 17; lf52 L1 24-56, human 32), and
+    the squared-efficiency score rewards getting the first effective click early. Component clicks get
+    + SIZE_W * (1 - size_rank / n_components) (smallest = largest bonus); the bonus is a fixed additive
+    prior, so the online effect statistics dominate once evidence accumulates."""
+    name = "graph-components-size"
+    SIZE_W = 0.2
+
+    def p_change(self, obs):
+        p = super().p_change(obs)
+        acts = self.objects(obs)[0]                    # sorted smallest first
+        n = len(acts)
+        if n and len(p) > 70:
+            for i, a in enumerate(acts):
+                p[a] += self.SIZE_W * (1.0 - i / n)
+        return p
+
+
 class GraphNoEffectPolicy(GraphExplorePolicy):
     """Ablation: same graph exploration, untried actions in random order (no effect head)."""
     name = "graph-noeff"
@@ -995,7 +1061,11 @@ POLICIES = {"graph": GraphExplorePolicy, "graph-noeff": GraphNoEffectPolicy,
             "graph-object": GraphObjectPolicy, "graph-smallobj": GraphSmallObjectPolicy,
             "graph-objfallback": GraphObjectFallbackPolicy,
             "graph-objpromote": GraphObjectPromotePolicy,
-            "graph-components": GraphComponentClickPolicy, "graph-inverse-noprior": GraphInverseNoPriorPolicy, "random": RandomPolicy, "dqn": DQNPolicy, "dqn-online": DQNOnlinePolicy,
+            "graph-components": GraphComponentClickPolicy,
+            "graph-components-noprior": GraphComponentNoPriorPolicy,
+            "graph-components-fb": GraphComponentCentreFallbackPolicy,
+            "graph-components-fb-noprior": GraphComponentFBNoPriorPolicy,
+            "graph-components-size": GraphComponentSizePolicy, "graph-inverse-noprior": GraphInverseNoPriorPolicy, "random": RandomPolicy, "dqn": DQNPolicy, "dqn-online": DQNOnlinePolicy,
             "ppo": PPOPolicy, "ppo-lstm": PPOLSTMPolicy}
 
 

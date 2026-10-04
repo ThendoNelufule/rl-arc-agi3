@@ -504,3 +504,19 @@ action; harness resets on GAME_OVER).
   lp85 L1 9/9 (14-30 actions, human 17), lf52 L1 9/9 (24-56, human 32), ls20 L1 9/9 (128-287).
 - Conclusion: biggest single gain since graph v2 (+39% over TEAM-44); efficiency on lf52 now at
   human level. Remaining: no level 2, ka59/dc22 unsolved.
+
+## Supplementary: TEAM-45 logic without prior (TEAM-45n) | dev + train split
+- Dev (9 eval seeds, training-free): 0.6671, 28 levels. Train split: 0.0811, 12 levels on 6 games
+  (su15 2, sp80 1, vc33 3, m0r0 3, r11l 2, s5i5 1) vs centre-based TEAM-37n logic 0.1225, 6 levels on
+  4 games -> component clicks solve MORE games (su15, vc33, s5i5 new) but lose ft09.
+
+## TEAM-46-graph-components-fb | 2026-10-04 -- no gain
+- Intervention (on TEAM-45): 64 cell centres as a fallback tier when stuck.
+- Results (dev, 3x3): 0.7913 +- 0.0874, identical to TEAM-45 (centres almost never unlocked);
+  train-split twin 0.0790, 10 levels (ft09 NOT recovered, sp80 lost). Not adopted.
+
+## TEAM-47-graph-components-size | 2026-10-04 -- FAILED
+- Intervention (on TEAM-45): weak size prior (smaller components first, +0.2 max).
+- Results (dev, 3x3): 0.6323 +- 0.0765, 27 levels; lf52 L1 faster (13-45) but lp85 L1 slower
+  (16-49 vs 14-30). Not adopted. Lesson: hand-made orderings trade one game for another on a
+  5-game dev set; we stop adding priors here to avoid overfitting dev.

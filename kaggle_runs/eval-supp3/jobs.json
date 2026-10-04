@@ -1,0 +1,9 @@
+{
+  "accel": "cpu",
+  "jobs": [
+    "evaluate.py --policy graph-components-noprior --split train --seeds 3 --record --tag SUPP-graph-components-noprior-train",
+    "evaluate.py --policy graph-components-noprior --split dev --seeds 9 --record --tag TEAM-45n-graph-components-noprior-dev"
+  ],
+  "maxpar": 4,
+  "threads": 1
+}

@@ -1,0 +1,47 @@
+{
+  "tag": "SUPP-graph-components-noprior-train",
+  "policy": "graph-components-noprior",
+  "ckpt": null,
+  "split": "train",
+  "games": [
+    "ar25",
+    "cn04",
+    "ft09",
+    "g50t",
+    "m0r0",
+    "r11l",
+    "re86",
+    "s5i5",
+    "sb26",
+    "sc25",
+    "sp80",
+    "su15",
+    "tr87",
+    "vc33",
+    "wa30"
+  ],
+  "seeds": 3,
+  "budget": 500,
+  "official_score_per_seed": {
+    "0": 0.011903505463546581,
+    "1": 0.127120400022749,
+    "2": 0.10417710403144056
+  },
+  "official_score_mean": 0.08106700317257871,
+  "official_score_std": 0.04979485093358326,
+  "levels_per_seed": {
+    "0": 5,
+    "1": 4,
+    "2": 3
+  },
+  "mean_level_frac": 0.03946888888888889,
+  "eval_seconds": 143.5,
+  "versions": {
+    "python": "3.13.15",
+    "arc_agi": "0.9.8",
+    "arcengine": "0.9.3",
+    "numpy": "2.1.3",
+    "gymnasium": "1.2.0",
+    "platform": "Linux-6.18.48+-x86_64-with-glibc2.39"
+  }
+}
