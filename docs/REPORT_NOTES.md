@@ -444,3 +444,36 @@ action; harness resets on GAME_OVER).
 - Every remaining failure mode traced to the action space: lp85 L2+ (no effective click centre),
   ka59 / dc22 / lf52 (reachable space under 64 click centres exhausted, clicks dominate). Fixing it
   requires changing the Discrete(70) design lock -> requested from the team (object-centroid clicks).
+
+## DESIGN-LOCK CHANGE (approved by team 2026-10-04 ~01:50): extended pixel clicks for the graph agent
+- rl/arc_gym.py: action index 70 + y*64 + x = ACTION6 at pixel (x, y). Only the graph agent uses it;
+  the RL agents keep Discrete(70); evaluation protocol unchanged (500 actions, 3x3 seeds, dev only).
+- Motivation: every remaining failure of TEAM-37/40 traced to the 8x8 click-centre grid (see above).
+
+## TEAM-41-graph-object | 2026-10-04
+- Intervention (on TEAM-37): per state, 4-connected same-colour components (ticker rows masked);
+  one click per component at its pixel closest to the centroid (<= 96, smallest first), offered
+  alongside the 64 cell centres; stats key ("o", colour); identical objects grouped; PPO prior of
+  the containing cell.
+- Results (dev, 3x3): 0.4698 +- 0.0876, 26 levels (TEAM-37: 18): lf52 L1 9/9 (34-95 actions, human
+  32) and lf52 L2 2/9 (first level 2 of the project); but lp85 L1 slower (17-36) and ls20 changed.
+- Diagnosis: object clicks duplicated cell centres on large components (dilution); ls20 change was a
+  side effect (object Thompson draws even where clicks are illegal shifted the random stream).
+
+## TEAM-42-graph-smallobj | 2026-10-04
+- Intervention (on TEAM-41): object clicks only for components no cell centre hits; object draws only
+  when ACTION6 is legal (restores TEAM-37's ls20 behaviour exactly: 287/128/205).
+- Results (dev, 3x3): 0.3789 +- 0.0937, 28 levels incl. the FIRST ka59 level (L1 at 256 actions);
+  lf52 L1 9/9 (35-99); but lp85 L1 still slower (17-33): untried object clicks get optimistic
+  Thompson samples and are tried before proven cell centres.
+
+## TEAM-43-graph-objfallback | 2026-10-04  -- BEST ON DEV
+- Limitation observed (TEAM-41/42): object clicks find levels where the agent used to be stuck, but
+  offered alongside cell centres they delay already-solvable levels.
+- Intervention (on TEAM-42): two tiers. Tier 1 = TEAM-37 behaviour (simple actions + 64 centres).
+  Only when no tier-1 untried action is reachable anywhere are small-object clicks unlocked (for the
+  current state and the frontier search).
+- Results (dev, 3x3): 0.5445 +- 0.0787 (train seeds), all 9 runs 0.5445 +- 0.1295; 27 levels:
+  lp85 L1 9/9 (15-25, identical to TEAM-37), ls20 L1 9/9 (128/205/287, identical), lf52 L1 9/9
+  (52-349 actions). Eval Kaggle CPU ~2-3 min per train seed; framework path verified locally.
+- Conclusion: strictly adds to TEAM-37 (same solves, +9 lf52 levels). Best agent so far.

@@ -311,7 +311,7 @@ class GraphExplorePolicy(Policy):
             self.clear_graph()
         self.levels = lv
         hs = self.h(obs)
-        self.legal[hs] = [int(a) for a in np.flatnonzero(mask)]
+        self.legal[hs] = self.legal_actions(obs, mask)
         cand = self.untried(hs)
         if cand:
             pc = self.p_change(obs)
@@ -329,6 +329,10 @@ class GraphExplorePolicy(Policy):
     def on_stuck(self, obs, hs):
         """Hook when no untried action is reachable (subclasses may relax their filters)."""
         return None
+
+    def legal_actions(self, obs, mask):
+        """Hook: actions the explorer may use in this state (default: the 70 masked actions)."""
+        return [int(a) for a in np.flatnonzero(mask)]
 
     def observe(self, obs, action, reward, next_obs, terminated, info):
         hs, hn = self.h(obs), self.h(next_obs)
@@ -722,6 +726,185 @@ class GraphRelaxPolicy(GraphInversePolicy):
             self.no_prune = False
 
 
+def components(frame, skip_rows=()):
+    """4-connected same-colour components of a (64,64) frame; returns [(colour, pixels(N,2))]."""
+    H, W = frame.shape
+    lab = -np.ones((H, W), int)
+    skip = set(int(r) for r in skip_rows)
+    out = []
+    for y0 in range(H):
+        if y0 in skip:
+            continue
+        for x0 in range(W):
+            if lab[y0, x0] >= 0:
+                continue
+            col, k = frame[y0, x0], len(out)
+            stack, pix = [(y0, x0)], []
+            lab[y0, x0] = k
+            while stack:
+                y, x = stack.pop()
+                pix.append((y, x))
+                for ny, nx in ((y - 1, x), (y + 1, x), (y, x - 1), (y, x + 1)):
+                    if 0 <= ny < H and 0 <= nx < W and ny not in skip and lab[ny, nx] < 0                             and frame[ny, nx] == col:
+                        lab[ny, nx] = k
+                        stack.append((ny, nx))
+            out.append((int(col), np.array(pix)))
+    return out
+
+
+class GraphObjectPolicy(GraphInversePolicy):
+    """TEAM-41: TEAM-37 + object-centroid clicks (extended pixel clicks; design-lock change approved
+    by the team). Evidence (TEAM-37/40 + 2000-step runs): every remaining failure is the 8x8 click
+    grid -- lp85 L2+ has no effective cell centre; ka59/dc22/lf52 exhaust the reachable space under
+    the 64 centres (relaxed re-tries find nothing new).
+    Per state (ticker rows masked): 4-connected same-colour components; one click per component at
+    its pixel closest to the centroid (up to MAX_OBJ, smallest first), offered in addition to the 64
+    cell centres. Object clicks share effect statistics by ("o", colour) (separate from cell-centre
+    statistics so failed background centres do not prune objects), are grouped by component shape
+    + colour within a state (identical objects tried once), and get the PPO prior of the cell they
+    fall in. Everything is computed from the observed frame only."""
+    name = "graph-object"
+    MAX_OBJ = 96
+
+    def clear_graph(self):
+        super().clear_graph()
+        self._obj, self._gcache = {}, {}
+
+    def objects(self, obs):
+        hs = self.h(obs)
+        if hs not in self._obj:
+            from arc_gym import PIXEL_BASE
+            comps = components(self.masked(obs)[0], np.flatnonzero(self.ticker))
+            comps.sort(key=lambda c: len(c[1]))
+            acts, sig = [], {}
+            for col, pix in comps[:self.MAX_OBJ]:
+                cy, cx = pix.mean(0)
+                y, x = pix[int(np.argmin((pix[:, 0] - cy) ** 2 + (pix[:, 1] - cx) ** 2))]
+                a = PIXEL_BASE + int(y) * 64 + int(x)
+                mn = pix.min(0)
+                shape = np.zeros(tuple(pix.max(0) - mn + 1), np.uint8)
+                shape[pix[:, 0] - mn[0], pix[:, 1] - mn[1]] = 1
+                acts.append(a); sig[a] = (col, shape.shape, shape.tobytes())
+            self._obj[hs] = (acts, sig)
+        return self._obj[hs]
+
+    def legal_actions(self, obs, mask):
+        base = super().legal_actions(obs, mask)
+        if not mask[6]:
+            return base
+        return base + self.objects(obs)[0]
+
+    def click_point(self, a):
+        from arc_gym import decode_action
+        return decode_action(a)[1]
+
+    def key(self, obs, a):
+        if a >= 70:
+            xy = self.click_point(a)
+            return ("o", int(self.masked(obs)[0, xy["y"], xy["x"]]))
+        return super().key(obs, a)
+
+    def groups(self, obs):
+        hs = self.h(obs)
+        if hs not in self._gcache:
+            g = {a: v for a, v in enumerate(super().groups(obs))}
+            g.update({a: ("obj",) + v for a, v in self.objects(obs)[1].items()})
+            self._gcache[hs] = g
+        return self._gcache[hs]
+
+    def p_change(self, obs):
+        base = super().p_change(obs)                     # 70 actions, unchanged RNG order
+        acts = self.objects(obs)[0]
+        if not acts:
+            return base
+        from arc_gym import N_EXTENDED
+        p = np.zeros(N_EXTENDED)
+        p[:70] = base
+        prior = None
+        if self.prior is not None:
+            with self.torch.no_grad():
+                o = self.torch.from_numpy(np.ascontiguousarray(obs[None]))
+                pi = self.prior.pi.get_distribution(o).distribution.probs[0].numpy()
+            prior = self.PRIOR_W * pi / max(pi.max(), 1e-8)
+        for a in acts:
+            c, n = self.stat.get(self.key(obs, a), (0, 0))
+            p[a] = self.rng.beta(c + 1.0, n - c + 1.0)
+            if prior is not None:
+                xy = self.click_point(a)
+                p[a] += prior[6 + (xy["y"] // 8) * 8 + xy["x"] // 8]
+        return p
+
+
+class GraphSmallObjectPolicy(GraphObjectPolicy):
+    """TEAM-42: TEAM-41 with (a) object clicks only for components that NO cell centre hits, and
+    (b) object Thompson samples drawn only when ACTION6 is legal in the state.
+    Evidence (TEAM-41 vs TEAM-37 on dev): +8 levels (lf52 L1 9/9, L2 2/9) but lower official score:
+    lp85 L1 slowed from 15-25 to 17-36 actions because most object clicks duplicated cell-centre
+    clicks on the same large components; and on ls20 (no clicks legal) the extra Thompson draws
+    shifted the random stream (ls20 L1 240/413/none vs 128/205/287) -- a side effect, now removed."""
+    name = "graph-smallobj"
+
+    def objects(self, obs):
+        hs = self.h(obs)
+        if hs not in self._obj:
+            acts, sig = GraphObjectPolicy.objects(self, obs)
+            o = self.masked(obs)[0]
+            hit = set()
+            comps = components(o, np.flatnonzero(self.ticker))
+            lab = {}
+            for k, (col, pix) in enumerate(comps):
+                for y, x in pix:
+                    lab[(int(y), int(x))] = k
+            for a in range(6, 70):
+                xy = self.click_xy[a]
+                hit.add(lab.get((xy["y"], xy["x"])))
+            keep = []
+            for a in acts:
+                xy = self.click_point(a)
+                if lab.get((xy["y"], xy["x"])) not in hit:
+                    keep.append(a)
+            self._obj[hs] = (keep, {a: sig[a] for a in keep})
+        return self._obj[hs]
+
+    def p_change(self, obs):
+        if 6 not in self.legal.get(self.h(obs), []):
+            return GraphInversePolicy.p_change(self, obs)
+        return super().p_change(obs)
+
+
+class GraphObjectFallbackPolicy(GraphSmallObjectPolicy):
+    """TEAM-43: object clicks as a FALLBACK tier. Evidence (TEAM-41/42 seed-0 diagnostics): object
+    clicks find new levels where the agent used to be stuck (lf52) but, offered alongside cell
+    centres, they delay already-solvable levels (lp85 L1 31 vs 15-25; lf52 L1 87 vs 45).
+    Tier 1 = TEAM-37 behaviour (simple actions + 64 cell centres). Only when no tier-1 untried
+    action is reachable anywhere (i.e. TEAM-37 would be stuck) are small-object clicks unlocked for
+    the current state and the frontier search; tier 1 is preferred again whenever available."""
+    name = "graph-objfallback"
+    use_objects = False
+
+    def untried(self, hs):
+        cand = super().untried(hs)
+        if self.use_objects:
+            return cand
+        return [a for a in cand if a < 70]
+
+    def p_change(self, obs):
+        if not self.use_objects:
+            return GraphInversePolicy.p_change(self, obs)
+        return super().p_change(obs)
+
+    def on_stuck(self, obs, hs):
+        self.use_objects = True
+        try:
+            cand = self.untried(hs)
+            if cand:
+                pc = self.p_change(obs)
+                return int(cand[int(np.argmax(pc[cand] + self.rng.random(len(cand)) * 1e-3))])
+            return self.path_to_frontier(hs)
+        finally:
+            self.use_objects = False
+
+
 class GraphNoEffectPolicy(GraphExplorePolicy):
     """Ablation: same graph exploration, untried actions in random order (no effect head)."""
     name = "graph-noeff"
@@ -735,7 +918,9 @@ POLICIES = {"graph": GraphExplorePolicy, "graph-noeff": GraphNoEffectPolicy,
             "graph-patch-noprior": GraphPatchNoPriorPolicy,
             "graph-patch-clickprior": GraphPatchClickPriorPolicy,
             "graph-inverse": GraphInversePolicy, "graph-patchstats": GraphPatchStatsPolicy,
-            "graph-value": GraphValuePolicy, "graph-relax": GraphRelaxPolicy, "graph-inverse-noprior": GraphInverseNoPriorPolicy, "random": RandomPolicy, "dqn": DQNPolicy, "dqn-online": DQNOnlinePolicy,
+            "graph-value": GraphValuePolicy, "graph-relax": GraphRelaxPolicy,
+            "graph-object": GraphObjectPolicy, "graph-smallobj": GraphSmallObjectPolicy,
+            "graph-objfallback": GraphObjectFallbackPolicy, "graph-inverse-noprior": GraphInverseNoPriorPolicy, "random": RandomPolicy, "dqn": DQNPolicy, "dqn-online": DQNOnlinePolicy,
             "ppo": PPOPolicy, "ppo-lstm": PPOLSTMPolicy}
 
 

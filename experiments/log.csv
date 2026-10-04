@@ -29,3 +29,6 @@ date,kernel,phase,games_set,seeds,local_score,kaggle_score,notes
 2026-10-04,TEAM-39-graph-value,X,dev,3x3,0.4971,,value-aware frontier; no gain vs TEAM-37
 2026-10-04,SUPP-TEAM-37-budget,X,dev,3x3,0.5041,,budget 1000/2000 identical to 500: agent stuck (frontier exhausted)
 2026-10-04,TEAM-40-graph-relax,X,dev,3x3,0.5032,,pruning as priority when stuck; no gain; relaxed clicks find nothing new
+2026-10-04,TEAM-41-graph-object,X,dev,3x3,0.4698,,object-centroid clicks (design lock change); 26 levels (lf52 L1 9/9, L2 2/9); slower lp85
+2026-10-04,TEAM-42-graph-smallobj,X,dev,3x3,0.3789,,small objects only + RNG fix; 28 levels incl first ka59; slower
+2026-10-04,TEAM-43-graph-objfallback,X,dev,3x3,0.5445,,objects as fallback tier; BEST; 27 levels (lp85/ls20/lf52 L1 9/9)

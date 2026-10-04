@@ -43,6 +43,9 @@ P5 REPORT (done in planning chat from REPORT_NOTES.md) | P6 SHIP: P6.1 Paper Tra
 Each improvement must be motivated by the previous stage's evidence. Not hyperparameter tweaks.
 
 ## Design locks (do not change without asking us)
+- DESIGN-LOCK CHANGE approved by team 2026-10-04 01:50: extended pixel clicks, action index
+  70 + y*64 + x = ACTION6 at pixel (x,y), usable by the graph agent only (object-centroid clicks);
+  RL agents keep Discrete(70) and the eval protocol is unchanged.
 - rl/arc_gym.py: obs (1,64,64) uint8 colour ids (one-hot inside the net); Discrete(70):
   0-4 ACTION1-5, 5 ACTION7, 6-69 ACTION6 clicks on 8x8 cell centres; reward = level delta
   (training only); terminated on WIN/GAME_OVER; illegal action = no-op; action_masks() available.

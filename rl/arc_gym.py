@@ -40,6 +40,10 @@ SIMPLE = [a for a in (
 ) if a is not None]
 N_SIMPLE = len(SIMPLE)
 N_ACTIONS = N_SIMPLE + CLICK_RES * CLICK_RES
+# Extended pixel clicks (design-lock change approved 2026-10-04, graph agent only):
+# index PIXEL_BASE + y*64 + x = ACTION6 at pixel (x, y). Not part of the RL action space.
+PIXEL_BASE = N_ACTIONS
+N_EXTENDED = PIXEL_BASE + GRID * GRID
 
 _ARCADE = None
 
@@ -58,6 +62,9 @@ def get_arcade():
 def decode_action(idx: int) -> tuple[GameAction, Optional[dict]]:
     if idx < N_SIMPLE:
         return SIMPLE[idx], None
+    if idx >= PIXEL_BASE:
+        y, x = divmod(idx - PIXEL_BASE, GRID)
+        return GameAction.ACTION6, {"x": int(x), "y": int(y)}
     row, col = divmod(idx - N_SIMPLE, CLICK_RES)
     return GameAction.ACTION6, {"x": col * CELL + CELL // 2,
                                 "y": row * CELL + CELL // 2}
