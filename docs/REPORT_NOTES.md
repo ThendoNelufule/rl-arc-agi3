@@ -579,3 +579,9 @@ action; harness resets on GAME_OVER).
 - BASE smoke test (arc3-m2-base v1, 2026-10-16 ~15:00): ran end to end, no errors: SGLang server up, 3 public
   games x 1 pass x 5 min: lp85 2/8 levels (score 8.33), tu93 1/9 (2.22), cd82 0/6; ~271 generated tok/s;
   900 s wallclock for the games. GPU (RTX PRO 6000) used so far: base smoke ~15-20 min + base-sub save ~2 min.
+- MOD-1 smoke test (arc3-m2-mod1 v1): end to end, no errors; D' installed ("#OURS_FORM ok version=d_prime
+  priority_value replaced; fresh-first removed; tail fade 0.4 ..."); stagnation-restart patch applied
+  (SHA-checked script raised nothing) but not triggered (needs 96k tokens on one level; smoke games used
+  ~25-32k). Same 3 levels as BASE (lp85 2/8, tu93 1/9, cd82 0/6; mean 3.52) -- 5-min smoke tests cannot
+  separate strength; comparison will come from alternating real submissions (team plan).
+- arc3-m2-mod1-sub (v1): gated submission version of MOD-1 (same packaging as base-sub), save run complete.

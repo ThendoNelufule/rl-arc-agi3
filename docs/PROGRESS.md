@@ -45,7 +45,8 @@ Current phase: P2.3 TEAM-12-dqn-novelty-mask (training) + P3.1 TEAM-20-ppo-base 
 
 ## Submission queue (ranked by dev official score; Kaggle = 1 submission/day, never used for tuning)
 | rank | notebook (version) | dev official (3x3) | dev levels | Kaggle public |
-| 0 | **arc3-m2-base-sub (v1) = attributed dfranzen M2 base; SUBMIT NEXT** | n/a (LLM agent; public LB of original 27.9, copies 25.8 +- 3.9) | - | pending |
+| 0a | **arc3-m2-base-sub (v1) = attributed dfranzen M2 base; SUBMIT 2026-10-16**  | n/a (LLM agent; public LB of original 27.9, copies 25.8 +- 3.9) | - | pending |
+| 0b | **arc3-m2-mod1-sub (v1) = base + stagnation restart + D' (reused, credited); SUBMIT 2026-10-17** | n/a | - | pending |
 | 1 | arc3-team-45-graph-components (v1) | 0.7913 +- 0.0874 | 27 | pending |
 | - | arc3-team-12-dqn-novelty-mask (v1, submit later; DQN champion) | 0.0044 (3x3) | 3 | pending |
 | 2 | arc3-team-44-graph-objpromote (v1) | 0.5682 +- 0.0627 | 27 | pending |
@@ -60,3 +61,5 @@ Current phase: P2.3 TEAM-12-dqn-novelty-mask (training) + P3.1 TEAM-20-ppo-base 
 | 6 | arc3-team-11-dqn-novelty (v1) | 0.0000 | 0 | pending |
 | - | arc3-team-10-dqn-base (v1) | 0.0000 | 0 | 0.00 |
 Note: graph versions are within noise on score; TEAM-37 has the best score AND the most levels (18).
+
+## Submission plan (team): alternate base-sub and best MOD-sub daily until 2026-10-27; nominate highest score.
