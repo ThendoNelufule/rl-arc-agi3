@@ -39,3 +39,6 @@ kaggle_runs/eval-budget45/
 kaggle_sub/*/*.ipynb
 kaggle_runs/smoke-*/
 kaggle_runs/sub-*/
+recon/src/
+recon/analysis/franzen.patch
+recon/fable/

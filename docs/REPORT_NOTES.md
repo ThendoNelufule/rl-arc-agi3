@@ -588,3 +588,12 @@ action; harness resets on GAME_OVER).
 - KAGGLE: arc3-m2-base-sub v1 public LB = 28.83 (2026-10-16). Reference: dfranzen original 27.89; copies of his
   notebook 25.77 +- 3.93 (thread 745062) -> our reproduction is within the normal range. MOD-1 submitted next
   (team, 2026-10-17 after 02:00).
+
+## GPU quota (measured via Kaggle API, 2026-10-17)
+- kagglesdk KernelsApi.GetAcceleratorQuotaStatistics: gpuQuota totalTimeAllowed = 21600 s (6 h/week),
+  timeUsed ~1753 s (our two RTX PRO 6000 smoke tests + save runs), quotaRefreshTime 2026-10-17 00:00 UTC.
+- The 9 h competition scoring rerun of arc3-m2-base-sub did NOT appear in timeUsed -> scoring reruns are free;
+  only our own dev runs (smoke/proxy) consume the 6 h.
+- Consequence: a faithful 25-game x 4-pass proxy (~9 h) is impossible; a 1-pass 25-game proxy costs ~2-2.5 h,
+  i.e. at most ~2 proxy runs per week. Single-pass proxies are noisy (Franzen v3: 10/25 games swing >= 40 pts
+  between passes), so only large effects are detectable.
