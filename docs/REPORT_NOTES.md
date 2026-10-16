@@ -576,3 +576,6 @@ action; harness resets on GAME_OVER).
   not yet pushed.
 - GPU quota: Kaggle docs not machine-readable; assumption (to be confirmed by team on the website): dev runs
   on RTX PRO 6000 count against the weekly GPU quota, competition scoring reruns do not.
+- BASE smoke test (arc3-m2-base v1, 2026-10-16 ~15:00): ran end to end, no errors: SGLang server up, 3 public
+  games x 1 pass x 5 min: lp85 2/8 levels (score 8.33), tu93 1/9 (2.22), cd82 0/6; ~271 generated tok/s;
+  900 s wallclock for the games. GPU (RTX PRO 6000) used so far: base smoke ~15-20 min + base-sub save ~2 min.
