@@ -534,3 +534,26 @@ action; harness resets on GAME_OVER).
 - Step 2 (recon): leaderboard top (2026-10-16): Tufa Labs 68.91, Yi-Chia Chen 67.49, then 49.85 ...
   37.27 for places 3-20. 15 public notebooks pulled (top by score + most-voted distinct
   approaches) and summarised by one subagent each; rules + discussions summarised separately.
+
+## Recon results (2026-10-16): public notebooks, rules, discussions (16 subagent reports)
+- Leaderboard: Tufa Labs 68.91, Yi-Chia Chen 67.49 (no public code), then 37-50. Tufa will release
+  only after the competition (thread 742801).
+- Nearly every top public notebook is ONE family: dfranzen/arc-agi-3-milestone-2-solution
+  (Daniel Franzen; Milestone-2 winner; github da-fr/arc-agi-3-solution), a ~500 KB patch on Tufa Labs'
+  Duck harness (TAAF; Jeroen Cottaar et al., commit 7652836): LLM tool-agent (Qwen3.8-Flash-Next,
+  Intel AutoRound W4A16 + Albucino MTP drafter) served by an SGLang fork (pennyroyal), Python sandbox,
+  vision/diff context, no-op/stale guards, UNDO/RESET exposure, priority scheduler over 110 games,
+  RTX PRO 6000 (g4-standard-48), full 9 h. Public LB: dfranzen 27.89; copies mean 25.77 +- 3.93 SD
+  (thread 745062); one unchanged copy 31.73; skarin's copy 27.80 then 21.01; public-25 local mean 46.49
+  (4 replicates 45.6-47.5; skarin audit). Gap is almost all unfinished levels (efficiency costs ~2.6 pts).
+- Derivatives: Affectify D' scheduler (shiiin9; also in amatlas, yukailiu) 31.54 n=1 (within noise);
+  heliosli "stagnation restart" (no score); Fable layer (leoprovorov; no score); jingshuifu,
+  manwithacat clones; greenalgeria = byte-identical copy with credits removed (excluded);
+  vladimiryakunin DF-WM hard-codes public game ids + opaque blob (excluded); yukailiu adds an
+  undocumented encoded patch (excluded); nihilisticneuralnet 0.46 BFS reads game source / hidden
+  state (excluded, integrity). Tufa M1 duck harness (Qwen3.6-27B FP8, vLLM) and duck-v12 (~9) are older/weaker.
+- Rules: external models allowed if publicly available at no/minimal cost; prize eligibility needs
+  OSI-open system+model+weights (Qwen Community License 1.0 is not OSI; hosts give no guidance, 745079)
+  -> leaderboard use OK, prize eligibility unclear. 1 submission/day. Internet off; wheels via datasets.
+  RTX PRO 6000 queues 8-17 h, 2 concurrent GPU saves per user (742148). 1 Oct image moved to Python 3.13
+  (breaks py3.12 wheelhouses; pin the notebook's docker image).
