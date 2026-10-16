@@ -585,3 +585,6 @@ action; harness resets on GAME_OVER).
   ~25-32k). Same 3 levels as BASE (lp85 2/8, tu93 1/9, cd82 0/6; mean 3.52) -- 5-min smoke tests cannot
   separate strength; comparison will come from alternating real submissions (team plan).
 - arc3-m2-mod1-sub (v1): gated submission version of MOD-1 (same packaging as base-sub), save run complete.
+- KAGGLE: arc3-m2-base-sub v1 public LB = 28.83 (2026-10-16). Reference: dfranzen original 27.89; copies of his
+  notebook 25.77 +- 3.93 (thread 745062) -> our reproduction is within the normal range. MOD-1 submitted next
+  (team, 2026-10-17 after 02:00).

@@ -37,3 +37,4 @@ date,kernel,phase,games_set,seeds,local_score,kaggle_score,notes
 2026-10-04,TEAM-45n-graph-components-noprior,X,dev,9 eval,0.6671,,prior ablation (train split 0.0811, 12 levels on 6 games)
 2026-10-04,TEAM-46-graph-components-fb,X,dev,3x3,0.7913,,centres as fallback; identical on dev; no gain
 2026-10-04,TEAM-47-graph-components-size,X,dev,3x3,0.6323,,size prior; FAILED (lp85 slower)
+2026-10-16,M2-BASE (dfranzen fork),final,kaggle,-,,28.83,arc3-m2-base-sub v1: attributed dfranzen M2 (Tufa Duck harness + Qwen3.8-Flash-Next); copies avg 25.8+-3.9
