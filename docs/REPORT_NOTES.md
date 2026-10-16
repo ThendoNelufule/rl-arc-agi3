@@ -597,3 +597,32 @@ action; harness resets on GAME_OVER).
 - Consequence: a faithful 25-game x 4-pass proxy (~9 h) is impossible; a 1-pass 25-game proxy costs ~2-2.5 h,
   i.e. at most ~2 proxy runs per week. Single-pass proxies are noisy (Franzen v3: 10/25 games swing >= 40 pts
   between passes), so only large effects are detectable.
+
+## MOD-2 step 1: where the points are lost (2026-10-17; 5 subagent analyses)
+Sources: Franzen WRITEUP.md / README (github.com/da-fr/arc-agi-3-solution, Apache-2.0); 100 trajectories of
+Franzen v3 (25 public games x 4 passes) embedded in skarin's audit notebook (recon/analysis/
+franzen_v3_failure_modes.py recomputes all 100 stored scores exactly); patched Duck-harness source
+(Tufalabs/duck-harness@7652836 + Franzen patch); our base/MOD-1 smoke logs; Fable/DF-WM notebooks and threads.
+- Public-25 mean 46.49 (per-pass benchmark SD only ~0.9: 45.6-47.5) vs hidden LB ~26-29 (copies SD ~3.9).
+- Losses (points on the public-25 scale): later-level STALLS 43.9 (60/100 trajectories; e.g. bp35/lf52/wa30
+  always stop at L2, re86 at L7); level 1 never solved 7.0 (sk48 always); inefficiency on solved levels only
+  2.6 (median agent/human actions 0.64; 80% of levels score >= 100); ~26-29% of tokens go to the level that is
+  never solved; no measurable learning carried from level k to k+1 (efficiency corr -0.18).
+- Upside: every non-won trajectory +1 level at mean credit = +8.8 (theoretical ceiling for stall-breaking);
+  reinvesting dead-end tokens plausibly +2..+4; inefficiency fixes <= +0.6..2.6 (not worth it).
+- Our smoke logs: solved levels already beat human action counts (lp85 L1 7 vs 17, L2 15 vs 38; tu93 L1 18 vs
+  19); ~85% of tokens are reasoning; the model already clicks objects via the harness `segmentation`, already
+  gets no-op flags, and the whole conversation (plus retained functions) carries across levels -> our
+  object-click / inverse-action helpers would mostly save probing time, not actions.
+- Already in base (no gain left): fp8 KV + long history (rellik13 14.5 -> 22.5), UNDO exposure, death/no-op
+  guards; Franzen found NO gain from structured world model / summarisation; advice blocks HURT in rellik13's
+  tests (6.42 -> 4.16), facts from the agent's own history helped (+8.0 more own history; +2.8 pinned rule).
+- Code hooks (all as runtime monkeypatches, no file edit -> compatible with heliosli's SHA check): sandbox
+  helpers via python_tool_sandbox._SANDBOX_BOOTSTRAP + FRAME_DIFF_HINT_ADDENDUM (~100 LOC); harness-written
+  cross-level facts by wrapping ToolAgent._build_user_prompt (~80 LOC); reinvestment by scaling D's B*phi with C
+  / zeroing it after K tokens on a level (~10 LOC). Hopeless games currently never give up (B stays additive).
+- Measurement: per-pass public-25 benchmark SD ~0.9 -> a 1-pass 25-game proxy (~2-2.5 GPU-h, compute per game
+  scaled as in Franzen v3) CAN detect ~+2-3 point effects; we can afford ~2 such runs per 6 h weekly quota.
+- Realism: hidden ~= 0.6 x public (28.8 / 46.5). 40 on the hidden LB would need ~+18-20 on the public proxy,
+  far beyond any measured lever (stall-breaking ceiling +8.8 public). Realistic: +1..+4 on the proxy ->
+  roughly 30-33 hidden; plus resubmission luck (SD 3.9 -> best-of-3 ~+3 on the PUBLIC LB only).
