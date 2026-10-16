@@ -520,3 +520,17 @@ action; harness resets on GAME_OVER).
 - Results (dev, 3x3): 0.6323 +- 0.0765, 27 levels; lf52 L1 faster (13-45) but lp85 L1 slower
   (16-49 vs 14-30). Not adopted. Lesson: hand-made orderings trade one game for another on a
   5-game dev set; we stop adding priors here to avoid overfitting dev.
+
+## PLAN CHANGE (team, 2026-10-16): final-submission push
+- Team decision: our own graph explorer scored 0.07 on the Kaggle public LB (TEAM-45); classmates ~33,
+  global leader ~69. New goal: base the final submission on the strongest public approach we can
+  legally run, reproduce and understand; add our own components only where they measurably help;
+  cite all reused work. All other work paused.
+- Step 1: TEAM-12 (DQN chain champion, dqn-online) notebook arc3-team-12-dqn-novelty-mask v1 pushed,
+  smoke OK (for submission on a later day). MAX_ACTIONS check: the competition's own copy of
+  ARC-AGI-3-Agents (agent.py/swarm.py/main.py downloaded from the competition files) has no
+  override; our MyAgent class attribute MAX_ACTIONS = 500 applies (the starter's default 80 does
+  not cap us).
+- Step 2 (recon): leaderboard top (2026-10-16): Tufa Labs 68.91, Yi-Chia Chen 67.49, then 49.85 ...
+  37.27 for places 3-20. 15 public notebooks pulled (top by score + most-voted distinct
+  approaches) and summarised by one subagent each; rules + discussions summarised separately.

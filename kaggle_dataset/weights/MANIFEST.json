@@ -32,6 +32,14 @@
         "TEAM-21-ppo-rnd.pt",
         "TEAM-21-ppo-rnd.json"
       ]
+    },
+    "TEAM-12-dqn-novelty-mask": {
+      "policy": "dqn-online",
+      "source": "experiments/train/TEAM-12-dqn-novelty-mask-s0",
+      "files": [
+        "TEAM-12-dqn-novelty-mask.pt",
+        "TEAM-12-dqn-novelty-mask.json"
+      ]
     }
   },
   "submission_rule": "training seed 0 of each version (fixed before any Kaggle score)"

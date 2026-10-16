@@ -32,3 +32,7 @@ experiments/train/*/model.pt
 experiments/train/*/train.log
 kaggle_runs/*/out/
 kaggle_dataset/weights/ckpt/*.pt
+
+# third-party notebooks pulled for recon (not ours; not redistributed)
+recon/nb/
+kaggle_runs/eval-budget45/

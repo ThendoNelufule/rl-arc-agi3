@@ -39,9 +39,14 @@ Current phase: P2.3 TEAM-12-dqn-novelty-mask (training) + P3.1 TEAM-20-ppo-base 
 - 2026-10-04 02:20 TEAM-44 (adaptive object promotion) 0.5682 = BEST. FINAL if nothing changes: TEAM-44.
 - 2026-10-04 02:30 TEAM-45 (one click per component) 0.7913 = BEST. FINAL if nothing changes: TEAM-45.
 
+- 2026-10-16 PLAN CHANGE: final-submission push based on the strongest public approach (team decision;
+  our TEAM-45 scored 0.07 on the public LB). Step 1 done: TEAM-12 notebook pushed; MAX_ACTIONS=500
+  confirmed effective. Step 2 (recon of public notebooks/rules) in progress.
+
 ## Submission queue (ranked by dev official score; Kaggle = 1 submission/day, never used for tuning)
 | rank | notebook (version) | dev official (3x3) | dev levels | Kaggle public |
 | 1 | arc3-team-45-graph-components (v1) | 0.7913 +- 0.0874 | 27 | pending |
+| - | arc3-team-12-dqn-novelty-mask (v1, submit later; DQN champion) | 0.0044 (3x3) | 3 | pending |
 | 2 | arc3-team-44-graph-objpromote (v1) | 0.5682 +- 0.0627 | 27 | pending |
 | 3 | arc3-team-43-graph-objfallback (v1) | 0.5445 +- 0.0787 | 27 | pending |
 | 2 | arc3-team-37-graph-inverse (v1) | 0.5041 +- 0.0445 | 18 | pending |
