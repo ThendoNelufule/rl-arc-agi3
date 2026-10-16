@@ -557,3 +557,22 @@ action; harness resets on GAME_OVER).
   -> leaderboard use OK, prize eligibility unclear. 1 submission/day. Internet off; wheels via datasets.
   RTX PRO 6000 queues 8-17 h, 2 concurrent GPU saves per user (742148). 1 Oct image moved to Python 3.13
   (breaks py3.12 wheelhouses; pin the notebook's docker image).
+
+## Final-submission track: BASE = attributed fork of dfranzen M2 (2026-10-16)
+- Team approved dfranzen/arc-agi-3-milestone-2-solution as the base (full attribution, pinned docker image
+  sha256:57e612b4..., RTX PRO 6000, same datasets/models). scripts/build_m2.py regenerates all variants from
+  the pulled public notebooks (not committed: third-party code).
+- arc3-m2-base (v1): original + attribution cell; Save & Run reduced to a 3-game smoke test (lp85, tu93, cd82;
+  1 pass; 5 min/game). Competition path byte-identical (verified: only the config cell differs).
+- arc3-m2-base-sub (v1): SUBMISSION packaging of the base. Save & Run writes only a placeholder parquet (no GPU
+  work); every heavy cell wrapped in `if TRUE_SUBMISSION:` (heliosli's pattern); !rm/!cp -> subprocess; the
+  SGLang launcher kept byte-identical and run via exec (re-indenting would alter its multi-line strings).
+  Verified statically: all wrapped cells' string constants identical to the original, launcher source
+  identical. Commit run complete; pinned image, RTX PRO 6000, datasets and models attached.
+- Licences: reused public competition code (D', stagnation restart) is OSI-licensed under competition rule
+  2.b ("deemed to have licensed the shared code under an Open Source Initiative-approved license that in no
+  event limits commercial use"). Model licence (Qwen Community License) affects prize eligibility only.
+- MOD-1 (= base + heliosli stagnation restart + shiiin9 D' scheduler, both verbatim and credited) built,
+  not yet pushed.
+- GPU quota: Kaggle docs not machine-readable; assumption (to be confirmed by team on the website): dev runs
+  on RTX PRO 6000 count against the weekly GPU quota, competition scoring reruns do not.
