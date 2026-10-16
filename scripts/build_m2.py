@@ -186,3 +186,86 @@ def build_sub(builder):
 if __name__ == "__main__":
     save(*build_sub(build_base), "m2-base-sub")
     save(*build_sub(build_mod1), "m2-mod1-sub")
+
+
+# ---------------------------------------------------------------------------------------------------------
+# MOD-2 = MOD-1 + Fable layer (facts only) + reinvestment priority decay, and matched 25-game proxy variants.
+
+MOD2_NOTE = """**This version (MOD-2) = MOD-1 + two more changes:**
+3. *Fable layer* (REUSED, credited): [leoprovorov/fable-astra-play-arc-3-handbook-harness](https://www.kaggle.com/code/leoprovorov/fable-astra-play-arc-3-handbook-harness),
+   cell F001 from dataset leoprovorov/arc-agi-3-fable-harness-analytical-handbook (Apache-2.0): harness-computed facts
+   (indicator notes after 15k tokens on a level, pinned LEVEL LOG after 30k, budget alert). **Our modification:** its five
+   PROTOCOL_LINES (advice text) are removed, keeping facts only (evidence: advice blocks hurt in rellik13's tests, thread 744792).
+4. *Reinvestment priority decay* (OURS): after 130k generated tokens on the current level, a game's scheduling priority is
+   multiplied by max(0.2, exp(-(tokens-130k)/100k)), so GPU slots shift to games that are progressing (no game is stopped).
+"""
+
+REINVEST_CELL = '''# [Team Vladmir_Putin MOD-2, OUR CODE] Reinvestment: decay the scheduling priority of a game that has spent many
+# tokens on its current level (likely a dead end; ~26-29% of tokens go to never-solved levels in Franzen's v3 runs).
+# Wraps whatever priority_value is installed (D' from the previous cell). The gate looks the name up at call time.
+import math as _ri_math
+import inference.agent.tool_agent as _ri_ta
+REINVEST_K, REINVEST_SCALE, REINVEST_FLOOR = 130_000, 100_000, 0.2
+_ri_orig = _ri_ta.priority_value
+def _ri_priority(state, *args, **kwargs):
+    v = _ri_orig(state, *args, **kwargs)
+    t = float(getattr(state, "tokens", 0.0) or 0.0)
+    if t <= REINVEST_K:
+        return v
+    f = max(REINVEST_FLOOR, _ri_math.exp(-(t - REINVEST_K) / REINVEST_SCALE))
+    return max(1, int(v * f))
+_ri_priority._ours_reinvest = True
+_ri_ta.priority_value = _ri_priority
+print("#OURS_REINVEST ok K=%d scale=%d floor=%.2f wraps=%s" % (REINVEST_K, REINVEST_SCALE, REINVEST_FLOOR,
+      getattr(_ri_orig, "__name__", _ri_orig)), flush=True)
+'''
+
+
+def fable_cell():
+    nb = json.load(open(ROOT / "recon" / "fable" / "F001_fable_layer_notebook.ipynb", encoding="utf-8"))
+    src = next("".join(c["source"]) for c in nb["cells"]
+               if c["cell_type"] == "code" and "".join(c["source"]).startswith('# F001: the "Fable layer"'))
+    a = src.index("PROTOCOL_LINES = [")
+    b = src.index("]\n", a) + 2
+    src = src[:a] + "PROTOCOL_LINES = []  # [Team Vladmir_Putin] advice lines removed: facts only\n" + src[b:]
+    return ("# [Team Vladmir_Putin MOD-2] Fable layer, REUSED from leoprovorov's F001 notebook (Apache-2.0), unchanged\n"
+            "# except PROTOCOL_LINES emptied (facts only). Applied after the stagnation patch (tested: both apply).\n" + src)
+
+
+def build_mod2():
+    nb, meta = build_mod1()
+    nb["cells"][0]["source"] = "".join(nb["cells"][0]["source"]) + "\n" + MOD2_NOTE
+    cells = nb["cells"]
+    i_stag = find(cells, lambda s: "patch_stagnation_restart.py" in s)
+    cells.insert(i_stag + 1, code(fable_cell()))
+    i_d = find(cells, lambda s: "install_d(" in s)
+    cells.insert(i_d + 1, code(REINVEST_CELL))
+    return nb, meta
+
+
+PROXY_NOTE = """**PROXY build (not for submission):** Save & Run plays ALL 25 public games, 1 pass, concurrency 25, per-game cap
+532*60*25/110 s (same per-game compute share as the competition and as Franzen's v3 runs). Used for matched A/B tests.
+"""
+
+
+def proxyify(builder):
+    nb, meta = builder()
+    nb["cells"][0]["source"] = "".join(nb["cells"][0]["source"]) + "\n" + PROXY_NOTE
+    i = find(nb["cells"], lambda s: s.startswith("# Make one-off changes to `bm`"))
+    src = "".join(nb["cells"][i]["source"])
+    a = src.index("# [Team Vladmir_Putin] Save & Run = smoke test only")
+    b = src.index("\n", src.index("demo_excluded_games =", a)) + 1
+    src = src[:a] + "# [Team Vladmir_Putin] PROXY: all 25 public games\ndemo_excluded_games = []\n" + src[b:]
+    a = src.index("    # [Team Vladmir_Putin] smoke test: 1 pass, 5 min per game")
+    b = src.index("    bm.solver.max_runtime_s_per_game = 5 * 60\n", a) + len("    bm.solver.max_runtime_s_per_game = 5 * 60\n")
+    src = src[:a] + ("    # [Team Vladmir_Putin] PROXY: 1 pass, 25 concurrent games, competition-equivalent per-game share\n"
+                     "    bm.n_passes = 1\n    bm.solver.concurrency = 25\n"
+                     "    bm.solver.max_runtime_s_per_game = 532*60 * 25 // 110\n") + src[b:]
+    nb["cells"][i]["source"] = src
+    return nb, meta
+
+
+if __name__ == "__main__":
+    save(*build_mod2(), "m2-mod2")
+    save(*proxyify(build_mod1), "m2-mod1-proxy")
+    save(*proxyify(build_mod2), "m2-mod2-proxy")

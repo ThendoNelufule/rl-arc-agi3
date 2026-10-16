@@ -626,3 +626,23 @@ franzen_v3_failure_modes.py recomputes all 100 stored scores exactly); patched D
 - Realism: hidden ~= 0.6 x public (28.8 / 46.5). 40 on the hidden LB would need ~+18-20 on the public proxy,
   far beyond any measured lever (stall-breaking ceiling +8.8 public). Realistic: +1..+4 on the proxy ->
   roughly 30-33 hidden; plus resubmission luck (SD 3.9 -> best-of-3 ~+3 on the PUBLIC LB only).
+
+## MOD-2 build + matched proxy (2026-10-17)
+- Reference check (team request): Franzen's 46.49 is NOT a matched reference. His v3 job (metadata in skarin's
+  audit) ran 25 games x 4 replicates CONCURRENTLY (harness concurrency 100, server streams 10, per-game cap
+  29,018 s, 8.2 h job). Our 1-pass proxy runs 25 games concurrently (cap 532*60*25/110 = 7,254 s, ~2 h). The
+  per-game compute share is equal by construction (10 streams / 100 games x 8.2 h ~ 10 / 25 x 2.05 h ~ 0.82
+  stream-h) but scheduler mix, queueing and cache pressure differ; his per-pass range (45.6-47.5) comes from the
+  same 4-pass job. -> Decision: matched A/B instead: MOD-1-proxy vs MOD-2-proxy, identical settings, launched
+  simultaneously on the two GPU slots. Threshold: MOD-2 >= MOD-1 + 2 points (within-job per-pass SD ~0.9 ->
+  diff SD ~1.3; between-job variance unknown -> flagged as a limitation).
+- Note: D' tail fade uses the 9 h budget window; in a ~2 h proxy it never activates (same for both arms).
+- MOD-2 = MOD-1 + (3) Fable layer (REUSED: leoprovorov F001, Apache-2.0; facts only -- our change: its 5
+  PROTOCOL_LINES of advice removed) + (4) reinvestment priority decay (OURS: priority x max(0.2,
+  exp(-(t-130k)/100k)) once a game has spent t > 130k tokens on its current level).
+- Compatibility tested locally on the Franzen-patched Duck tree: heliosli stagnation patch (SHA check passes on
+  the LF-normalised file), then Fable apply -> "applied"; tool_agent.py compiles; both hooks present.
+- Proxies pushed 2026-10-17 01:50: thendonelufule/arc3-m2-mod1-proxy and arc3-m2-mod2-proxy (RTX PRO 6000).
+  GPU quota before: 1753 s used of 21,600 s.
+- Not built (lower expected value per hour): our object-click / inverse-action sandbox helpers (the model already
+  clicks objects via `segmentation` and gets no-op flags; would mainly save probing time).
