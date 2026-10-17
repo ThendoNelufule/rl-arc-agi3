@@ -69,3 +69,6 @@ Note: graph versions are within noise on score; TEAM-37 has the best score AND t
   with one pass.
 - 2026-10-17 MOD-1 LB 24.88 (< base 28.83). TEAM DECISION: submit arc3-m2-base-sub daily until 2026-10-27,
   nominate the best score. No MOD-3 unless credible +10. Scores: base 28.83 (10-16), mod1 24.88 (10-17).
+- 2026-10-17 MOD-F (base + OUR fixes: stub dead reasoning, stale-state message + prompt line, cap 525 min) smoke OK.
+  TEAM DECISION: daily submission = arc3-m2-modf-sub (v1) from 2026-10-18 02:00 until 2026-10-27; every roll must be a
+  modified version (brief req. 6); fallback = arc3-m2-mod1-sub. Nominate the best-scoring modified version.

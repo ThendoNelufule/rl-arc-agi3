@@ -763,3 +763,24 @@ tokens on a level) -- these five games alone explain ~7.8 of the 4.56-point mean
 add-on's design, not evidence against Fable facts.
 Realistic total of items 1-5: roughly +1 to +3 proxy points, i.e. below Kaggle noise (+-4) and not resolvable by a
 1-pass proxy; no single item justifies a submission slot on its own.
+
+## MOD-F (2026-10-17): base + three of OUR OWN fixes -- built, smoke-tested, submission version pushed
+Built on the BASE (not MOD-1; no reused add-ons). All three are our own modifications, from the verified findings of the
+independent loss search above; documented in the notebook header (scripts/build_m2.py build_modf, MODF_NOTE/MODF_CELL).
+1. `ARC3_STUB_DEAD_REASONING=1` in the harness env dict: truncated (finish_reason=length) reasoning-only replies are
+   replaced in context by the harness's existing one-line stub instead of ~13k tokens of broken reasoning.
+2. Stale-state refusal corrected (runtime patch of inference.framework.solver._stale_detail): the false sentence
+   "(StaleStateActionError can be caught if a snippet has good reason to keep acting through no-ops.)" is replaced by
+   "Catching StaleStateActionError does not help: every later action() call in this snippet will be refused too. End
+   this python call and issue the remaining actions in a new one." Plus one system-prompt line (appended to
+   PYTHON_ADDENDUM_TAIL) describing the batch no-op stop (all levels) and the stale-state refusal (from level 2).
+3. Per-game cap 525*60 s instead of 532*60 s in the competition path (9 h margin: proxy timings projected 32,524 s).
+NOT included: the scheduler efficiency-term fix (needs an A/B we cannot afford).
+Verification: local test against the patched harness (missing third-party modules stubbed): env flag read as enabled,
+message replaced, prompt line present in the built system prompt. Kaggle smoke (arc3-m2-modf v1, 3 public games, 5 min,
+RTX PRO 6000, ~15 min GPU): '#OURS_MODF ok ... stub_dead_reasoning=1' in the log, prompt line in all 3 system prompts,
+no errors/tracebacks, 3 games played (66 actions, 3 levels; 5-min smoke scores are not comparable to anything). The
+stale refusal and stub paths did not trigger in 5 min (expected: rare events). Submission version arc3-m2-modf-sub v1:
+Save & Run COMPLETE, placeholder submission.parquet written. Expected effect: small (+0 to +1), below Kaggle noise;
+MOD-F is our nominated-entry candidate because it contains our own modifications (brief requirement 6).
+GPU quota: weekly quota reset (0 of 21,600 s used before the smoke; next reset 2026-10-24).
