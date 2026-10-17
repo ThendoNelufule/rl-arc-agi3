@@ -269,3 +269,71 @@ if __name__ == "__main__":
     save(*build_mod2(), "m2-mod2")
     save(*proxyify(build_mod1), "m2-mod1-proxy")
     save(*proxyify(build_mod2), "m2-mod2-proxy")
+
+
+# ---------------------------------------------------------------------------------------------------------
+# MOD-F = BASE + three of OUR OWN fixes found by the 2026-10-17 loss search (docs/REPORT_NOTES.md). Built on the
+# base, NOT on MOD-1: no reused add-ons.
+
+MODF_NOTE = """**This version (MOD-F) = base + three fixes. All three are OUR OWN modifications** (found by our log/code audit of the
+base on 25 public games; details in our report notes). Agent model, harness patch, inputs, docker image and GPU unchanged.
+1. *Stub truncated reasoning (config)*: `ARC3_STUB_DEAD_REASONING=1`. A reply cut off at the 12,288-token output cap with no
+   tool call was kept verbatim (~13k tokens of broken reasoning re-sent on later requests; 13 of 2,341 replies in our run).
+   The flag switches on the harness's existing stub path (Franzen's code), which replaces it with a one-line placeholder.
+2. *Correct the stale-state refusal (message + one prompt line)*: from level 2, after one no-op every later `action()` call in
+   the same snippet is refused, but the refusal said the error "can be caught ... to keep acting" (false: catching it only
+   turns each later action into another refusal; 92 silently refused actions in 14 snippets in our run). We replace that
+   sentence in the message and add one line describing the no-op rules to the system prompt.
+3. *Per-game cap 525 min instead of 532 (time-limit safety)*: in our proxy the server was ready after 538 s and games ended
+   up to 66 s past their cap, i.e. ~32,524 s > the 32,400 s notebook limit at 532 min. 525 min leaves ~6 min of margin.
+"""
+
+MODF_CELL = '''# [Team Vladmir_Putin MOD-F, OUR CODE] Fix 2: correct the stale-state refusal message and describe the no-op rules once
+# in the system prompt. Runtime patches of module globals (looked up at call time); no harness file is edited.
+import inference.framework.solver as _mf_solver
+import inference.agent.tool_agent as _mf_ta
+_MF_OLD = ("(StaleStateActionError can be caught if a snippet has good reason to "
+           "keep acting through no-ops.)")
+_MF_NEW = ("Catching StaleStateActionError does not help: every later action() call in this snippet "
+           "will be refused too. End this python call and issue the remaining actions in a new one.")
+_mf_orig_detail = _mf_solver._stale_detail
+def _mf_stale_detail(action, stale_after):
+    return _mf_orig_detail(action, stale_after).replace(_MF_OLD, _MF_NEW)
+_mf_solver._stale_detail = _mf_stale_detail
+_MF_LINE = ("- No-op rules: a multi-action `action([...])` batch stops at its first action that changes nothing on the board. "
+            "From level 2 on, once an `action(...)` call in a snippet has changed nothing, every later `action(...)` call in "
+            "that same snippet is refused with `StaleStateActionError`, even if you catch it. End the snippet, re-check the "
+            "board, and continue in a new python call; when probing several candidates, probe one per call or put the "
+            "likely no-op last.\\n")
+assert _mf_ta.PYTHON_ADDENDUM_TAIL.endswith("\\n") and _MF_LINE not in _mf_ta.PYTHON_ADDENDUM_TAIL
+_mf_ta.PYTHON_ADDENDUM_TAIL = _mf_ta.PYTHON_ADDENDUM_TAIL + _MF_LINE
+print("#OURS_MODF ok stale message patched; prompt line added; stub_dead_reasoning=%s" %
+      os.environ.get("ARC3_STUB_DEAD_REASONING"), flush=True)
+'''
+
+
+def build_modf():
+    nb, meta = build_base()
+    nb["cells"][0]["source"] = CREDITS + MODF_NOTE + "\nSave & Run = smoke test only (3 public games, 1 pass, 5 min).\n"
+    cells = nb["cells"]
+    # fix 1: config flag in the harness env dict
+    i = find(cells, lambda s: "'ARC3_STALE_STATE_BLOCK': '1'," in s)
+    s = "".join(cells[i]["source"])
+    assert s.count("'ARC3_STALE_STATE_BLOCK': '1',") == 1 and "ARC3_STUB_DEAD_REASONING'" not in s
+    cells[i]["source"] = s.replace("'ARC3_STALE_STATE_BLOCK': '1',", "'ARC3_STALE_STATE_BLOCK': '1',\n"
+                                   "    'ARC3_STUB_DEAD_REASONING': '1',  # [Team Vladmir_Putin MOD-F fix 1]")
+    # fix 3: per-game cap in the competition path
+    i = find(cells, lambda s: s.startswith("# Make one-off changes to `bm`"))
+    s = "".join(cells[i]["source"])
+    old = "        bm.solver.max_runtime_s_per_game = 532*60\n"
+    assert s.count(old) == 1
+    cells[i]["source"] = s.replace(old, "        bm.solver.max_runtime_s_per_game = 525*60  "
+                                        "# [Team Vladmir_Putin MOD-F fix 3] was 532*60\n")
+    # fix 2: runtime patch cell after the config cell (harness importable, before the solver starts)
+    cells.insert(i + 1, code(MODF_CELL))
+    return nb, meta
+
+
+if __name__ == "__main__":
+    save(*build_modf(), "m2-modf")
+    save(*build_sub(build_modf), "m2-modf-sub")
