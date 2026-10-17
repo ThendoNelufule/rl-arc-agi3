@@ -669,3 +669,43 @@ franzen_v3_failure_modes.py recomputes all 100 stored scores exactly); patched D
 - Team decision: daily submission = arc3-m2-base-sub (resubmit, one per day until 2026-10-27); nominate the single
   best score. No MOD-3 unless there is a credible case for +10 points (smallest effect a 1-pass proxy resolves).
 - Kaggle scores used for reporting/nomination only, not for tuning.
+
+## Lead check: retained reasoning + compaction (2026-10-17) -- already in base, MOD-3 NOT built
+Source of the idea (cited): OpenAI, "How two settings tripled our ARC-AGI-3 scores" (29 Jul 2026),
+https://openai.com/index/how-two-settings-tripled-our-arc-agi-3-scores/ -- retained reasoning + compaction took
+GPT-5.6 Sol from 13.3% to 38.3% on the public set with ~6x fewer output tokens (page returned 403 to our fetcher;
+figures from the post's coverage: the-decoder.com, dev.to). ARC Prize has not accepted that comparison as official.
+Verification in our Franzen fork (free, from code + our MOD-1 proxy request logs):
+- Retained reasoning is ON. Server: SGLang `--reasoning-parser qwen3 --default-chat-template-kwargs
+  {"preserve_thinking":true}`; harness re-asserts `preserve_thinking=True` per request (ARC3_PRESERVE_THINKING
+  default 1, merged into chat_template_kwargs) and sends prior thinking back under `reasoning_content`
+  (ARC3_REASONING_HISTORY_KEY='reasoning_content' in Franzen's config; the harness docstring documents that the wrong
+  key is silently dropped by templates -- Franzen set the right one).
+- Empirical proof (2,341 requests, 25 games): logged messages carry `reasoning_content` on every assistant turn;
+  prompt growth per previous generated token: median 1.83, p10 1.20, never < 0.5 (reasoning = 87.5% of generated
+  tokens, so stripping it would give growth << 1). Prefix-cache hit rate 93.2% (Franzen's demo run: 93.4%).
+- Context management: append-only history, 128 Ki window (12 Ki output reserve); when the budget is hit, ONE large
+  block of the oldest history is evicted (drain 58 Ki; plus a 150-assistant-turn cap draining 30), so the prefix stays
+  reusable between rare trims. No summaries/compaction (ARC3_SUMMARY_INTERVAL_TOKENS unset = 0, memory sections off).
+  All 25 games hit the limit in the 2 h proxy (1-7 evictions each), so truncation does happen.
+- Franzen tested both settings (WRITEUP.md): "the choice to retain the model's thinking output is deliberate and
+  already present in the original harness - removing it leads to a large regression in score"; "I tried summaries
+  inserted into the history and summaries replacing preceding context. Neither gave a clear improvement."
+- Decision (per team rule: build only if reasoning is dropped; no MOD-3 without a credible +10): NOT built. The only
+  untested variant -- compaction exactly at the eviction point instead of periodic summaries -- is close to what
+  Franzen tested and has no evidence for +10; the 1-pass proxy can't resolve smaller effects (diff SD ~26/game).
+  No GPU spent.
+
+## Recon refresh (2026-10-17): public notebooks run 12-17 Oct
+Pulled 11 recently run/updated notebooks (recon/nb2/, not committed) and diffed code cells + env config vs Franzen:
+- Verbatim/near-verbatim Franzen copies (0 config changes): bang1850 sovereign-agent (adds only env flags already
+  set), evgendvorkin arc-3-2026, kaiwalyaatulraut, kunaldesale2408 (48 min/game runtime cell = Franzen's own).
+- Small add-ons on Franzen: ouyangruize (D' + animation-aware guard), zhangyues0000 (game-over ledger pinned to user
+  messages), omn1v3r53 (scoped episode memory; T4 metadata), yukailiu (memory sections ON + "dhia" plan tools),
+  sujanmajhisuzan (UND hooks, world-model BFS sim, death/no-op guards), prvsiyan (Franzen rerun, compressed source).
+- None changes reasoning retention or adds compaction. None publishes a matched proxy showing a gain.
+- Best LB evidence for run-to-run noise (ouyangruize notes): Franzen's unchanged code scored 27.62-31.47 across
+  resubmissions; D' 30.74. A notebook page shows the BEST of all its submissions. So 33-38 on the public LB is
+  reachable by resubmission luck + small mods (our base 28.83, base copies 25.8 +- 3.9); the "Tech Times 33-38%
+  cluster" could not be located (search found the 6 Oct Tech Times item only via a Manifold citation, about a
+  55.89 top public score).
