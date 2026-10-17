@@ -42,3 +42,4 @@ kaggle_runs/sub-*/
 recon/src/
 recon/analysis/franzen.patch
 recon/fable/
+kaggle_runs/proxy-*/

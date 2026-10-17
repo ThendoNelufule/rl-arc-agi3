@@ -64,3 +64,6 @@ Note: graph versions are within noise on score; TEAM-37 has the best score AND t
 
 ## Submission plan (team): alternate base-sub and best MOD-sub daily until 2026-10-27; nominate highest score.
 - 2026-10-17 base LB 28.83. New goal: MOD-2 toward 40 (stretch); proxy = 25 public games before any submission.
+- 2026-10-17 MOD-2 proxy A/B: MOD-1 47.39 vs MOD-2 42.83 (-4.56) -> MOD-2 FAILED, no submission version.
+  MOD candidate stays arc3-m2-mod1-sub. Proxy noise (per-game diff SD ~26) means small mods can't be detected
+  with one pass.

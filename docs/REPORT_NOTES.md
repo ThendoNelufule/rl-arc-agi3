@@ -646,3 +646,19 @@ franzen_v3_failure_modes.py recomputes all 100 stored scores exactly); patched D
   GPU quota before: 1753 s used of 21,600 s.
 - Not built (lower expected value per hour): our object-click / inverse-action sandbox helpers (the model already
   clicks objects via `segmentation` and gets no-op flags; would mainly save probing time).
+
+## MOD-2 proxy result (2026-10-17) -- FAILED, not submitted
+- Matched A/B, 25 public games, 1 pass, cap 7,254 s, both jobs 2026-10-16 23:58-02:00 UTC (~2 h each).
+- MOD-1-proxy mean **47.39** (107 levels, 6 games won); MOD-2-proxy mean **42.83** (97 levels, 7 won).
+  Diff **-4.56** (paired SE 5.3; bootstrap 95% CI -15.2..+5.4). Threshold was MOD-2 >= MOD-1 + 2 -> FAIL.
+- Per game: 9 better / 10 worse / 6 tied. Big swings both ways (tr87 +58.6, m0r0 +28.6, cd82 +17.4 vs
+  vc33 -78.6, sp80 -42.9, dc22 -33.3, ka59 -30.5, tn36 -27.2). Per-game diff SD ~26 -> a single 25-game pass
+  only resolves effects of ~+10 or more; between-job noise is much larger than the within-job SD 0.9 we assumed.
+  Honest reading: MOD-2 is not shown to help, and may hurt (fewer levels: 97 vs 107).
+- Add-on activation: MOD-1 log confirms `#OURS_FORM ok version=d_prime` and stagnation_context_restart events.
+  MOD-2's kernel log/summary was not pulled (local download stopped by Claude Code under low memory); scores
+  come from its benchmark.json (`final_score`, same field that summary.txt averages). MOD-2 hook activation
+  (#OURS_REINVEST, [F001] applied) therefore unverified -- limitation.
+- Interesting side result: MOD-1 on the 1-pass proxy (47.39) ~= Franzen v3 per-pass range (45.6-47.5).
+- Decision: no arc3-m2-mod2-sub. Keep MOD-1 as the MOD candidate. GPU quota: ~4 h of the 6 h/week spent on the
+  two proxies (not re-measured, see PROGRESS).
