@@ -40,3 +40,4 @@ date,kernel,phase,games_set,seeds,local_score,kaggle_score,notes
 2026-10-16,M2-BASE (dfranzen fork),final,kaggle,-,,28.83,arc3-m2-base-sub v1: attributed dfranzen M2 (Tufa Duck harness + Qwen3.8-Flash-Next); copies avg 25.8+-3.9
 2026-10-17,M2-MOD1-proxy,final,public25 1-pass,1,47.39,,matched A/B arm; stagnation restart + D'prime; 107 levels
 2026-10-17,M2-MOD2-proxy,final,public25 1-pass,1,42.83,,FAILED -4.56 vs MOD-1 (CI -15.2..+5.4); Fable facts + our reinvest decay; not submitted
+2026-10-17,M2-MOD1 (dfranzen fork + heliosli stagnation + shiiin9 D'prime),final,kaggle,-,,24.88,arc3-m2-mod1-sub v1; below base 28.83 (within copy spread 25.8+-3.9)

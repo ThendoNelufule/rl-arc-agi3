@@ -662,3 +662,10 @@ franzen_v3_failure_modes.py recomputes all 100 stored scores exactly); patched D
 - Interesting side result: MOD-1 on the 1-pass proxy (47.39) ~= Franzen v3 per-pass range (45.6-47.5).
 - Decision: no arc3-m2-mod2-sub. Keep MOD-1 as the MOD candidate. GPU quota: ~4 h of the 6 h/week spent on the
   two proxies (not re-measured, see PROGRESS).
+
+## MOD-1 Kaggle score + team decision (2026-10-17)
+- arc3-m2-mod1-sub v1: Kaggle public LB **24.88** (base 28.83). Within the spread of public base copies
+  (25.8 +- 3.9), so no evidence MOD-1 beats base; proxy 47.39 is inside Franzen's base per-pass range (45.6-47.5).
+- Team decision: daily submission = arc3-m2-base-sub (resubmit, one per day until 2026-10-27); nominate the single
+  best score. No MOD-3 unless there is a credible case for +10 points (smallest effect a 1-pass proxy resolves).
+- Kaggle scores used for reporting/nomination only, not for tuning.

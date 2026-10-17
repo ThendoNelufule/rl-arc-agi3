@@ -67,3 +67,5 @@ Note: graph versions are within noise on score; TEAM-37 has the best score AND t
 - 2026-10-17 MOD-2 proxy A/B: MOD-1 47.39 vs MOD-2 42.83 (-4.56) -> MOD-2 FAILED, no submission version.
   MOD candidate stays arc3-m2-mod1-sub. Proxy noise (per-game diff SD ~26) means small mods can't be detected
   with one pass.
+- 2026-10-17 MOD-1 LB 24.88 (< base 28.83). TEAM DECISION: submit arc3-m2-base-sub daily until 2026-10-27,
+  nominate the best score. No MOD-3 unless credible +10. Scores: base 28.83 (10-16), mod1 24.88 (10-17).
