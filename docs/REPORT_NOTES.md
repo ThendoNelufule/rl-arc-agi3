@@ -709,3 +709,57 @@ Pulled 11 recently run/updated notebooks (recon/nb2/, not committed) and diffed 
   reachable by resubmission luck + small mods (our base 28.83, base copies 25.8 +- 3.9); the "Tech Times 33-38%
   cluster" could not be located (search found the 6 Oct Tech Times item only via a Manifold citation, about a
   55.89 top public score).
+
+## Independent loss search (2026-10-17): 8 parallel subagents, coordinator-verified
+Setup: 8 read-only subagents, one area each (scoring, scheduling, server, prompt/perception, context/memory, game
+behaviour, harness bugs, competition rules). Shared brief recon/shared/BRIEF.md + per-request digest
+recon/shared/request_digest.csv (3,976 responses). They were NOT told our earlier ideas (D', stagnation, Fable,
+reinvestment, graph hybrid, reasoning retention) and were barred from docs/ and other notebooks. Every claim below
+was re-checked by the coordinator against code/logs. Caveat: both proxy logs carry our add-ons (D' replaces the
+base priority function), so scheduler-timing evidence does not describe the base.
+Headline (all 8 agree): no single large leak. ~All lost points are unfinished levels (mod1: 50.2 mean pts lost to
+unfinished levels vs 2.46 to over-baseline actions; median actions/baseline on solved levels 0.64). No finding
+supports +10. Ranked findings (evidence x expected points):
+1. Truncated replies kept verbatim (2 agents, VERIFIED). 15/2,341 mod1 replies hit the 12,288-token cap
+   (finish_reason=length); 13 had no tool call and their ~13.2k-token dead reasoning stays in context (prompt jumps
+   +13.2k every time, e.g. bp35 84,392->97,661); 136 later requests carried it; 12/155 drains happened early
+   because of it. Existing fix ARC3_STUB_DEAD_REASONING (tool_agent.py:880, :6967) is OFF (not in the config dict;
+   only in the patch code). Fix: env flag = 1. Gain < 0.5. Verify: grep transcripts for the stub; digest shows no
+   +13k jump after `length` rows.
+2. Stale-state guard gives false advice (VERIFIED). From level 2, after one no-op every later action() in the
+   snippet is refused (solver.py:1074-1089 blocks batch_index 1 whenever stale_after is set; sandbox flag clears only
+   on gameplay_changed, which a refused call never reaches: python_tool_sandbox.py:515-567). The message says
+   "StaleStateActionError can be caught if a snippet has good reason to keep acting" (solver.py:426) -- false.
+   60 turns in 18/25 games stopped by it; 14 snippets caught-and-continued -> 92 silently refused actions, recorded
+   by the model as no-ops (dc22 transcript @17752: "The prompt says StaleStateActionError can be caught").
+   Fix: correct message + one system-prompt line. Gain 0-0.5.
+3. Scheduler value model uses the wrong efficiency term (VERIFIED code). priority_scheduler.py:102
+   efficiency=(25/(25+actions))^2 (ARC3_PRIORITY_HUMAN_ACTIONS default 25) decays with every action, while the
+   real per-level factor min(1.15,(b/a)^2) averages 1.01 on solved levels. CPU replay: last level of a 6-level game
+   (28.6 pts at stake) ranks below level 1 of an 8-level game. Fix: ARC3_PRIORITY_HUMAN_ACTIONS=1e6 (env only,
+   rules-safe). Gain unknown (<= ~4 pts at stake in mod1); needs a proxy A/B; base-run timing evidence missing.
+4. Trim-time history hygiene (estimated, code change). After a trim the retained ~56k context still holds 21.6%
+   junk: an identical ~1.8k-char instruction block repeated in every older user message (10.9% of ALL prompt tokens;
+   verified present in every user message), images beyond the last few, dead reasoning. Stripping them only at trim
+   time (prefix is re-prefilled anyway) saves ~1.9% GPU time -> 0.2-0.65 pts. Do NOT use ARC3_HISTORY_IMAGE_KEEP
+   (re-applied every turn -> prefix breaks + slot handover each turn).
+5. Prefill waste (VERIFIED partially). ~21% of GPU time is prefill stalls (enable_mixed_chunk=False). Of 11.25M
+   uncached tokens: 40% trims, 22% the previous turn's own completion re-prefilled (reuse is bimodal: 59% of turns
+   reuse <20% of it; root cause unknown, likely re-tokenisation), 11% a KV-cascade at ~14 min (pool 1,011,264
+   tokens < 10 streams x 128k; usage peak 0.99). MAMBA_CACHE 60->48 (peak use 40 slots) frees ~+5% KV; gain <= 0.3.
+   Raising streams to 11-12 trades decode +6-12% against more cascade -- not a proven gain.
+6. 9 h margin (RISK, VERIFIED): proxy READY 536 s, benchmark start 538 s, games end up to 66 s past cap ->
+   real run 538+31,920+66 = 32,524 s > 32,400 s. Both our submissions and Franzen's scored, so reruns evidently have
+   slack; cap 525 min would remove the risk for ~0.3 pts.
+Negative results (useful for the report): proxy compute share = real (2,902 slot-s/game both); hidden/public ratio
+0.60 is the same for Franzen's own notebook (27.89 vs ~46.5) -> not our submission path; token estimation accurate
+(3% error, 0 overflows); no leaked tool calls; click mapping correct; deaths rare (16); no death/no-op loops.
+Stuck-level returns (independent re-discovery of a known lever): P(solve | >=60k tokens on level) 34%, >=100k 17%;
+tokens past 62k on a level returned ~half the average points per token.
+MOD-2 post-mortem (new, VERIFIED): in MOD-2 seven games stopped acting 18-69 min into the 2 h run (sk48 18, vc33
+55, ka59 58, g50t 63, cn04 68, sp80 69, dc22 69 min; same games in MOD-1 acted until 83-121 min) while staying alive
+to the cap -> starved by the scheduler. Most likely cause: our reinvestment decay (priority x0.2 floor after 130k
+tokens on a level) -- these five games alone explain ~7.8 of the 4.56-point mean drop. So MOD-2's failure was our
+add-on's design, not evidence against Fable facts.
+Realistic total of items 1-5: roughly +1 to +3 proxy points, i.e. below Kaggle noise (+-4) and not resolvable by a
+1-pass proxy; no single item justifies a submission slot on its own.
