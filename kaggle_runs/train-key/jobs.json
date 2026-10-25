@@ -1,0 +1,11 @@
+{
+  "accel": "cpu",
+  "jobs": [
+    "evaluate.py --policy dqn-online --ckpt {ASSETS}/weights/ckpt/TEAM-12-dqn-novelty-mask-s0.pt --split train --seeds 3 --record --tag SUPP-TEAM-12-dqn-novelty-mask-s0-train",
+    "evaluate.py --policy ppo --ckpt {ASSETS}/weights/ckpt/TEAM-21-ppo-rnd-s0.pt --split train --seeds 3 --record --tag SUPP-TEAM-21-ppo-rnd-s0-train",
+    "evaluate.py --policy graph-inverse --ckpt {ASSETS}/weights/ckpt/TEAM-21-ppo-rnd-s0.pt --split train --seeds 3 --record --tag SUPP-TEAM-37-graph-inverse-s0-train",
+    "evaluate.py --policy graph-components --ckpt {ASSETS}/weights/ckpt/TEAM-21-ppo-rnd-s0.pt --split train --seeds 3 --record --tag SUPP-TEAM-45-graph-components-s0-train"
+  ],
+  "maxpar": 4,
+  "threads": 1
+}

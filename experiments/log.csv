@@ -50,3 +50,7 @@ date,kernel,phase,games_set,seeds,local_score,kaggle_score,notes
 2026-10-23,M2-MODF (base + our 3 fixes),final,kaggle,-,,29.15,arc3-m2-modf-sub v1; submission 57556604 at 2026-10-23 09:42:37 UTC; parquet 3777 B; BEST = P4.3 nominee
 2026-10-24,M2-MODF (base + our 3 fixes),final,kaggle,-,,0.00,arc3-m2-modf-sub v1; submission 57575205; ZERO; parquet 3411 B
 2026-10-25,M2-MODF (base + our 3 fixes),final,kaggle,-,,0.00,arc3-m2-modf-sub v1; submission 57609893; ZERO; parquet 3411 B; MOD-F stopped (team)
+2026-10-04,TEAM-37-graph-inverse,final,kaggle,-,,0.07,arc3-team-37-graph-inverse (scriptVersionId 355018931); submission 56808866; dev 0.5041 -> Kaggle 0.07 (dev overfitting)
+2026-10-05,TEAM-21-ppo-rnd,final,kaggle,-,,0.05,arc3-team-21-ppo-rnd (scriptVersionId 355011563); submission 56848520
+2026-10-06,TEAM-20-ppo-base,final,kaggle,-,,0.00,arc3-team-20-ppo-base (scriptVersionId 355003417); submission 56874016
+2026-10-08,TEAM-11-dqn-novelty,final,kaggle,-,,0.00,arc3-team-11-dqn-novelty (scriptVersionId 355001140); submission 56946057

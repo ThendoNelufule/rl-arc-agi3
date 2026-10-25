@@ -522,7 +522,7 @@ action; harness resets on GAME_OVER).
   5-game dev set; we stop adding priors here to avoid overfitting dev.
 
 ## PLAN CHANGE (team, 2026-10-16): final-submission push
-- Team decision: our own graph explorer scored 0.07 on the Kaggle public LB (TEAM-45); classmates ~33,
+- Team decision: our own graph explorer scored 0.07 on the Kaggle public LB (TEAM-37 per the submissions API; TEAM-45 was never submitted); classmates ~33,
   global leader ~69. New goal: base the final submission on the strongest public approach we can
   legally run, reproduce and understand; add our own components only where they measurably help;
   cite all reused work. All other work paused.

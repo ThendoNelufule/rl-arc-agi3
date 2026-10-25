@@ -45,3 +45,10 @@ recon/fable/
 kaggle_runs/proxy-*/
 recon/nb2/
 recon/nb2/
+
+# LaTeX build by-products (report/main.pdf is kept)
+report/*.aux
+report/*.log
+report/*.bbl
+report/*.blg
+report/*.out

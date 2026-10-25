@@ -40,7 +40,7 @@ Current phase: P4.3 champion nominated (MOD-F 29.15) -> P5 REPORT
 - 2026-10-04 02:30 TEAM-45 (one click per component) 0.7913 = BEST. FINAL if nothing changes: TEAM-45.
 
 - 2026-10-16 PLAN CHANGE: final-submission push based on the strongest public approach (team decision;
-  our TEAM-45 scored 0.07 on the public LB). Step 1 done: TEAM-12 notebook pushed; MAX_ACTIONS=500
+  our TEAM-37 scored 0.07 on the public LB; corrected 2026-10-25 from the submissions API, TEAM-45 was never submitted). Step 1 done: TEAM-12 notebook pushed; MAX_ACTIONS=500
   confirmed effective. Step 2 (recon of public notebooks/rules) in progress.
 
 ## Submission queue (ranked by dev official score; Kaggle = 1 submission/day, never used for tuning)

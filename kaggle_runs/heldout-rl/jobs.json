@@ -1,0 +1,23 @@
+{
+  "accel": "cpu",
+  "jobs": [
+    "evaluate.py --policy random --split heldout --final --seeds 3 --record --tag HO-random-heldout",
+    "evaluate.py --policy dqn-online --ckpt {ASSETS}/weights/ckpt/TEAM-10-dqn-base-s0.pt --split heldout --final --seeds 3 --record --tag HO-TEAM-10-dqn-base-s0-heldout",
+    "evaluate.py --policy dqn-online --ckpt {ASSETS}/weights/ckpt/TEAM-12-dqn-novelty-mask-s0.pt --split heldout --final --seeds 3 --record --tag HO-TEAM-12-dqn-novelty-mask-s0-heldout",
+    "evaluate.py --policy ppo --ckpt {ASSETS}/weights/ckpt/TEAM-20-ppo-base-s0.pt --split heldout --final --seeds 3 --record --tag HO-TEAM-20-ppo-base-s0-heldout",
+    "evaluate.py --policy ppo --ckpt {ASSETS}/weights/ckpt/TEAM-21-ppo-rnd-s0.pt --split heldout --final --seeds 3 --record --tag HO-TEAM-21-ppo-rnd-s0-heldout",
+    "evaluate.py --policy ppo-lstm --ckpt {ASSETS}/weights/ckpt/TEAM-22-ppo-rnd-lstm-s0.pt --split heldout --final --seeds 3 --record --tag HO-TEAM-22-ppo-rnd-lstm-s0-heldout",
+    "evaluate.py --policy dqn-online --ckpt {ASSETS}/weights/ckpt/TEAM-10-dqn-base-s1.pt --split heldout --final --seeds 3 --record --tag HO-TEAM-10-dqn-base-s1-heldout",
+    "evaluate.py --policy dqn-online --ckpt {ASSETS}/weights/ckpt/TEAM-12-dqn-novelty-mask-s1.pt --split heldout --final --seeds 3 --record --tag HO-TEAM-12-dqn-novelty-mask-s1-heldout",
+    "evaluate.py --policy ppo --ckpt {ASSETS}/weights/ckpt/TEAM-20-ppo-base-s1.pt --split heldout --final --seeds 3 --record --tag HO-TEAM-20-ppo-base-s1-heldout",
+    "evaluate.py --policy ppo --ckpt {ASSETS}/weights/ckpt/TEAM-21-ppo-rnd-s1.pt --split heldout --final --seeds 3 --record --tag HO-TEAM-21-ppo-rnd-s1-heldout",
+    "evaluate.py --policy ppo-lstm --ckpt {ASSETS}/weights/ckpt/TEAM-22-ppo-rnd-lstm-s1.pt --split heldout --final --seeds 3 --record --tag HO-TEAM-22-ppo-rnd-lstm-s1-heldout",
+    "evaluate.py --policy dqn-online --ckpt {ASSETS}/weights/ckpt/TEAM-10-dqn-base-s2.pt --split heldout --final --seeds 3 --record --tag HO-TEAM-10-dqn-base-s2-heldout",
+    "evaluate.py --policy dqn-online --ckpt {ASSETS}/weights/ckpt/TEAM-12-dqn-novelty-mask-s2.pt --split heldout --final --seeds 3 --record --tag HO-TEAM-12-dqn-novelty-mask-s2-heldout",
+    "evaluate.py --policy ppo --ckpt {ASSETS}/weights/ckpt/TEAM-20-ppo-base-s2.pt --split heldout --final --seeds 3 --record --tag HO-TEAM-20-ppo-base-s2-heldout",
+    "evaluate.py --policy ppo --ckpt {ASSETS}/weights/ckpt/TEAM-21-ppo-rnd-s2.pt --split heldout --final --seeds 3 --record --tag HO-TEAM-21-ppo-rnd-s2-heldout",
+    "evaluate.py --policy ppo-lstm --ckpt {ASSETS}/weights/ckpt/TEAM-22-ppo-rnd-lstm-s2.pt --split heldout --final --seeds 3 --record --tag HO-TEAM-22-ppo-rnd-lstm-s2-heldout"
+  ],
+  "maxpar": 4,
+  "threads": 1
+}
