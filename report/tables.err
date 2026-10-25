@@ -1,7 +1,0 @@
-Traceback (most recent call last):
-  File "C:\rl\ARC-AGI-3-Kaggle-Starter\report\tables.py", line 118, in <module>
-    master([v[0] for v in D.VERSIONS], "master_full")
-  File "C:\rl\ARC-AGI-3-Kaggle-Starter\report\tables.py", line 66, in master
-    games = solved_str(first_level_actions(k), r["n_runs"])
-                                               ~^^^^^^^^^^
-TypeError: 'NoneType' object is not subscriptable
