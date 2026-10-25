@@ -67,3 +67,5 @@ date,kernel,phase,games_set,seeds,local_score,kaggle_score,notes
 2026-10-25,SUPP-TEAM-21-ppo-rnd-s0-train,P4.1,train (15),3,0.2395,,6 levels; games ft09/r11l/sp80; training seed 0
 2026-10-25,SUPP-TEAM-37-graph-inverse-s0-train,P4.1,train (15),3,0.0305,,6 levels; games ft09/m0r0/r11l/sp80; training seed 0
 2026-10-25,SUPP-TEAM-45-graph-components-s0-train,P4.1,train (15),3,0.0203,,11 levels; games ar25/m0r0/s5i5/sp80/vc33; training seed 0
+2026-10-25,TEAM-12a-dqn-mask-only,P4.1,dev,3x3,0.0028,,ablation: T12 without novelty (mask only); 5 levels (lp85 5/9 @146-421); repeated known no-ops 0.083/0.004/0.099; T4 0.48-0.49 h/seed
+2026-10-25,TEAM-12af-dqn-mask-only-frozen,P4.1,dev,3x3,0.0000,,frozen variant of T12a; 0 levels (T12f 6 levels)

@@ -12,6 +12,7 @@ OUT.mkdir(exist_ok=True)
 KAGGLE = {"random": "0.02$^\\dagger$", "T10": "0.00", "T11": "0.00", "T12": "0.00", "T20": "0.00", "T21": "0.05",
           "T37": "0.07"}
 TRAIN_PREFIX = {"T10": "TEAM-10-dqn-base", "T11": "TEAM-11-dqn-novelty", "T12": "TEAM-12-dqn-novelty-mask",
+                "T12a": "TEAM-12a-dqn-mask-only",
                 "T20": "TEAM-20-ppo-base", "T21": "TEAM-21-ppo-rnd", "T22": "TEAM-22-ppo-rnd-lstm"}
 
 

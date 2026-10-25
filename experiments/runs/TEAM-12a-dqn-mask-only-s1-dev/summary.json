@@ -1,0 +1,37 @@
+{
+  "tag": "TEAM-12a-dqn-mask-only-s1-dev",
+  "policy": "dqn-online",
+  "ckpt": "/kaggle/input/datasets/thendonelufule/arc3-rl-assets/weights/ckpt/TEAM-12a-dqn-mask-only-s1.pt",
+  "split": "dev",
+  "games": [
+    "dc22",
+    "ka59",
+    "lf52",
+    "lp85",
+    "ls20"
+  ],
+  "seeds": 3,
+  "budget": 500,
+  "official_score_per_seed": {
+    "0": 0.0,
+    "1": 0.0,
+    "2": 0.0
+  },
+  "official_score_mean": 0.0,
+  "official_score_std": 0.0,
+  "levels_per_seed": {
+    "0": 0,
+    "1": 0,
+    "2": 0
+  },
+  "mean_level_frac": 0.0,
+  "eval_seconds": 1436.1,
+  "versions": {
+    "python": "3.13.15",
+    "arc_agi": "0.9.8",
+    "arcengine": "0.9.3",
+    "numpy": "2.1.3",
+    "gymnasium": "1.2.0",
+    "platform": "Linux-6.18.55+-x86_64-with-glibc2.39"
+  }
+}

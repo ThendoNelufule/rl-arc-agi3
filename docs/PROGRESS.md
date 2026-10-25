@@ -86,7 +86,9 @@ Note: graph versions are within noise on score; TEAM-37 has the best score AND t
   tn36 L1 in 22-45 actions, human 32), T45n 0.7667 (28 lv). bp35/sk48 never solved.
   Train split (kernel train-key, training seed 0): T12 0.0002, T21 0.2395 (fits its own training games), T37 0.0305,
   T45 0.0203 (11 lv), T45n 0.0811 (earlier run).
-- 2026-10-25 Ablation P4.1: T12a = T12 without novelty (mask only), 3 seeds training on T4 (kernel arc3-train-team12a).
+- 2026-10-25 Ablation P4.1 done: T12a (mask only) 0.0028 +- 0.0021, 5 lv (T12 0.0044, 3 lv) -> mask is the active ingredient online; frozen T12af 0 lv (T12f 6).
 - 2026-10-25 Report rewritten as one research story (RL -> graph -> state of the art -> LLM platform); authors filled;
   MODIFICATIONS.md + EVIDENCE.md + CONTRIBUTIONS.md in submission/; Paper Track text report/paper_track.md (1,371 words);
   Moodle zip via scripts/make_moodle_zip.sh. Daily rolls 25/26 Oct: arc3-m2-mod1-sub v1 (team clicks).
+- 2026-10-25 Notebook arc3-m2-modf-sub v2 pushed: markdown header only (Save&Run sentence corrected, v1 results, write-up
+  link); all code cells byte-identical to v1 (code SHA c0ce77c2...). Nominated submission stays 57556604 (v1).

@@ -1,0 +1,23 @@
+{
+  "tag": "TEAM-12a-dqn-mask-only-s2",
+  "env_steps": 400005,
+  "updates": 76002,
+  "train_seconds": 1719.7,
+  "train_hours": 0.48,
+  "levels_total": 3,
+  "hardware": {
+    "cpu": "Intel(R) Xeon(R) CPU @ 2.00GHz",
+    "logical_cpus": 4,
+    "torch_threads": 2,
+    "device": "cuda",
+    "os": "Linux-6.18.55+-x86_64-with-glibc2.39",
+    "host": "kaggle",
+    "ram_gb": 31.3,
+    "gpu": "Tesla T4"
+  },
+  "versions": {
+    "python": "3.13.15",
+    "torch": "2.11.0+cu128",
+    "numpy": "2.1.3"
+  }
+}

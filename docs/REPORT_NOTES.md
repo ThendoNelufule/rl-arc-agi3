@@ -823,3 +823,13 @@ For the report: present MOD-F as 6 rolls with 3 failures, report mean AND non-ze
   T45n 0.081. All-25-public average of T45 ~0.35 vs Franzen's LLM agent 46.5 on the same games.
 - Reading: dev overfitting is real but game-dependent: component clicks transfer to click-driven games (tn36);
   orderings tuned to 5 dev games do not; no version reaches late levels.
+
+## P4.1 ablation: T12a = T12 without novelty (mask only) | 2026-10-25
+- Question: is T12's dev gain from the effect mask or from the novelty bonus stacked under it?
+- Same config as T12 except --novelty-beta 0 (effect head BCE 1.0, tau 0.1); 3 new training seeds on one T4 kernel
+  (0.48-0.49 h each, 3/6/3 training levels); dev eval on Kaggle CPU, same protocol (dqn-online + frozen).
+- Results (dev, 3x3): T12a 0.0028 +- 0.0021, 5 levels (lp85 L1 5/9 at 146-421 actions) vs T12 0.0044 +- 0.0063, 3 levels:
+  within noise. Repeated known no-ops 0.083/0.004/0.099 (T12 0.169/0.012/0.042; T11 0.27-0.33). Frozen T12af 0 levels
+  vs T12f 6.
+- Reading: online, the mask (with exact per-game memory + online fine-tuning) is the active ingredient; novelty shapes
+  the pretrained (frozen) policy but adds nothing measurable to the online agent.

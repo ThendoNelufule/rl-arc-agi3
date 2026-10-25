@@ -5,6 +5,9 @@ submission **57556604**, public score **29.15**, submitted 2026-10-23 09:42:37 U
 The copy in this zip (`notebook/arc3-m2-modf-sub.ipynb`) was pulled back from Kaggle on 2026-10-25. All 26 cell
 sources are identical to the version we pushed (SHA-256 of the concatenated code cells: `c0ce77c237b92613...`).
 The notebook contains no credentials and no outputs.
+**Version 2** of the same notebook (pushed 2026-10-25) changes only the first markdown cell: it corrects the Save & Run
+sentence, adds the results of all six v1 runs, and links the write-up. All 25 other cells are byte-identical (same code
+SHA-256). This zip contains **v1**, the version that was scored.
 
 ## 1. The base (reused, credited)
 

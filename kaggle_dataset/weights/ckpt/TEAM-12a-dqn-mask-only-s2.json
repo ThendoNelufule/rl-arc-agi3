@@ -1,0 +1,9 @@
+{
+  "algo": "dqn",
+  "arch": "QEffNet",
+  "arch_kwargs": {},
+  "eval_eps": 0.05,
+  "tag": "TEAM-12a-dqn-mask-only-s2",
+  "novelty_beta": 0.0,
+  "effect_tau": 0.1
+}

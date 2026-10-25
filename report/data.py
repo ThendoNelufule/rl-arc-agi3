@@ -22,6 +22,7 @@ VERSIONS = [
     ("T12", "T12 +effect mask", "dqn", "TEAM-12-dqn-novelty-mask", "seeds"),
     ("T12f", "T12f frozen", "dqn", "TEAM-12f-dqn-novelty-mask-frozen", "seeds"),
     ("T12a", "T12a mask only (no novelty)", "dqn", "TEAM-12a-dqn-mask-only", "seeds"),
+    ("T12af", "T12af mask only, frozen", "dqn", "TEAM-12af-dqn-mask-only-frozen", "seeds"),
     ("T20", "T20 PPO", "ppo", "TEAM-20-ppo-base", "seeds"),
     ("T21", "T21 +RND", "ppo", "TEAM-21-ppo-rnd", "seeds"),
     ("T22", "T22 +LSTM", "ppo", "TEAM-22-ppo-rnd-lstm", "seeds"),
