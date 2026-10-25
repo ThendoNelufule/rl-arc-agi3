@@ -63,6 +63,8 @@ def master(keys, name, caption_note=""):
             lines.append(r"\midrule")
         prev_fam = fam
         r = D.version_results(k)
+        if r is None:          # version not evaluated (yet): leave it out rather than invent a row
+            continue
         games = solved_str(first_level_actions(k), r["n_runs"])
         tr, ho = D.version_results(k, "train"), D.version_results(k, "heldout")
         lab = D.LABEL[k]
@@ -114,7 +116,7 @@ def numbers():
 
 
 if __name__ == "__main__":
-    master(["random", "T10", "T11", "T12", "T20", "T21", "T22", "T30", "T31", "T37", "T43", "T45", "T45n"], "master")
+    master(["random", "T10", "T11", "T12", "T12a", "T20", "T21", "T22", "T30", "T31", "T37", "T43", "T45", "T45n"], "master")
     master([v[0] for v in D.VERSIONS], "master_full")
     compute()
     for k, v in numbers().items():

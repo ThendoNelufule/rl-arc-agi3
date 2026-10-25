@@ -1,5 +1,5 @@
 # Progress
-Current phase: P4.3 champion nominated (MOD-F 29.15) -> P5 REPORT
+Current phase: P5 REPORT (final revision) + P6 SHIP; P4.2 held-out done (once)
 - 2026-09-18 P0 done: pipeline verified, Kaggle 0.02 (random)
 - 2026-10-03 P1.1 adapter, P1.2 frozen splits, P1.3 eval harness done
 - 2026-10-03 P1.4 done: private dataset thendonelufule/arc3-rl-assets (SB3 2.9.0 + sb3-contrib
@@ -81,3 +81,12 @@ Note: graph versions are within noise on score; TEAM-37 has the best score AND t
   (25 Oct night, 26 Oct) = arc3-m2-mod1-sub v1.
 - 2026-10-25 P4.3 NOMINATION: MOD-F arc3-m2-modf-sub v1, submission 57556604, public 29.15, 2026-10-23 09:42:37 UTC
   (our best score; contains our own modifications). Switch only if a MOD-1 roll beats 29.15 before the deadline.
+- 2026-10-25 P4.2 held-out DONE (--final, run exactly once, team-approved; Kaggle CPU kernels heldout-rl + heldout-graph):
+  random 0, T10 0, T12 0, T20 0, T21 0.0005 (1 lv tu93), T22 0, T37 0.1334 (22 lv), T45 0.8848 (34 lv; ~3/4 from
+  tn36 L1 in 22-45 actions, human 32), T45n 0.7667 (28 lv). bp35/sk48 never solved.
+  Train split (kernel train-key, training seed 0): T12 0.0002, T21 0.2395 (fits its own training games), T37 0.0305,
+  T45 0.0203 (11 lv), T45n 0.0811 (earlier run).
+- 2026-10-25 Ablation P4.1: T12a = T12 without novelty (mask only), 3 seeds training on T4 (kernel arc3-train-team12a).
+- 2026-10-25 Report rewritten as one research story (RL -> graph -> state of the art -> LLM platform); authors filled;
+  MODIFICATIONS.md + EVIDENCE.md + CONTRIBUTIONS.md in submission/; Paper Track text report/paper_track.md (1,371 words);
+  Moodle zip via scripts/make_moodle_zip.sh. Daily rolls 25/26 Oct: arc3-m2-mod1-sub v1 (team clicks).

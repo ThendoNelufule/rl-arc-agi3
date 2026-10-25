@@ -54,3 +54,16 @@ date,kernel,phase,games_set,seeds,local_score,kaggle_score,notes
 2026-10-05,TEAM-21-ppo-rnd,final,kaggle,-,,0.05,arc3-team-21-ppo-rnd (scriptVersionId 355011563); submission 56848520
 2026-10-06,TEAM-20-ppo-base,final,kaggle,-,,0.00,arc3-team-20-ppo-base (scriptVersionId 355003417); submission 56874016
 2026-10-08,TEAM-11-dqn-novelty,final,kaggle,-,,0.00,arc3-team-11-dqn-novelty (scriptVersionId 355001140); submission 56946057
+2026-10-25,HO-random-heldout,P4.2,"heldout (--final, once)",3,0.0000,,0 levels (3 eval seeds; training-free)
+2026-10-25,HO-TEAM-10-dqn-base,P4.2,"heldout (--final, once)",3x3,0.0000,,0 levels; games -; sd over train seeds 0.0000
+2026-10-25,HO-TEAM-12-dqn-novelty-mask,P4.2,"heldout (--final, once)",3x3,0.0000,,0 levels; games -; sd over train seeds 0.0000
+2026-10-25,HO-TEAM-20-ppo-base,P4.2,"heldout (--final, once)",3x3,0.0000,,0 levels; games -; sd over train seeds 0.0000
+2026-10-25,HO-TEAM-21-ppo-rnd,P4.2,"heldout (--final, once)",3x3,0.0005,,1 levels; games tu93; sd over train seeds 0.0006
+2026-10-25,HO-TEAM-22-ppo-rnd-lstm,P4.2,"heldout (--final, once)",3x3,0.0000,,0 levels; games -; sd over train seeds 0.0000
+2026-10-25,HO-TEAM-37-graph-inverse,P4.2,"heldout (--final, once)",3x3,0.1334,,22 levels; games cd82/tu93; sd over train seeds 0.0106
+2026-10-25,HO-TEAM-45-graph-components,P4.2,"heldout (--final, once)",3x3,0.8848,,34 levels; games cd82/tn36/tu93; sd over train seeds 0.0255
+2026-10-25,HO-TEAM-45n-graph-components-noprior,P4.2,"heldout (--final, once)",9,0.7667,,28 levels; games cd82/tn36/tu93; sd over 9 eval runs 0.2405 (training-free)
+2026-10-25,SUPP-TEAM-12-dqn-novelty-mask-s0-train,P4.1,train (15),3,0.0002,,1 levels; games r11l; training seed 0
+2026-10-25,SUPP-TEAM-21-ppo-rnd-s0-train,P4.1,train (15),3,0.2395,,6 levels; games ft09/r11l/sp80; training seed 0
+2026-10-25,SUPP-TEAM-37-graph-inverse-s0-train,P4.1,train (15),3,0.0305,,6 levels; games ft09/m0r0/r11l/sp80; training seed 0
+2026-10-25,SUPP-TEAM-45-graph-components-s0-train,P4.1,train (15),3,0.0203,,11 levels; games ar25/m0r0/s5i5/sp80/vc33; training seed 0

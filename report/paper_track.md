@@ -1,89 +1,109 @@
-# Exploration, not value estimation, limits learning agents on ARC-AGI-3
+# Where ARC-AGI-3 agents stall: from DQN to a pretrained LLM agent
 
-**Team Vladmir_Putin** (University of the Witwatersrand, COMS4061A/7071A Reinforcement Learning). [NAME 1], [NAME 2].
-**Linked code submission:** `thendonelufule/arc3-m2-modf-sub` (script version 359469291), submission 57556604, public score 29.15 (2026-10-23 09:42:37 UTC).
-**Code and data:** https://github.com/ThendoNelufule/rl-arc-agi3. **Full report:** see the attached PDF.
+**Team Vladmir_Putin**: Musala Ndouvhada and Thendo Nelufule (School of Computer Science and Applied Mathematics, University of the Witwatersrand, Johannesburg; COMS4061A/7071A Reinforcement Learning).
+**Linked submission:** notebook `thendonelufule/arc3-m2-modf-sub` v1 (scriptVersionId 359469291), submission 57556604, public score 29.15 (2026-10-23 09:42:37 UTC).
+**Code, logs, full report and MODIFICATIONS.md:** https://github.com/ThendoNelufule/rl-arc-agi3
 
-> **Attribution first.** Our scored entry is an attributed fork of **Daniel Franzen's** public *ARC-AGI-3 Milestone 2 Solution* ([notebook](https://www.kaggle.com/code/dfranzen/arc-agi-3-milestone-2-solution), [code](https://github.com/da-fr/arc-agi-3-solution), Apache-2.0). That solution is built on **Tufa Labs' Duck harness** ([code](https://github.com/Tufalabs/duck-harness), Jeroen Cottaar et al.) and serves Qwen3.8-Flash-Next (Intel AutoRound W4A16, Albucino's MTP drafter) through Pennyroyal, John Pezzulli's SGLang fork, with patches by Mamy Ratsimbazafy and Gabriel Olympie. The agent, model, serving and scheduler are theirs. Our own contribution to the entry is three small fixes, listed below. Our own research is the RL and graph-exploration study.
+> **Attribution.** The scored agent is **Daniel Franzen's** public *ARC-AGI-3 Milestone 2 Solution* ([notebook](https://www.kaggle.com/code/dfranzen/arc-agi-3-milestone-2-solution), [code](https://github.com/da-fr/arc-agi-3-solution), Apache-2.0). It is built on **Tufa Labs' Duck harness** ([code](https://github.com/Tufalabs/duck-harness), Jeroen Cottaar et al.) and serves Qwen3.8-Flash-Next (Intel AutoRound W4A16, Albucino's MTP drafter) through Pennyroyal (John Pezzulli's SGLang fork; patches by Mamy Ratsimbazafy and Gabriel Olympie). **The agent is not our work.** Ours are the research question, the RL and graph agents, the analysis, and three small fixes, listed with their evidence in MODIFICATIONS.md.
 
 ## 1. Question
 
-Can a learning agent trained offline on the 25 public games learn exploration behaviour that completes levels in unseen ARC-AGI-3 games? If not, what limits it? We answered this under one frozen protocol before switching to an LLM agent for the leaderboard.
+Can agents trained with reinforcement learning learn to explore and solve unseen ARC-AGI-3 games? If not, what limits them? We followed the question from DQN and PPO, through a graph explorer, to the strongest public LLM agent. Every step was motivated by the previous result.
 
-## 2. Setup
+## 2. Learning agents: the bottleneck is exploration inside an unseen game
 
+**Setup.**
 - **Adapter.** Gymnasium environment. Observation: 64×64 colour ids. Actions: `Discrete(70)` = ACTION1–5, ACTION7, and 64 clicks at the centres of an 8×8 grid. Reward = newly completed levels (training only).
-- **Split.** The 25 public games were split once, stratified by move/click/mixed, and frozen: 15 train, 5 dev (all decisions), 5 held-out (evaluated once at the end).
-- **Protocol.** 500 actions per game, counted across deaths. Fresh scorecard per seed. 3 training seeds × 3 evaluation seeds. We report the official scorecard score.
+- **Split.** The 25 public games were split once and frozen: 15 train, 5 dev (all decisions), 5 held-out (evaluated once at the end).
+- **Protocol.** 500 actions per game, 3 training × 3 evaluation seeds, local official score.
 
-## 3. Learning agents: both baselines are indistinguishable from random
+| version (local official score) | dev | held-out | Kaggle |
+|---|---|---|---|
+| random | 0.0004 | 0 | 0.02 (starter) |
+| DQN with test-time TD (T10) | 0 | 0 | 0.00 |
+| + count novelty (T11) | 0 | n/a | 0.00 |
+| + action-effect masking (T12) | 0.0044 | 0 | 0.00 |
+| PPO (T20) | 0.0004 | 0 | 0.00 |
+| + RND (T21) | **0.0247** | 0.0005 | 0.05 |
+| + LSTM (T22) | 0.0003 | 0 | n/a |
 
-- **Two chains, all runs reported.** DQN (Mnih et al., 2015; test-time TD updates on the eval game) and MaskablePPO (Schulman et al., 2017) were each trained for 400k steps on the 15 training games. Each got two stacked improvements, and each improvement is motivated by a diagnostic from the previous stage.
+- **No learning signal.** Each training run sees only 3–8 level completions in 400k steps. DQN's Q-function stays flat, so the frozen DQN spends 77–93% of its actions on one action. PPO barely moves from uniform.
+- **Novelty changes behaviour, not results.** 27–33% of all actions repeat a (state, action) pair already seen to change nothing.
+- **Effect masking helps, but not through pretraining.** Masking those actions completes the first DQN levels. The pretrained effect head is at chance on unseen games (AUC 0.42–0.58); the gain comes from exact per-game memory.
+- **RND fits training games.** It is the largest learned gain, yet it scores 0.24 on its own training games and 0.0005 on held-out games: it fits its training games rather than learning to explore.
+- **Recurrence fails.** The LSTM does not learn to avoid repeats.
 
-| Version | Dev score (mean ± SD over training seeds) | Levels / runs |
-|---|---|---|
-| Random | 0.0004 | 1 / 3 |
-| DQN base | 0.0000 | 0 / 9 |
-| + count novelty | 0.0000 | 0 / 9 |
-| + action-effect masking | 0.0044 ± 0.0063 | 3 / 9 |
-| PPO base | 0.0004 ± 0.0006 | 1 / 9 |
-| + RND | **0.0247 ± 0.0317** | 5 / 9 |
-| + LSTM | 0.0003 ± 0.0004 | 1 / 9 |
+**Lesson:** the useful knowledge (what does nothing, where the agent has been) is specific to the game, so it must be explicit and acquired online.
 
-- **No learning signal.** In 400k steps each training run sees only 3–8 level completions, and DQN's Q-function stays flat.
-  - The frozen DQN puts 77–93% of its actions on a single action.
-  - PPO's entropy barely moves from uniform.
-- **Repeated no-ops.** Count novelty changed behaviour but not results: 27–33% of all actions repeated a (state, action) pair already seen to change nothing.
-- **Effect masking helped, but not via pretraining.** The pretrained effect head is at chance on unseen games (within-game AUC 0.42–0.58). The gain came from exact per-game no-op memory.
-- **RND was the largest learned gain.** It needed fixes before it worked: target-feature standardisation and EMA-normalised bonuses, because ARC frames are mostly identical background.
-- **Recurrence failed.** The LSTM did not learn to avoid repeats.
+## 3. Making it explicit: a graph explorer, and dev overfitting
 
-**Lesson:** the binding constraint is exploration inside an unseen game. The knowledge that helps (what does nothing, where the agent has been) is game-specific, so it must be explicit and acquired online.
+- **Design.** Following *Stochastic Goose* (Smit, 2025), our training-free explorer:
+  - keeps an exact frame-hash state graph per level;
+  - never re-tries known no-ops;
+  - walks to the nearest frontier state;
+  - ranks untried actions by per-game Thompson-sampled effect estimates.
+- **Fixes from recordings.**
+  - online masking of step-counter rows, which otherwise make every frame unique;
+  - learned inverse action pairs;
+  - one click per connected component, once we showed that the 8×8 grid had exhausted the reachable states.
+- **Dev result.** The score rose to **0.791**, with lp85 and lf52 level 1 at human speed.
+- **Transfer is narrow.**
+  - An earlier version falls from 0.504 on dev to 0.133 on held-out and **0.07 on Kaggle**.
+  - The final version scores 0.885 on held-out, about three quarters of it from one game (tn36, solved at human speed), but only 0.020 on 15 other public games.
+  - No version finishes a game. It stalls when its frontier is exhausted, because it has no hypothesis about the goal.
+- **Gap to LLM agents.** Averaged over all 25 public games it scores about 0.35. Franzen's LLM agent scores 46.5 on the same games, two orders of magnitude more.
 
-## 4. A training-free graph explorer
+## 4. Research phase: the state of the art
 
-- **Starting point.** Following *Stochastic Goose* (Smit, 2025), we built an explorer with:
-  - an exact frame-hash state graph per level;
-  - no re-tries of recorded no-op or deadly actions;
-  - BFS to the nearest frontier state;
-  - Beta-Thompson online estimates of which actions or clicked colours have effects.
-- **Each step was diagnosed from recordings:**
-  - online detection and masking of step-counter "ticker" rows, which otherwise make every frame unique;
-  - learned inverse action pairs: ls20 level 1 in 9/9 runs after 128–287 actions, instead of 6/9 after 367–473;
-  - one click per connected component, after we showed that the 8×8 click grid had exhausted the reachable state space.
-- **Results.** On dev it went from 0.389 (online statistics only) to **0.791 ± 0.087** (component clicks). Level 1 of lp85 and lf52 is now solved at human speed.
-- **Held-out (evaluated once).** The component-click version scores 0.885: tu93 two levels, tn36 and cd82 level 1. The earlier inverse-action version drops from 0.504 on dev to 0.133. Bp35 and sk48 stay unsolved.
-- **Kaggle.** The inverse-action version scored **0.07** on the hidden games. Gains measured on 5 dev games are fragile, and no version ever finished a game or got past early levels, which RHAE weights most.
-- **PPO-prior ablation.** Removing the trained PPO prior costs score through ls20 but changes the levels reached little. The structure does the work, not the learning.
+- **What we studied.**
+  - the milestone winners (Stochastic Goose, Duck, Franzen M2);
+  - 26 public notebooks, each diffed against its parent;
+  - OpenAI's post on retained reasoning;
+  - the leaderboard.
+- **Excluded** (integrity): a byte-identical copy with credits removed, notebooks with hard-coded game IDs or opaque encoded patches, and a solver that reads game source and hidden state.
+- **Choice.** Nearly every strong public notebook derives from Franzen's M2, and the two leaders publish no code. We adopted Franzen's M2 as a **research platform**, to test whether our findings also limit a strong pretrained agent.
 
-## 5. Our leaderboard entry and our three fixes (MOD-F)
+## 5. Our work on the platform
 
-We audited Franzen's agent on a one-pass, 25-game proxy (2,341 model replies) and made three changes.
+**Reproducible fork and evaluation proxy (ours).**
+- **Fork.** A pinned Docker image (the 1 Oct image update broke the bundled wheels), with every variant generated by a script. In the submission packaging, heavy cells run only in the competition rerun; development versions have a 3-game smoke test.
+- **Reproduction.** Our unchanged fork scores 28.83 on Kaggle (Franzen: 27.89).
+- **Proxy.** It plays all 25 public games for one pass with the competition's per-game compute share (~2 GPU-hours).
 
-1. **Truncated reasoning.** Reasoning-only replies cut off at the 12,288-token cap were kept verbatim: 13 replies re-sent about 13k tokens of broken reasoning into later requests. We switch on the harness's existing stub for them (`ARC3_STUB_DEAD_REASONING=1`).
-2. **False advice.** The stale-state refusal told the model the error "can be caught … to keep acting", which is false: every later action in that snippet is refused too. 92 actions were silently refused in 14 snippets that followed this advice. We corrected the message and added one system-prompt line describing the no-op rules.
-3. **Time-limit safety.** Proxy timings projected 32,524 s against the 32,400 s limit, so we cut the per-game cap from 532 to 525 minutes.
+**Where the points go (ours).**
+- **Franzen's trajectories.** On his 100 public trajectories (reproducing every stored score), later-level stalls cost **43.9 points**, an unsolved level 1 costs 7.0, and inefficiency on solved levels only **2.6**.
+- **Our logs.** Our proxy logs (2,341 replies) agree: 50.2 points lost to unfinished levels vs 2.46 to excess actions.
+- **Loss searches.** Eight independent, LLM-assisted read-only loss searches over logs and code, each claim re-checked by us, found no single large leak.
 
-We also checked a published lever: OpenAI's "retained reasoning" setting. It is already active in this agent. Thinking is re-sent every turn (prompt growth per generated token: median 1.83; prefix-cache hit rate 93%), so we built nothing for it.
+The LLM agent, like ours, is efficient where it knows what to do and stalls where it runs out of hypotheses.
 
-## 6. What a single Kaggle score can and cannot show
+**Hypothesis tests.**
+- **Retained reasoning** (OpenAI's lever) is already active. Thinking is re-sent every turn (prompt growth per generated token: median 1.83; prefix-cache hit 93%), so we built nothing.
+- **MOD-1** (two reused add-ons: heliosli's stagnation restart and shiiin9's D′ scheduler) scored 24.88 and 21.58 on Kaggle: no gain.
+- **MOD-2** adds **our reinvestment rule**, which decays a game's GPU priority after 130k tokens on one level, because late tokens return about half the average points. Against a pre-registered +2 threshold in a matched A/B test, it scored **−4.56** (95% CI −15.2 to +5.4). Post-mortem: our rule starved seven games of GPU time. We did not submit it.
+- **MOD-F**, our three fixes from the audit:
+  1. Reasoning-only replies cut at the 12,288-token cap were re-sent verbatim (13 replies, about 13k tokens each). We enable the harness's existing stub.
+  2. A refusal message falsely said a stale-state error "can be caught", and 92 actions were silently refused as a result. We corrected it and added one prompt line.
+  3. Proxy timings projected 32,524 s against a 32,400 s limit, so we cut the per-game cap from 532 to 525 minutes.
 
-| Version | Public scores (every run) |
+## 6. What a Kaggle score can show
+
+| version | public scores (every run) |
 |---|---|
-| Base (unchanged fork) | 28.83 |
-| MOD-1 (two reused public add-ons) | 24.88, 21.58 |
-| **MOD-F (ours)** | 28.40, 22.10, 0.00, **29.15**, 0.00, 0.00 |
+| base | 28.83 |
+| MOD-1 | 24.88, 21.58 |
+| **MOD-F** | 28.40, 22.10, 0.00, **29.15**, 0.00, 0.00 |
 
-- **Variance.** Public copies of the same notebook score 25.77 ± 3.93. A leaderboard entry is a team's best submission, so the expected best of N rises with N, to about 35.6 at N = 100 under that spread. Franzen's best is 38.85 from 106 entries, consistent with this plus genuine improvements.
-- **No claimed effect.** All our non-zero runs lie inside the spread, so **we do not claim that our fixes change the expected score.**
-- **Proxy noise.** A matched proxy A/B of MOD-2 (Fable facts plus our own scheduler decay) against MOD-1 differed by −4.56 points, with a 95% CI of −15.2 to +5.4 and a per-game SD of about 26. One pass resolves only effects of about ±10.
-- **MOD-2 failed.** Our decay starved seven games of GPU time for most of the run. Five of them explain about 7.8 points of the drop.
-- **Three zero runs.** Three MOD-F runs produced byte-identical outputs in which no game scored, i.e. whole-run failures. Our changes are deterministic, the same version scored three times, and the inputs did not change. We found no code cause, and rerun logs are not visible to participants.
+- **Variance.** Public copies of this notebook score 25.77 ± 3.93. A leaderboard entry is a team's best submission, so the expected best of N grows to about 35.6 at N = 100. Franzen's 38.85 from 106 entries is consistent with that plus genuine gains.
+- **No claimed effect.** All our non-zero runs lie inside the spread, so **we do not claim that any modification changes the expected score**. One proxy pass resolves only ±10-point effects.
+- **Three zero runs.** Three MOD-F runs produced byte-identical outputs in which no game scored. Our changes are deterministic, the same version scored three times, and the inputs were unchanged. We found no code cause; rerun logs are not visible to participants.
 
-## 7. Takeaways for other teams
+## 7. Conclusion
 
-1. Report every submission, not the best one. On this leaderboard, best-of-N alone can add about 10 points.
-2. Learned exploration from 15–25 games does not transfer. Explicit, per-game, online memory does, but hand-designed orderings overfit a small dev set.
-3. Both in our explorer and in Franzen's trajectories (43.9 of the lost points come from later-level stalls, but only 2.6 from inefficiency), points are lost because agents run out of hypotheses about the goal, not because they are slow on levels they solve.
+- **RL did not learn to explore.** Agents trained on public ARC-AGI-3 games did not learn to explore unseen ones.
+- **Explicit memory transferred only narrowly.** Making per-game knowledge explicit helped, but only where its mechanisms applied.
+- **The LLM agent shares the bottleneck.** It is efficient on levels it understands and stalls on later ones.
+- **Goals, not speed.** Inferring goals, not covering states faster, is where both learned and pretrained agents must improve.
+- **For other teams.** Report every submission, not the best one: best-of-N alone can add about 10 points.
 
-*Generative-AI use:* we used Claude and Claude Code (Anthropic) for planning, code, analysis and drafting. We verified all numbers against our logs.
+*Generative-AI use:* we used Claude and Claude Code (Anthropic) for planning, code, analysis (including the loss searches) and drafting. We verified all numbers against our logs.

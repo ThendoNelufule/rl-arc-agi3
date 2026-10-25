@@ -811,3 +811,15 @@ rerun (startup / gateway / kill before scoring) whose cause we cannot see (compe
 Risk: if it is environmental and recent, MOD-1 rolls can zero too. Cheap discriminating test (not run: needs team OK,
 ~15 min GPU quota, no submission): re-run the arc3-m2-modf and arc3-m2-mod1 smoke kernels now and compare startup.
 For the report: present MOD-F as 6 rolls with 3 failures, report mean AND non-zero mean, never only the best roll.
+
+## P4.2 held-out (2026-10-25; --final, exactly once) + train split for key versions
+- Same protocol as dev (500 actions, 3x3 seeds; training-free 9 eval seeds). Kernels arc3-train-heldout-rl /
+  arc3-train-heldout-graph (Kaggle CPU, 1 thread per job).
+- Learned agents: all 0 except T21 0.0005 (1 level, tu93 L1 at 194 actions). T21 on its OWN training games: 0.2395
+  (6 levels) -> PPO+RND fits its training games, does not transfer. T12 on its training games 0.0002.
+- Graph: T37 0.504 dev -> 0.133 held-out (tu93 2 lv 9/9, cd82 L1 4/9) -> 0.07 Kaggle. T45 0.791 dev -> 0.885 held-out
+  (tu93 2 lv 9/9, tn36 L1 9/9 at 22-45 actions vs human 32, cd82 L1 7/9 at 76-486); our per-game RHAE reconstruction
+  from the curves attributes ~0.74 of ~0.96 (reconstructed) to tn36. On the 15 train games T45 scores 0.020 (11 lv) and
+  T45n 0.081. All-25-public average of T45 ~0.35 vs Franzen's LLM agent 46.5 on the same games.
+- Reading: dev overfitting is real but game-dependent: component clicks transfer to click-driven games (tn36);
+  orderings tuned to 5 dev games do not; no version reaches late levels.

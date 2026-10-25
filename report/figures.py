@@ -125,48 +125,54 @@ def fig_levels_actions():
     ax.set_xlim(0, 505)
     ax.set_xlabel("Actions used per game (budget 500)")
     ax.set_ylabel("Levels completed\n(sum over 5 dev games)")
-    ax.legend(loc="upper left", bbox_to_anchor=(1.07, 1.0), fontsize=7)
+    ax.legend(loc="upper left", bbox_to_anchor=(1.02, 1.02), fontsize=8, labelspacing=0.35)
     save(fig, "levels_actions")
 
 
 # ---------------------------------------------------------------- 4. generalisation gap
+KAGGLE_SCORE = {"random": 0.02, "T10": 0.00, "T11": 0.00, "T12": 0.00, "T20": 0.00, "T21": 0.05, "T37": 0.07}
+
+
 def fig_generalisation():
-    keys = ["random", "T12", "T21", "T37", "T45", "T45n"]
-    kag = {"random": 0.02, "T12": 0.00, "T21": 0.05, "T37": 0.07}
-    splits = [("train", "Train split (15)", 0.5), ("dev", "Dev (5)", 0.0), ("heldout", "Held-out (5)", -0.4),
-              ("kaggle", "Kaggle public LB", None)]
-    fig, ax = plt.subplots(figsize=(W, 1.85))
-    bw = 0.2
-    floor = 1e-4
+    keys = ["random", "T10", "T12", "T20", "T21", "T22", "T37", "T45", "T45n"]
+    splits = [("train", "Train split (15 games)", 0.5), ("dev", "Dev (5)", 0.0), ("heldout", "Held-out (5)", -0.4),
+              ("kaggle", "Kaggle public LB (hidden games)", None)]
+    fig, ax = plt.subplots(figsize=(W, 2.0))
+    bw, floor = 0.2, 1e-4
     for i, k in enumerate(keys):
         fam = D.FAMILY[k]
         for j, (sp, lab, f) in enumerate(splits):
             xo = i + (j - 1.5) * bw
             if sp == "kaggle":
-                if k not in kag:
-                    continue
-                val, err, c, hatch = kag[k], None, "white", None
+                if k not in KAGGLE_SCORE:
+                    continue                      # never submitted: blank slot
+                val = KAGGLE_SCORE[k]
                 ax.bar(xo, max(val, floor) - floor, bottom=floor, width=bw, color="white", edgecolor=FAM[fam],
                        hatch="////", linewidth=0.8)
-                ax.text(xo, max(val, floor) * 1.25, f"{val:.2f}", ha="center", fontsize=6, color=INK)
+                if val == 0:
+                    ax.text(xo, floor * 1.25, "0", ha="center", va="bottom", fontsize=6, color=INK)
                 continue
             r = D.version_results(k, sp)
             if r is None:
-                ax.text(xo, floor * 1.3, "n/a", ha="center", fontsize=5.5, color=MUTED, rotation=90)
-                continue
+                continue                          # not run: blank slot
             m = max(r["mean"], floor)
             ax.bar(xo, m - floor, bottom=floor, width=bw, color=shade(FAM[fam], f), edgecolor="white", lw=0.5)
             ax.scatter(np.full(len(r["runs"]), xo), np.maximum(r["runs"], floor), s=4, color=INK, zorder=3)
+            if r["mean"] == 0:
+                ax.text(xo, floor * 1.25, "0", ha="center", va="bottom", fontsize=6, color=INK)
     ax.set_yscale("log")
-    ax.set_ylim(floor, 4)
-    ax.set_xticks(range(len(keys)), [D.LABEL[k].replace(" +", "\n+").replace(" no", "\nno") for k in keys],
-                  fontsize=7)
+    ax.set_ylim(floor, 3)
+    short = {"random": "Rand.", "T10": "T10\nDQN", "T12": "T12\n+mask", "T20": "T20\nPPO", "T21": "T21\n+RND",
+             "T22": "T22\n+LSTM", "T37": "T37\n+inverse", "T45": "T45\n+compon.", "T45n": "T45n\nno prior"}
+    ax.set_xticks(range(len(keys)), [short[k] for k in keys], fontsize=7)
+    ax.set_xlim(-0.55, len(keys) - 0.45)
     ax.grid(axis="x", visible=False)
     ax.set_ylabel("Official score (log)")
     from matplotlib.patches import Patch
     hs = [Patch(facecolor=shade("#777777", f), label=lab) for _, lab, f in splits[:3]]
     hs.append(Patch(facecolor="white", edgecolor="#777777", hatch="////", label=splits[3][1]))
-    ax.legend(handles=hs, ncol=4, loc="upper left", fontsize=7)
+    ax.legend(handles=hs, ncol=4, loc="lower left", bbox_to_anchor=(0, 1.0), fontsize=7, handlelength=1.4,
+              columnspacing=1.0)
     save(fig, "generalisation")
 
 
@@ -174,7 +180,7 @@ def fig_generalisation():
 def fig_kaggle():
     import datetime as dt
     subs = D.kaggle_submissions()
-    fig, (a, b) = plt.subplots(1, 2, figsize=(W, 2.15), gridspec_kw=dict(width_ratios=[1.35, 1]))
+    fig, (a, b, b2) = plt.subplots(1, 3, figsize=(W, 2.15), gridspec_kw=dict(width_ratios=[1.3, 0.8, 0.8]))
     seen = set()
     for s in subs:
         t = dt.datetime.fromisoformat(s["date_utc"][:19])
@@ -199,35 +205,37 @@ def fig_kaggle():
     a.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%d %b"))
     a.tick_params(axis="x", rotation=0, labelsize=7)
     a.legend(loc="center left", fontsize=6.3, handletextpad=0.2, bbox_to_anchor=(0, 0.52))
-    a.set_title("(a) All 16 submissions", loc="left")
-    # (b) variance: our Franzen-family runs + expected best-of-N
+    a.set_title("(a) All 16 submissions", loc="left", fontsize=8.5)
+    # (b) our Franzen-family runs
     fr = [float(s["public_score"]) for s in subs if s["family"] == "franzen"]
     nz = np.array([x for x in fr if x > 0])
     bins = np.arange(-1, 32, 2)
     b.hist([x for x in fr if x == 0], bins=bins, color="white", edgecolor=FAM["franzen"], hatch="xxx",
-           label="our runs scoring 0.00 (3)")
-    b.hist(nz, bins=bins, color=FAM["franzen"], alpha=0.85, edgecolor="white", label=f"our non-zero runs ({len(nz)})")
+           label="0.00 (3)")
+    b.hist(nz, bins=bins, color=FAM["franzen"], alpha=0.85, edgecolor="white", label=f"non-zero ({len(nz)})")
     b.set_xlabel("Kaggle public score")
     b.set_ylabel("Runs")
-    b.set_ylim(0, 6.2)
-    b.set_xlim(-2, 42)
-    b2 = b.inset_axes([0.19, 0.42, 0.33, 0.36])
+    b.set_ylim(0, 4.2)
+    b.set_xlim(-2, 33)
+    b.legend(loc="upper left", fontsize=6.5, handlelength=1.2)
+    b.set_title("(b) Our 9 fork runs", loc="left", fontsize=8.5)
+    # (c) expected best of N under the spread of public copies of the notebook
     rng = np.random.default_rng(0)
     Ns = np.unique(np.round(np.logspace(0, np.log10(120), 30)).astype(int))
     mu, sd = 25.77, 3.93   # public copies of Franzen's notebook (thread 745062)
     sim = rng.normal(mu, sd, (20000, Ns.max()))
-    b2.plot(Ns, [np.maximum.accumulate(sim, 1)[:, n - 1].mean() for n in Ns], color=FAM["franzen"], lw=1.3)
-    b2.scatter([106], [38.85], marker="D", s=14, color=INK, zorder=3)
-    b2.annotate("Franzen\n106 entries", (106, 38.85), xytext=(-2, -16), textcoords="offset points", fontsize=5.5,
-                ha="right")
-    b2.scatter([9], [29.15], marker="*", s=40, color=FAM["franzen"], edgecolor=INK, lw=0.4, zorder=3)
+    b2.plot(Ns, [np.maximum.accumulate(sim, 1)[:, n - 1].mean() for n in Ns], color=FAM["franzen"], lw=1.5,
+            label=r"$\mathcal{N}(25.8, 3.9^2)$")
+    b2.scatter([106], [38.85], marker="D", s=20, color=INK, zorder=3, label="Franzen (106 entries)")
+    b2.scatter([9], [29.15], marker="*", s=70, color=FAM["franzen"], edgecolor=INK, lw=0.5, zorder=3,
+               label="ours (9 fork runs)")
     b2.set_xscale("log")
-    b2.set_ylim(24, 42)
-    b2.tick_params(labelsize=5.5)
-    b2.set_xlabel("entries N", fontsize=6, labelpad=0)
-    b2.set_ylabel("E[best of N]", fontsize=6, labelpad=0)
-    b.legend(loc="upper right", fontsize=6.3, bbox_to_anchor=(1.03, 1.03))
-    b.set_title("(b) Run-to-run variance", loc="left")
+    b2.set_ylim(24, 49)
+    b2.set_xlabel("Entries N")
+    b2.set_ylabel("Expected best of N")
+    b2.legend(loc="upper left", fontsize=6.3, handletextpad=0.3, borderaxespad=0.2)
+    b2.set_title("(c) Best-of-N", loc="left", fontsize=8.5)
+    fig.subplots_adjust(wspace=0.42)
     save(fig, "kaggle")
 
 
@@ -321,8 +329,8 @@ def fig_trajectories():
         ax.set_xticks([]), ax.set_yticks([]), ax.grid(False)
         for sp in ax.spines.values():
             sp.set_visible(True), sp.set_color("#BBBBBB")
-    axes[0, 0].set_ylabel(f"lf52 (solved)\nTEAM-45, eval seed {s_ok}", fontsize=7.5)
-    axes[1, 0].set_ylabel("dc22 (stall)\nTEAM-45, eval seed 0", fontsize=7.5)
+    axes[0, 0].set_ylabel(f"lf52 (solved)\nT45, eval seed {s_ok}", fontsize=7.5)
+    axes[1, 0].set_ylabel("dc22 (stall)\nT45, eval seed 0", fontsize=7.5)
     fig.subplots_adjust(wspace=0.05, hspace=0.25)
     save(fig, "trajectories")
     return dict(lf52_t1=t1, lf52_seed=s_ok, dc22_distinct=uniq[-1])

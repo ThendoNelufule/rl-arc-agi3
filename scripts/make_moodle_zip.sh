@@ -7,8 +7,9 @@ OUT=dist/Kaggle-Vladmir_Putin
 rm -rf "$OUT" "$OUT.zip"
 mkdir -p "$OUT/notebook"
 cp report/main.pdf "$OUT/report.pdf"
-cp kaggle_sub/m2-modf-sub/arc3-m2-modf-sub.ipynb kaggle_sub/m2-modf-sub/kernel-metadata.json "$OUT/notebook/"
-cp submission/EVIDENCE.md submission/CONTRIBUTIONS.md experiments/kaggle_submissions.csv "$OUT/"
+# the scored version, pulled back from Kaggle (identical cell sources to what we pushed)
+cp kaggle_sub/m2-modf-sub-v1/arc3-m2-modf-sub.ipynb kaggle_sub/m2-modf-sub-v1/kernel-metadata.json "$OUT/notebook/"
+cp submission/EVIDENCE.md submission/CONTRIBUTIONS.md submission/MODIFICATIONS.md experiments/kaggle_submissions.csv "$OUT/"
 cp report/paper_track.md "$OUT/paper_track.md"
 [ -f submission/PAPER_TRACK_LINK.txt ] && cp submission/PAPER_TRACK_LINK.txt "$OUT/"
 # guard: never ship credentials or notebook outputs
