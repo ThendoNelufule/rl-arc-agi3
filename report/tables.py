@@ -77,22 +77,31 @@ def master(keys, name, caption_note=""):
     (OUT / f"{name}.tex").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def play_ms_per_action(r):
+    """Per-action play time (agent + environment step), from the per-game timers in results.csv; excludes process
+    setup and model loading, which eval_seconds (whole-process wall time) includes."""
+    return 1000 * sum(float(x["seconds"]) for x in r["rows"]) / sum(int(x["actions"]) for x in r["rows"])
+
+
 def compute():
-    lines = [r"\begin{tabular}{@{}lrrrr@{}}", r"\toprule",
-             r"Version & Train steps & Train h/seed (T4) & Eval s/train seed (CPU) & Train lv (s0/s1/s2) \\",
+    lines = [r"\begin{tabular}{@{}lrrrrr@{}}", r"\toprule",
+             r"Version & Train steps & Train h/seed (T4) & Train lv (s0/s1/s2) & Dev eval wall s (all runs) "
+             r"& Play ms/action (dev / held-out) \\",
              r"\midrule"]
+
+    def play(k):
+        d, h = D.version_results(k), D.version_results(k, "heldout")
+        return f"{play_ms_per_action(d):.1f}" + (f" / {play_ms_per_action(h):.1f}" if h else "")
     for k, p in TRAIN_PREFIX.items():
         ts = D.train_summary(p)
         r = D.version_results(k)
-        ev = r["eval_seconds"] / 3
         lines.append(f"{D.LABEL[k]} & {ts[0]['env_steps']:,} & {min(t['train_hours'] for t in ts):.2f}--"
-                     f"{max(t['train_hours'] for t in ts):.2f} & {ev:,.0f} & "
-                     f"{'/'.join(str(t['levels_total']) for t in ts)} \\\\")
-    for k in ["T30", "T37", "T45"]:
+                     f"{max(t['train_hours'] for t in ts):.2f} & {'/'.join(str(t['levels_total']) for t in ts)} & "
+                     f"{r['eval_seconds']:,.0f} ({r['n_runs']} runs) & {play(k)} \\\\")
+    for k in ["random", "T30", "T37", "T45", "T45n"]:
         r = D.version_results(k)
-        per = r["eval_seconds"] / (1 if k == "T30" else 3)
-        lines.append(f"{D.LABEL[k]} & 0 (+T21 prior) & -- & {per:,.0f} & -- \\\\" if k != "T30" else
-                     f"{D.LABEL[k]} & 0 & -- & {per:,.0f} (9 seeds) & -- \\\\")
+        prior = "0 (+T21 prior)" if k in ("T37", "T45") else "0"
+        lines.append(f"{D.LABEL[k]} & {prior} & -- & -- & {r['eval_seconds']:,.0f} ({r['n_runs']} runs) & {play(k)} \\\\")
     lines += [r"\bottomrule", r"\end{tabular}"]
     (OUT / "compute.tex").write_text("\n".join(lines).replace(",", "{,}") + "\n", encoding="utf-8")
 

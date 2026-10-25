@@ -1,6 +1,8 @@
 # Where ARC-AGI-3 agents stall: from DQN to a pretrained LLM agent
 
-**Team Vladmir_Putin**: Musala Ndouvhada and Thendo Nelufule (School of Computer Science and Applied Mathematics, University of the Witwatersrand, Johannesburg; COMS4061A/7071A Reinforcement Learning).
+**All scores are on the official 0–100 scale:** 0.79 means 0.79 out of 100, not 79%.
+
+**Team Vladmir_Putin**: Musala Ndouvhada and Thendo Nelufule (University of the Witwatersrand, COMS4061A/7071A).
 **Linked submission:** notebook `thendonelufule/arc3-m2-modf-sub` v1 (scriptVersionId 359469291), submission 57556604, public score 29.15 (2026-10-23 09:42:37 UTC).
 **Code, logs, full report and MODIFICATIONS.md:** https://github.com/ThendoNelufule/rl-arc-agi3
 
@@ -12,10 +14,7 @@ Can agents trained with reinforcement learning learn to explore and solve unseen
 
 ## 2. Learning agents: the bottleneck is exploration inside an unseen game
 
-**Setup.**
-- **Adapter.** Gymnasium environment. Observation: 64×64 colour ids. Actions: `Discrete(70)` = ACTION1–5, ACTION7, and 64 clicks at the centres of an 8×8 grid. Reward = newly completed levels (training only).
-- **Split.** The 25 public games were split once and frozen: 15 train, 5 dev (all decisions), 5 held-out (evaluated once at the end).
-- **Protocol.** 500 actions per game, 3 training × 3 evaluation seeds, local official score.
+**Setup.** A Gymnasium adapter (64×64 colour ids; `Discrete(70)` = ACTION1–5, ACTION7, 64 grid clicks; reward = new levels, training only). The 25 public games are split once: 15 train, 5 dev, 5 held-out (evaluated once). Protocol: 500 actions per game, 3 training × 3 evaluation seeds.
 
 | version (local official score) | dev | held-out | Kaggle |
 |---|---|---|---|
@@ -37,29 +36,18 @@ Can agents trained with reinforcement learning learn to explore and solve unseen
 
 ## 3. Making it explicit: a graph explorer, and dev overfitting
 
-- **Design.** Following *Stochastic Goose* (Smit, 2025), our training-free explorer:
-  - keeps an exact frame-hash state graph per level;
-  - never re-tries known no-ops;
-  - walks to the nearest frontier state;
-  - ranks untried actions by per-game Thompson-sampled effect estimates.
-- **Fixes from recordings.**
-  - online masking of step-counter rows, which otherwise make every frame unique;
-  - learned inverse action pairs;
-  - one click per connected component, once we showed that the 8×8 grid had exhausted the reachable states.
-- **Dev result.** The score rose to **0.791**, with lp85 and lf52 level 1 at human speed.
+- **Design.** Following *Stochastic Goose* (Smit, 2025), our training-free explorer keeps an exact state graph per level, never re-tries known no-ops, walks to the nearest frontier state, and ranks untried actions by per-game Thompson-sampled effect estimates.
+- **Fixes from recordings:** masking step-counter rows (which make every frame unique), learned inverse action pairs, and one click per connected component once the 8×8 grid had exhausted the reachable states.
+- **Dev result.** The score rose to **0.791 out of 100**, with lp85 and lf52 level 1 at human speed.
 - **Transfer is narrow.**
   - An earlier version falls from 0.504 on dev to 0.133 on held-out and **0.07 on Kaggle**.
   - The final version scores 0.885 on held-out, about three quarters of it from one game (tn36, solved at human speed), but only 0.020 on 15 other public games.
   - No version finishes a game. It stalls when its frontier is exhausted, because it has no hypothesis about the goal.
-- **Gap to LLM agents.** Averaged over all 25 public games it scores about 0.35. Franzen's LLM agent scores 46.5 on the same games, two orders of magnitude more.
+- **Gap to LLM agents.** Averaged over all 25 public games it scores about 0.35 out of 100. Franzen's LLM agent scores 46.5 on the same games, two orders of magnitude more.
 
 ## 4. Research phase: the state of the art
 
-- **What we studied.**
-  - the milestone winners (Stochastic Goose, Duck, Franzen M2);
-  - 26 public notebooks, each diffed against its parent;
-  - OpenAI's post on retained reasoning;
-  - the leaderboard.
+- **What we studied:** the milestone winners (Stochastic Goose, Duck, Franzen M2), 26 public notebooks (each diffed against its parent), OpenAI's post on retained reasoning, and the leaderboard.
 - **Excluded** (integrity): a byte-identical copy with credits removed, notebooks with hard-coded game IDs or opaque encoded patches, and a solver that reads game source and hidden state.
 - **Choice.** Nearly every strong public notebook derives from Franzen's M2, and the two leaders publish no code. We adopted Franzen's M2 as a **research platform**, to test whether our findings also limit a strong pretrained agent.
 
@@ -100,10 +88,6 @@ The LLM agent, like ours, is efficient where it knows what to do and stalls wher
 
 ## 7. Conclusion
 
-- **RL did not learn to explore.** Agents trained on public ARC-AGI-3 games did not learn to explore unseen ones.
-- **Explicit memory transferred only narrowly.** Making per-game knowledge explicit helped, but only where its mechanisms applied.
-- **The LLM agent shares the bottleneck.** It is efficient on levels it understands and stalls on later ones.
-- **Goals, not speed.** Inferring goals, not covering states faster, is where both learned and pretrained agents must improve.
-- **For other teams.** Report every submission, not the best one: best-of-N alone can add about 10 points.
+RL agents trained on public games did not learn to explore unseen ones. Explicit per-game memory helped, but only where its mechanisms applied. The LLM agent shares the bottleneck: it is efficient on levels it understands and stalls on later ones. Inferring goals, not covering states faster, is where both must improve. For other teams: report every submission, not the best one, because best-of-N alone can add about 10 points.
 
 *Generative-AI use:* we used Claude and Claude Code (Anthropic) for planning, code, analysis (including the loss searches) and drafting. We verified all numbers against our logs.

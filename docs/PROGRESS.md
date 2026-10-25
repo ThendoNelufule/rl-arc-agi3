@@ -92,3 +92,16 @@ Note: graph versions are within noise on score; TEAM-37 has the best score AND t
   Moodle zip via scripts/make_moodle_zip.sh. Daily rolls 25/26 Oct: arc3-m2-mod1-sub v1 (team clicks).
 - 2026-10-25 Notebook arc3-m2-modf-sub v2 pushed: markdown header only (Save&Run sentence corrected, v1 results, write-up
   link); all code cells byte-identical to v1 (code SHA c0ce77c2...). Nominated submission stays 57556604 (v1).
+- 2026-10-25 Final revision: abstract/first results on the 0-100 scale; RHAE wording verified against the official scorer
+  (arc-agi 0.9.8 == 0.9.9: level min(115, 100(b/a)^2); game = level-index-weighted mean capped at 100 x weighted completed
+  share; benchmark = mean over games of each game's best run); DQN hyperparameters in §4; Table 1 SD note for training-free
+  versions; per-action timing corrected (play time from per-game timers: random 2-3 ms, graph 3-22, PPO/frozen DQN 6-9,
+  DQN-online 140-184; old "9-27 ms" included process setup; T30's 89 s = whole 9-seed eval process); §8 pixel-click
+  action-space limitation. Main content: pp. 1-8 (references start p. 8). Optional levels-vs-actions plot skipped (no room).
+- 2026-10-25 Paper Track = separate Kaggle competition arc-prize-2026-paper-track (deadline 9 Nov 23:59 UTC; Writeup <= 1,500
+  words, cover image required, notebook in Project Links, team must match the ARC-AGI-3 team, 1 submission/team).
+  Writeup text report/paper_track.md (1,432 raw words), cover + media in submission/paper_track_media/.
+- 2026-10-25 Secret scan (tracked files + full history, all branches): no tokens/keys/credential files; only the README
+  placeholder KGAT_xxxx and the public test-key-123. Safe to make public (team flips it). Moodle package:
+  sh scripts/make_moodle_zip.sh -> dist/Vladmir_Putin.zip (report, v1 notebook, code/, MODIFICATIONS.md, evidence/).
+  Manual steps: submission/CHECKLIST.md.

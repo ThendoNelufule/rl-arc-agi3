@@ -336,6 +336,43 @@ def fig_trajectories():
     return dict(lf52_t1=t1, lf52_seed=s_ok, dc22_distinct=uniq[-1])
 
 
+def fig_cover(out_dir):
+    """Paper Track cover image (PNG, 2:1): where the points go, for the LLM agent and for our agents."""
+    fig = plt.figure(figsize=(8, 4), dpi=200)
+    fig.patch.set_facecolor("white")
+    fig.text(0.04, 0.90, "Where ARC-AGI-3 agents stall", fontsize=19, weight="bold", color=INK)
+    fig.text(0.04, 0.82, "From DQN to a pretrained LLM agent: points are lost on later levels, not to inefficiency",
+             fontsize=9.5, color=MUTED)
+    a = fig.add_axes([0.30, 0.20, 0.33, 0.48])
+    cats = ["Later-level stalls", "Level 1 never solved", "Inefficiency on\nsolved levels"]
+    vals = [43.9, 7.0, 2.6]   # Franzen v3, 100 public trajectories (recon/analysis/franzen_v3_failure_modes.py)
+    a.barh(range(3)[::-1], vals, color=[FAM["franzen"], shade(FAM["franzen"], 0.35), shade(FAM["franzen"], 0.6)],
+           height=0.6)
+    for i, v in zip(range(3)[::-1], vals):
+        a.text(v + 1, i, f"{v}", va="center", fontsize=9, color=INK)
+    a.set_yticks(range(3)[::-1], cats, fontsize=8.5)
+    a.set_xlim(0, 52)
+    a.set_xlabel("Points lost (0-100 scale)", fontsize=8.5)
+    a.set_title("LLM agent (Franzen M2), 100 public runs", loc="left", fontsize=9)
+    a.grid(axis="y", visible=False)
+    b = fig.add_axes([0.73, 0.20, 0.24, 0.48])
+    names = ["Random", "Best RL\n(PPO+RND)", "Graph\nexplorer"]
+    devs = [D.version_results(k)["mean"] for k in ("random", "T21", "T45")]
+    b.bar(range(3), devs, color=[FAM["random"], FAM["ppo"], FAM["graph"]], width=0.6)
+    b.set_yscale("log")
+    b.set_ylim(1e-4, 3)
+    b.set_xticks(range(3), names, fontsize=7.5)
+    b.tick_params(axis="y", labelsize=7)
+    b.set_ylabel("Dev score (0-100, log)", fontsize=8)
+    b.set_title("Our agents (local dev)", loc="left", fontsize=9)
+    b.grid(axis="x", visible=False)
+    fig.text(0.04, 0.01, "Team Vladmir_Putin (Wits)  |  best Kaggle public score 29.15 (attributed fork of Franzen's M2 "
+             "on Tufa Labs' Duck harness)", fontsize=7.5, color=MUTED)
+    fig.savefig(Path(out_dir) / "cover.png", dpi=200)
+    plt.close(fig)
+    print("wrote cover")
+
+
 if __name__ == "__main__":
     only = sys.argv[1:]
     for f in [fig_ladder, fig_training, fig_levels_actions, fig_generalisation, fig_kaggle, fig_proxy,

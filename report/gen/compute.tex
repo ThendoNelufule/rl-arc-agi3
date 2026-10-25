@@ -1,16 +1,18 @@
-\begin{tabular}{@{}lrrrr@{}}
+\begin{tabular}{@{}lrrrrr@{}}
 \toprule
-Version & Train steps & Train h/seed (T4) & Eval s/train seed (CPU) & Train lv (s0/s1/s2) \\
+Version & Train steps & Train h/seed (T4) & Train lv (s0/s1/s2) & Dev eval wall s (all runs) & Play ms/action (dev / held-out) \\
 \midrule
-T10 DQN & 400{,}005 & 0.30--0.32 & 1{,}166 & 7/4/8 \\
-T11 +novelty & 400{,}005 & 0.43--0.43 & 1{,}066 & 5/5/6 \\
-T12 +effect mask & 400{,}005 & 0.49--0.50 & 1{,}350 & 4/6/4 \\
-T12a mask only (no novelty) & 400{,}005 & 0.48--0.49 & 1{,}398 & 3/6/3 \\
-T20 PPO & 401{,}280 & 0.37--0.37 & 110 & 3/5/5 \\
-T21 +RND & 401{,}280 & 0.45--0.46 & 68 & 5/7/6 \\
-T22 +LSTM & 401{,}280 & 0.93--0.94 & 109 & 5/5/8 \\
-T30 graph+online stats & 0 & -- & 89 (9 seeds) & -- \\
-T37 +inverse actions & 0 (+T21 prior) & -- & 92 & -- \\
-T45 component clicks & 0 (+T21 prior) & -- & 123 & -- \\
+T10 DQN & 400{,}005 & 0.30--0.32 & 7/4/8 & 3{,}499 (9 runs) & 153.5 / 149.7 \\
+T11 +novelty & 400{,}005 & 0.43--0.43 & 5/5/6 & 3{,}198 (9 runs) & 140.3 \\
+T12 +effect mask & 400{,}005 & 0.49--0.50 & 4/6/4 & 4{,}050 (9 runs) & 177.9 / 166.5 \\
+T12a mask only (no novelty) & 400{,}005 & 0.48--0.49 & 3/6/3 & 4{,}193 (9 runs) & 184.0 \\
+T20 PPO & 401{,}280 & 0.37--0.37 & 3/5/5 & 329 (9 runs) & 8.0 / 6.8 \\
+T21 +RND & 401{,}280 & 0.45--0.46 & 5/7/6 & 203 (9 runs) & 6.0 / 6.6 \\
+T22 +LSTM & 401{,}280 & 0.93--0.94 & 5/5/8 & 326 (9 runs) & 8.9 / 8.2 \\
+Random & 0 & -- & -- & 23 (3 runs) & 2.8 / 1.7 \\
+T30 graph+online stats & 0 & -- & -- & 89 (9 runs) & 3.6 \\
+T37 +inverse actions & 0 (+T21 prior) & -- & -- & 277 (9 runs) & 6.9 / 10.6 \\
+T45 component clicks & 0 (+T21 prior) & -- & -- & 369 (9 runs) & 11.8 / 22.3 \\
+T45n no prior & 0 & -- & -- & 138 (9 runs) & 5.9 / 16.1 \\
 \bottomrule
 \end{tabular}

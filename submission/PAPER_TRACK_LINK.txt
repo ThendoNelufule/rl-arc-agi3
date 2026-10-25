@@ -1,0 +1,4 @@
+PLACEHOLDER: paste the URL of our submitted Paper Track Writeup on the next line (after submitting it on 27 Oct).
+
+Competition: https://www.kaggle.com/competitions/arc-prize-2026-paper-track
+Writeup URL:

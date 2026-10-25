@@ -1,0 +1,6 @@
+PLACEHOLDER: replace with a screenshot of the nominated Kaggle submission.
+
+Save it as  submission/submission_57556604.png  (the zip builder then uses it instead of this file).
+It should show: submission 57556604, notebook arc3-m2-modf-sub (Version 1), public score 29.15,
+submitted 2026-10-23 09:42:37 UTC, and the ticked "Select" box.
+Where: https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3/submissions
