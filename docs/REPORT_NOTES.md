@@ -784,3 +784,30 @@ stale refusal and stub paths did not trigger in 5 min (expected: rare events). S
 Save & Run COMPLETE, placeholder submission.parquet written. Expected effect: small (+0 to +1), below Kaggle noise;
 MOD-F is our nominated-entry candidate because it contains our own modifications (brief requirement 6).
 GPU quota: weekly quota reset (0 of 21,600 s used before the smoke; next reset 2026-10-24).
+
+## MOD-F Kaggle results + the three zeros (2026-10-25)
+Six rolls of the same version (arc3-m2-modf-sub v1, scriptVersionId 359469291; attribution from the submissions API):
+28.40 (10-18), 22.10 (10-19), 0.00 (10-22), 29.15 (10-23), 0.00 (10-24), 0.00 (10-25). Mean 13.28; non-zero mean 26.55
+(base 28.83 x1; MOD-1 24.88, 21.58). Other rolls: TEAM-12 0.00 (10-20, consistent with dev 0.0044).
+Nominated entry (P4.3): submission 57556604, 29.15, 2026-10-23 09:42:37 UTC.
+Evidence on the zeros:
+- Output size: all three zeros = byte-identical 3411 B submission.parquet; scoring runs 3777-3823 B; TEAM-12 (plays, 0
+  levels) 3505 B. Identical bytes => identical content => no game scored anything: a whole-run failure (the agent never
+  played, or the run died and the gateway wrote its default), not "played badly".
+- Our three changes are deterministic code (env flag; module-global patch of solver._stale_detail with a string that
+  exactly matches the original; prompt-line append guarded by an assert; a smaller constant cap). Any exception in
+  them fires on every run, yet the same version scored 28.40/22.10/29.15. The stub path is safe by reading: the stub
+  message carries the private control key, which _strip_control_keys removes before every request; pruning of stubs
+  is off. The 525-min cap only shortens runs (base at 532 min already scored), so it cannot zero a run.
+- Smoke log (arc3-m2-modf v1, re-downloaded 10-25): #OURS_MODF marker printed, server READY after 466 s, no
+  tracebacks; only 2 analyzer read-timeouts that the harness yields on (also in base). Caveat: the -sub notebook's
+  competition path itself never runs in Save & Run (gated), but 3 scoring reruns prove that path executes.
+- Inputs unchanged: pennyroyal-v253 (2026-09-29), taaf source bundle (2026-09-28), both model instances v1; docker
+  image pinned by sha.
+- Timing: zeros on 10-22, 10-24, 10-25 (last two consecutive), i.e. all after MOD-1's last good roll (10-21).
+  Fisher-style check: P(all 3 zeros land in MOD-F's 6 of 9 M2-family rolls by chance) = C(6,3)/C(9,3) = 0.24.
+Conclusion: no evidence the zeros are caused by our fixes; the data fit an intermittent whole-run failure in the
+rerun (startup / gateway / kill before scoring) whose cause we cannot see (competition rerun logs are not exposed).
+Risk: if it is environmental and recent, MOD-1 rolls can zero too. Cheap discriminating test (not run: needs team OK,
+~15 min GPU quota, no submission): re-run the arc3-m2-modf and arc3-m2-mod1 smoke kernels now and compare startup.
+For the report: present MOD-F as 6 rolls with 3 failures, report mean AND non-zero mean, never only the best roll.

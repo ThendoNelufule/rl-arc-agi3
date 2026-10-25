@@ -42,3 +42,11 @@ date,kernel,phase,games_set,seeds,local_score,kaggle_score,notes
 2026-10-17,M2-MOD2-proxy,final,public25 1-pass,1,42.83,,FAILED -4.56 vs MOD-1 (CI -15.2..+5.4); Fable facts + our reinvest decay; not submitted
 2026-10-17,M2-MOD1 (dfranzen fork + heliosli stagnation + shiiin9 D'prime),final,kaggle,-,,24.88,arc3-m2-mod1-sub v1; below base 28.83 (within copy spread 25.8+-3.9)
 2026-10-17,M2-MODF smoke (base + our 3 fixes),final,smoke 3 games 5 min,1,3.33,,arc3-m2-modf v1: patches active; no errors; sub arc3-m2-modf-sub v1 ready
+2026-10-18,M2-MODF (base + our 3 fixes),final,kaggle,-,,28.40,arc3-m2-modf-sub v1 (scriptVersionId 359469291); submission 57350707; parquet 3795 B
+2026-10-19,M2-MODF (base + our 3 fixes),final,kaggle,-,,22.10,arc3-m2-modf-sub v1; submission 57373441; parquet 3807 B
+2026-10-20,TEAM-12-dqn-novelty-mask,final,kaggle,-,,0.00,arc3-team-12-dqn-novelty-mask (scriptVersionId 359004414); submission 57422087; parquet 3505 B; consistent with dev 0.0044
+2026-10-21,M2-MOD1 (dfranzen fork + heliosli stagnation + shiiin9 D'prime),final,kaggle,-,,21.58,arc3-m2-mod1-sub v1 (scriptVersionId 359017288); submission 57470375; 2nd MOD-1 roll (1st 24.88)
+2026-10-22,M2-MODF (base + our 3 fixes),final,kaggle,-,,0.00,arc3-m2-modf-sub v1; submission 57508835; ZERO; parquet 3411 B (identical to other zeros = no game scored)
+2026-10-23,M2-MODF (base + our 3 fixes),final,kaggle,-,,29.15,arc3-m2-modf-sub v1; submission 57556604 at 2026-10-23 09:42:37 UTC; parquet 3777 B; BEST = P4.3 nominee
+2026-10-24,M2-MODF (base + our 3 fixes),final,kaggle,-,,0.00,arc3-m2-modf-sub v1; submission 57575205; ZERO; parquet 3411 B
+2026-10-25,M2-MODF (base + our 3 fixes),final,kaggle,-,,0.00,arc3-m2-modf-sub v1; submission 57609893; ZERO; parquet 3411 B; MOD-F stopped (team)

@@ -1,5 +1,5 @@
 # Progress
-Current phase: P2.3 TEAM-12-dqn-novelty-mask (training) + P3.1 TEAM-20-ppo-base (training)
+Current phase: P4.3 champion nominated (MOD-F 29.15) -> P5 REPORT
 - 2026-09-18 P0 done: pipeline verified, Kaggle 0.02 (random)
 - 2026-10-03 P1.1 adapter, P1.2 frozen splits, P1.3 eval harness done
 - 2026-10-03 P1.4 done: private dataset thendonelufule/arc3-rl-assets (SB3 2.9.0 + sb3-contrib
@@ -72,3 +72,12 @@ Note: graph versions are within noise on score; TEAM-37 has the best score AND t
 - 2026-10-17 MOD-F (base + OUR fixes: stub dead reasoning, stale-state message + prompt line, cap 525 min) smoke OK.
   TEAM DECISION: daily submission = arc3-m2-modf-sub (v1) from 2026-10-18 02:00 until 2026-10-27; every roll must be a
   modified version (brief req. 6); fallback = arc3-m2-mod1-sub. Nominate the best-scoring modified version.
+- 2026-10-25 Kaggle rolls 18-25 Oct (attribution verified from the submissions API `url` field):
+  MOD-F (arc3-m2-modf-sub v1, scriptVersionId 359469291) x6: 28.40, 22.10, 0.00, 29.15, 0.00, 0.00;
+  MOD-1 21.58 (2nd roll; 1st 24.88); TEAM-12 0.00. MOD-F mean 13.28 (non-zero runs 26.55).
+  All three MOD-F zeros produced a byte-identical 3411 B parquet (scoring runs 3777-3823 B; TEAM-12's 0.00 = 3505 B),
+  i.e. no game scored at all = whole-run failure, not a weak run. Investigation (code + smoke log, no submissions):
+  no MOD-F-specific defect found (see REPORT_NOTES "MOD-F zeros"). TEAM DECISION: MOD-F stopped; remaining rolls
+  (25 Oct night, 26 Oct) = arc3-m2-mod1-sub v1.
+- 2026-10-25 P4.3 NOMINATION: MOD-F arc3-m2-modf-sub v1, submission 57556604, public 29.15, 2026-10-23 09:42:37 UTC
+  (our best score; contains our own modifications). Switch only if a MOD-1 roll beats 29.15 before the deadline.
