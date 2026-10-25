@@ -52,3 +52,6 @@ report/*.log
 report/*.bbl
 report/*.blg
 report/*.out
+
+# Moodle package build output
+dist/

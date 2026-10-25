@@ -1,0 +1,49 @@
+{
+  "tag": "HO-TEAM-45n-graph-components-noprior-heldout",
+  "policy": "graph-components-noprior",
+  "ckpt": null,
+  "split": "heldout",
+  "games": [
+    "bp35",
+    "cd82",
+    "sk48",
+    "tn36",
+    "tu93"
+  ],
+  "seeds": 9,
+  "budget": 500,
+  "official_score_per_seed": {
+    "0": 0.5986655363536951,
+    "1": 0.7791652949583505,
+    "2": 1.0905447721378074,
+    "3": 0.7335087423399111,
+    "4": 0.564373897707231,
+    "5": 0.6447426757612492,
+    "6": 0.6985942471936152,
+    "7": 1.2777709163216722,
+    "8": 0.5128972167433706
+  },
+  "official_score_mean": 0.7666959221685448,
+  "official_score_std": 0.24046834601025233,
+  "levels_per_seed": {
+    "0": 4,
+    "1": 4,
+    "2": 4,
+    "3": 3,
+    "4": 1,
+    "5": 4,
+    "6": 2,
+    "7": 4,
+    "8": 2
+  },
+  "mean_level_frac": 0.08413777777777778,
+  "eval_seconds": 371.5,
+  "versions": {
+    "python": "3.13.15",
+    "arc_agi": "0.9.8",
+    "arcengine": "0.9.3",
+    "numpy": "2.1.3",
+    "gymnasium": "1.2.0",
+    "platform": "Linux-6.18.55+-x86_64-with-glibc2.39"
+  }
+}

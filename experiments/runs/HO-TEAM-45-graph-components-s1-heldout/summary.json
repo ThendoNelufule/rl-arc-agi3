@@ -1,0 +1,37 @@
+{
+  "tag": "HO-TEAM-45-graph-components-s1-heldout",
+  "policy": "graph-components",
+  "ckpt": "/kaggle/input/datasets/thendonelufule/arc3-rl-assets/weights/ckpt/TEAM-21-ppo-rnd-s1.pt",
+  "split": "heldout",
+  "games": [
+    "bp35",
+    "cd82",
+    "sk48",
+    "tn36",
+    "tu93"
+  ],
+  "seeds": 3,
+  "budget": 500,
+  "official_score_per_seed": {
+    "0": 0.8326884552821987,
+    "1": 0.7651738308557736,
+    "2": 0.9558582386163508
+  },
+  "official_score_mean": 0.8512401749181077,
+  "official_score_std": 0.07894411764802384,
+  "levels_per_seed": {
+    "0": 3,
+    "1": 4,
+    "2": 4
+  },
+  "mean_level_frac": 0.09524666666666667,
+  "eval_seconds": 185.4,
+  "versions": {
+    "python": "3.13.15",
+    "arc_agi": "0.9.8",
+    "arcengine": "0.9.3",
+    "numpy": "2.1.3",
+    "gymnasium": "1.2.0",
+    "platform": "Linux-6.18.55+-x86_64-with-glibc2.39"
+  }
+}
