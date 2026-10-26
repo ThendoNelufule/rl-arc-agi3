@@ -105,3 +105,9 @@ Note: graph versions are within noise on score; TEAM-37 has the best score AND t
   placeholder KGAT_xxxx and the public test-key-123. Safe to make public (team flips it). Moodle package:
   sh scripts/make_moodle_zip.sh -> dist/Vladmir_Putin.zip (report, v1 notebook, code/, MODIFICATIONS.md, evidence/).
   Manual steps: submission/CHECKLIST.md.
+- 2026-10-26 Kaggle roll 57654860 (05:25 UTC) went to arc3-m2-modf-sub v1 (MOD-F), not the planned MOD-1: 0.00,
+  byte-identical 3411 B parquet = 4th MOD-F zero (3rd in a row: 24, 25, 26 Oct). Nomination unchanged (57556604, 29.15).
+  Logged; report §7 + Fig. kaggle (now data-driven: 17 submissions, 10 fork runs), Paper Track, MODIFICATIONS,
+  EVIDENCE updated; chance placement now C(7,4)/C(10,4) = 0.17. Leaderboard screenshot saved
+  (submission/submission_57556604.png: rank 957, 29.15, 16 entries). Report still 8 pp main. Last roll: 27 Oct 00:00 UTC
+  -> arc3-m2-mod1-sub v1.

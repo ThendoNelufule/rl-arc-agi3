@@ -205,20 +205,20 @@ def fig_kaggle():
     a.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%d %b"))
     a.tick_params(axis="x", rotation=0, labelsize=7)
     a.legend(loc="center left", fontsize=6.3, handletextpad=0.2, bbox_to_anchor=(0, 0.52))
-    a.set_title("(a) All 16 submissions", loc="left", fontsize=8.5)
+    a.set_title(f"(a) All {len(subs)} submissions", loc="left", fontsize=8.5)
     # (b) our Franzen-family runs
     fr = [float(s["public_score"]) for s in subs if s["family"] == "franzen"]
     nz = np.array([x for x in fr if x > 0])
     bins = np.arange(-1, 32, 2)
     b.hist([x for x in fr if x == 0], bins=bins, color="white", edgecolor=FAM["franzen"], hatch="xxx",
-           label="0.00 (3)")
+           label=f"0.00 ({sum(x == 0 for x in fr)})")
     b.hist(nz, bins=bins, color=FAM["franzen"], alpha=0.85, edgecolor="white", label=f"non-zero ({len(nz)})")
     b.set_xlabel("Kaggle public score")
     b.set_ylabel("Runs")
-    b.set_ylim(0, 4.2)
+    b.set_ylim(0, 5.2)
     b.set_xlim(-2, 33)
     b.legend(loc="upper left", fontsize=6.5, handlelength=1.2)
-    b.set_title("(b) Our 9 fork runs", loc="left", fontsize=8.5)
+    b.set_title(f"(b) Our {len(fr)} fork runs", loc="left", fontsize=8.5)
     # (c) expected best of N under the spread of public copies of the notebook
     rng = np.random.default_rng(0)
     Ns = np.unique(np.round(np.logspace(0, np.log10(120), 30)).astype(int))
@@ -227,8 +227,8 @@ def fig_kaggle():
     b2.plot(Ns, [np.maximum.accumulate(sim, 1)[:, n - 1].mean() for n in Ns], color=FAM["franzen"], lw=1.5,
             label=r"$\mathcal{N}(25.8, 3.9^2)$")
     b2.scatter([106], [38.85], marker="D", s=20, color=INK, zorder=3, label="Franzen (106 entries)")
-    b2.scatter([9], [29.15], marker="*", s=70, color=FAM["franzen"], edgecolor=INK, lw=0.5, zorder=3,
-               label="ours (9 fork runs)")
+    b2.scatter([len(fr)], [max(fr)], marker="*", s=70, color=FAM["franzen"], edgecolor=INK, lw=0.5, zorder=3,
+               label=f"ours ({len(fr)} fork runs)")
     b2.set_xscale("log")
     b2.set_ylim(24, 49)
     b2.set_xlabel("Entries N")

@@ -18,7 +18,7 @@ from the logs in `experiments/` by `report/data.py`.
 | `kaggle_runs/*/jobs.json` | the exact job lines of every training and evaluation kernel we ran |
 | `experiments/train/*/config.json`, `model.json`, `metrics.csv`, `train_summary.json` | training configs, curves, time and hardware per run |
 | `experiments/runs/*/` | every evaluation run: `summary.json`, `results.csv`, `curves.csv`, recordings |
-| `experiments/log.csv`, `experiments/kaggle_submissions.csv` | the run log, and all 16 Kaggle submissions with IDs |
+| `experiments/log.csv`, `experiments/kaggle_submissions.csv` | the run log, and all 17 Kaggle submissions with IDs |
 | `scripts/build_m2.py` | builds our forks of Franzen's M2 notebook (base, MOD-1, MOD-2, MOD-F, proxies, `-sub` packaging) from the *pulled public notebooks* |
 | `recon/analysis/franzen_v3_failure_modes.py` | failure-mode decomposition of Franzen's 100 public trajectories (data extracted from skarin's public audit notebook) |
 | `report/` | `data.py` (numbers), `figures.py`, `tables.py`, `main.tex` (RLC 2026 template), `build.sh` |

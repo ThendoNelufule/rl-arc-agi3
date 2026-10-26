@@ -6,7 +6,7 @@ The copy in this zip (`notebook/arc3-m2-modf-sub.ipynb`) was pulled back from Ka
 sources are identical to the version we pushed (SHA-256 of the concatenated code cells: `c0ce77c237b92613...`).
 The notebook contains no credentials and no outputs.
 **Version 2** of the same notebook (pushed 2026-10-25) changes only the first markdown cell: it corrects the Save & Run
-sentence, adds the results of all six v1 runs, and links the write-up. All 25 other cells are byte-identical (same code
+sentence, adds the results of the six v1 runs up to 25 Oct, and links the write-up. All 25 other cells are byte-identical (same code
 SHA-256). This zip contains **v1**, the version that was scored.
 
 ## 1. The base (reused, credited)
@@ -49,8 +49,8 @@ Not changed: the agent logic, prompts (apart from F2b), model, serving, schedule
 | Retained-reasoning check (ours) of OpenAI's lever | code + 2,341 logged requests | already active: `reasoning_content` re-sent every turn; prompt growth per generated token median 1.83; prefix-cache hit 93.2%. Nothing built |
 | MOD-2 = MOD-1 + Fable facts (leoprovorov F001, Apache-2.0, advice lines removed) + **our reinvestment rule** (priority × max(0.2, exp(−(t−130k)/100k)) after t > 130k tokens on a level) | matched proxy A/B against MOD-1, launched simultaneously; pre-registered threshold +2 | **−4.56** (95% CI −15.2…+5.4; 97 vs 107 levels). Post-mortem: 7 games starved by our rule, 5 of which explain ≈7.8 points. Not submitted |
 | MOD-F smoke (`arc3-m2-modf` v1) | 3 games × 5 min | patch marker printed (`#OURS_MODF ok ... stub_dead_reasoning=1`), prompt line present, no errors |
-| MOD-F on Kaggle | 6 competition reruns of v1 | 28.40, 22.10, 0.00, **29.15**, 0.00, 0.00 |
-| Zero-run investigation (ours) | code, smoke logs, input versions, output sizes | the 3 zeros are byte-identical 3,411 B outputs, i.e. whole-run failures; the changes are deterministic and the same version scored 3×; inputs unchanged since Sept; chance placement p = 0.24; cause unknown (rerun logs not visible) |
+| MOD-F on Kaggle | 7 competition reruns of v1 | 28.40, 22.10, 0.00, **29.15**, 0.00, 0.00, 0.00 |
+| Zero-run investigation (ours) | code, smoke logs, input versions, output sizes | the 4 zeros (the last 3 in a row, 24–26 Oct) are byte-identical 3,411 B outputs, i.e. whole-run failures; the changes are deterministic and the same version scored 3×; inputs unchanged since Sept; chance placement p = 0.17 (all 4 zeros in MOD-F's 7 of 10 fork runs); MOD-1 not rerun after 21 Oct, so MOD-F-specific vs platform-wide cannot be separated; cause unknown (rerun logs not visible) |
 | Variance analysis (ours) | best-of-N under N(25.77, 3.93²) | expected best of 100 ≈ 35.6; Franzen 38.85 from 106 entries. **None of our modifications is shown to change the expected score** |
 
 ## 4. Tested or considered and rejected

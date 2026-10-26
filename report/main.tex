@@ -121,11 +121,11 @@ We studied (i) the competition's milestone winners (Stochastic Goose, Duck, Fran
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{figs/kaggle.pdf}
-\caption{Kaggle public scores (hidden games). (a) All 16 of our submissions; $\times$: fork runs scoring 0.00 (byte-identical 3{,}411\,B outputs); $\star$: nominated. (b) Our 9 fork runs. (c) Expected best of $N$ submissions under the spread of public copies of the notebook, with Franzen's best (38.85 from 106 entries, 2026-10-25) and ours.}
+\caption{Kaggle public scores (hidden games). (a) All 17 of our submissions; $\times$: fork runs scoring 0.00 (byte-identical 3{,}411\,B outputs); $\star$: nominated. (b) Our 10 fork runs. (c) Expected best of $N$ submissions under the spread of public copies of the notebook, with Franzen's best (38.85 from 106 entries, 2026-10-25) and ours.}
 \label{fig:kaggle}
 \end{figure}
 
-\textbf{What a Kaggle score can show} (ours). MOD-F scored 28.40, 22.10, 0.00, \textbf{29.15}, 0.00 and 0.00 (Fig.~\ref{fig:kaggle}). We nominate submission 57556604 (29.15, 2026-10-23 09:42:37 UTC; rank 959 of 4{,}817 on 25 Oct). A leaderboard entry is a team's \emph{best} submission. Under the copies' spread, the expected best of $N$ grows from 25.8 at $N{=}1$ to $\approx$35.6 at $N{=}100$, and Franzen's 38.85 from 106 entries is consistent with this plus genuine gains. All our non-zero runs (21.58--29.15) lie inside the spread, so \emph{we cannot claim that any modification changes the expected score}; one proxy pass resolves only effects of about $\pm$10 (per-game SD $\approx$26). \textbf{Zero runs:} three MOD-F runs produced byte-identical outputs in which no game scored, i.e.\ whole-run failures. Our changes are deterministic, the same version scored three times, and the inputs were unchanged. If zeros fell at random among the 9 fork runs, all 3 would land in MOD-F's 6 with probability 0.24. We find no evidence of a code cause, but the rerun logs are not visible to us.
+\textbf{What a Kaggle score can show} (ours). MOD-F scored 28.40, 22.10, 0.00, \textbf{29.15}, 0.00, 0.00 and 0.00 (Fig.~\ref{fig:kaggle}). We nominate submission 57556604 (29.15, 2026-10-23 09:42:37 UTC; rank 959 of 4{,}817 on 25 Oct). A leaderboard entry is a team's \emph{best} submission. Under the copies' spread, the expected best of $N$ grows from 25.8 at $N{=}1$ to $\approx$35.6 at $N{=}100$, and Franzen's 38.85 from 106 entries is consistent with this plus genuine gains. All our non-zero runs (21.58--29.15) lie inside the spread, so \emph{we cannot claim that any modification changes the expected score}; one proxy pass resolves only effects of about $\pm$10 (per-game SD $\approx$26). \textbf{Zero runs:} four MOD-F runs (the last three in a row, 24--26 Oct) produced byte-identical outputs in which no game scored, i.e.\ whole-run failures. Our changes are deterministic, the same version scored three times, and the inputs were unchanged. If zeros fell at random among the 10 fork runs, all 4 would land in MOD-F's 7 with probability 0.17; MOD-1 was not rerun after 21 Oct, so we cannot tell whether the recent failures are specific to MOD-F. We find no evidence of a code cause, but the rerun logs are not visible to us.
 
 \section{Failure cases and discussion}
 \label{sec:fail}
@@ -216,6 +216,6 @@ Retention & check of retained reasoning in logs and code & ours & already active
 \bottomrule
 \end{tabular}}
 \end{table}
-All 16 Kaggle submissions with IDs, script versions and output sizes are in \texttt{experiments/kaggle\_submissions.csv}. Nominated: submission \textbf{57556604}, notebook \texttt{thendonelufule/arc3-m2-modf-sub}, script version 359469291, public score \textbf{29.15}, 2026-10-23 09:42:37 UTC.
+All 17 Kaggle submissions with IDs, script versions and output sizes are in \texttt{experiments/kaggle\_submissions.csv}. Nominated: submission \textbf{57556604}, notebook \texttt{thendonelufule/arc3-m2-modf-sub}, script version 359469291, public score \textbf{29.15}, 2026-10-23 09:42:37 UTC.
 
 \end{document}

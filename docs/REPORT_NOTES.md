@@ -833,3 +833,10 @@ For the report: present MOD-F as 6 rolls with 3 failures, report mean AND non-ze
   vs T12f 6.
 - Reading: online, the mask (with exact per-game memory + online fine-tuning) is the active ingredient; novelty shapes
   the pretrained (frozen) policy but adds nothing measurable to the online agent.
+
+## Fourth MOD-F zero (2026-10-26)
+Submission 57654860, 2026-10-26 05:25 UTC, arc3-m2-modf-sub v1 (scriptVersionId 359469291, from the API `url`): 0.00,
+3411 B parquet, byte-identical to the other three zeros. MOD-F now x7: 28.40, 22.10, 0.00, 29.15, 0.00, 0.00, 0.00
+(zeros on 10-22, 10-24, 10-25, 10-26). Chance placement: P(all 4 zeros in MOD-F's 7 of 10 fork runs) =
+C(7,4)/C(10,4) = 35/210 = 0.17. MOD-1 not rerun after 10-21, so we cannot separate "MOD-F fails since 10-24" from
+"the platform fails since 10-24". Report wording updated accordingly; no causal claim.

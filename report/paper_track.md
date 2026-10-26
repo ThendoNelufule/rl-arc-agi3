@@ -80,11 +80,11 @@ The LLM agent, like ours, is efficient where it knows what to do and stalls wher
 |---|---|
 | base | 28.83 |
 | MOD-1 | 24.88, 21.58 |
-| **MOD-F** | 28.40, 22.10, 0.00, **29.15**, 0.00, 0.00 |
+| **MOD-F** | 28.40, 22.10, 0.00, **29.15**, 0.00, 0.00, 0.00 |
 
 - **Variance.** Public copies of this notebook score 25.77 ± 3.93. A leaderboard entry is a team's best submission, so the expected best of N grows to about 35.6 at N = 100. Franzen's 38.85 from 106 entries is consistent with that plus genuine gains.
 - **No claimed effect.** All our non-zero runs lie inside the spread, so **we do not claim that any modification changes the expected score**. One proxy pass resolves only ±10-point effects.
-- **Three zero runs.** Three MOD-F runs produced byte-identical outputs in which no game scored. Our changes are deterministic, the same version scored three times, and the inputs were unchanged. We found no code cause; rerun logs are not visible to participants.
+- **Four zero runs.** Four MOD-F runs (the last three in a row) produced byte-identical outputs in which no game scored. Our changes are deterministic, the same version scored three times, and the inputs were unchanged. We found no code cause; rerun logs are not visible to participants.
 
 ## 7. Conclusion
 

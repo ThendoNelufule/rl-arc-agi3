@@ -42,7 +42,7 @@ E="$OUT/evidence"
 cp experiments/kaggle_submissions.csv "$E/"
 cp submission/EVIDENCE.md "$E/NOMINATED_ENTRY.md"
 cp submission/CONTRIBUTIONS.md "$E/"
-if [ -f submission/submission_57556604.png ]; then cp submission/submission_57556604.png "$E/"; else cp submission/SCREENSHOT_PLACEHOLDER.txt "$E/"; fi
+if ls submission/*.png >/dev/null 2>&1; then cp submission/*.png "$E/"; else cp submission/SCREENSHOT_PLACEHOLDER.txt "$E/"; fi
 cp report/paper_track.md "$E/paper_track/writeup.md"
 cp submission/PAPER_TRACK_LINK.txt "$E/paper_track/"
 cp submission/paper_track_media/*.png "$E/paper_track/"

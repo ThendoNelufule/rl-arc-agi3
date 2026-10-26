@@ -3,16 +3,20 @@
 Deadlines: Moodle 27 Oct 2026 23:59 SAST. Paper Track (Kaggle competition `arc-prize-2026-paper-track`): 9 Nov 2026 23:59 UTC.
 We plan to submit the Paper Track on 27 Oct.
 
-## 0. Tonight and tomorrow: daily rolls
-- Click **Submit to Competition** on `arc3-m2-mod1-sub` **Version 1**.
+## 0. Last daily roll (27 Oct)
+- The 26 Oct roll (submission 57654860) went to **`arc3-m2-modf-sub`** (MOD-F), not MOD-1, and scored 0.00 (4th MOD-F zero).
+  It is logged and the report, write-up, figure and ZIP are updated. Today's slot is used.
+- Next slot opens **27 Oct 00:00 UTC (02:00 SAST)**. Submit as early as possible, because a run takes up to ~9 h and the
+  score must be back before the Moodle deadline: open `arc3-m2-mod1-sub`, check the page title says **mod1**, then
+  **Submit to Competition** on **Version 1**.
 - **If a MOD-1 roll beats 29.15**, the nomination changes. Tell Claude, which then updates `submission/EVIDENCE.md`,
   the report (abstract + §7), `report/paper_track.md` and the ZIP. Then do steps 1–2 for the new submission instead.
 
-## 1. Screenshot of the nominated submission
-1. Open https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3/submissions
-2. Find submission **57556604**: `arc3-m2-modf-sub - Version 1`, public score **29.15**, 2026-10-23.
-3. Screenshot the row, including the score and the Select checkbox from step 2.
-4. Save it as `submission/submission_57556604.png`. The ZIP builder uses it in place of the placeholder.
+## 1. Screenshot of the nominated submission (done: leaderboard row saved)
+- `submission/submission_57556604.png` (leaderboard: rank 957, 29.15, 16 entries) is saved and goes into the ZIP.
+- *Optional, stronger:* after step 2, open https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3/submissions, screenshot
+  the row of **57556604** (`arc3-m2-modf-sub - Version 1`, 29.15, Select ticked) and save it as
+  `submission/submission_57556604_row.png`. The ZIP builder includes every PNG in `submission/`.
 
 ## 2. Select it for final scoring
 - On the same page, tick **Select** on submission 57556604.
@@ -26,7 +30,7 @@ We plan to submit the Paper Track on 27 Oct.
    - **Title:** `Where ARC-AGI-3 Agents Stall: From DQN to a Pretrained LLM Agent`
    - **Subtitle:** `RL agents, a graph explorer and a fork of Franzen's M2 all lose their points to stalls on later levels, not to inefficiency`
    - **Track:** ARC-AGI-3 (required to submit)
-   - **Body:** paste `evidence/paper_track/writeup.md` from the ZIP (= `report/paper_track.md`), *without* its first line (the `#` title). It is under 1,500 words (1,432 raw, including table syntax).
+   - **Body:** paste `evidence/paper_track/writeup.md` from the ZIP (= `report/paper_track.md`), *without* its first line (the `#` title). It is under 1,500 words (1,439 raw, including table syntax).
    - **Media Gallery:** upload `cover.png` as the **cover image** (required); optionally add `ladder.png`, `generalisation.png`,
      `kaggle.png`, `trajectories.png`, `training.png` (all in `evidence/paper_track/`).
    - **Project Links:** attach the notebook `thendonelufule/arc3-m2-modf-sub`. It may stay private: Kaggle makes attached private
