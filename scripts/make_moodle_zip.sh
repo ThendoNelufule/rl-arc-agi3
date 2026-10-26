@@ -17,7 +17,7 @@ cp kaggle_sub/m2-modf-sub-v1/arc3-m2-modf-sub.ipynb kaggle_sub/m2-modf-sub-v1/ke
 
 # 3. our code, configs and a reproduction README (no weights, no game files, no third-party notebooks)
 C="$OUT/code"
-cp REPRODUCE.md "$C/README.md"
+cat submission/ZIP_README_NOTE.md REPRODUCE.md > "$C/README.md"   # ZIP-to-repo path map, then the repo README
 mkdir -p "$C/rl" "$C/scripts" "$C/agent" "$C/report" "$C/recon/analysis" "$C/configs/train" "$C/configs/kaggle_jobs"
 cp rl/*.py "$C/rl/"
 cp scripts/*.py scripts/*.sh "$C/scripts/"
