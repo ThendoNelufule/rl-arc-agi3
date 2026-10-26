@@ -11,8 +11,8 @@ Competition: ARC Prize 2026 - ARC-AGI-3 (https://www.kaggle.com/competitions/arc
 | notebook | `thendonelufule/arc3-m2-modf-sub` (https://www.kaggle.com/code/thendonelufule/arc3-m2-modf-sub) |
 | script version | 359469291 |
 | submission output size | 3,777 bytes (`submission.parquet`) |
-| leaderboard (2026-10-25 16:28 UTC snapshot) | rank 959 of 4,817; team best = 29.15 from 16 submissions |
-| leaderboard screenshot (`submission_57556604.png`, about 2026-10-25 20:00 UTC) | rank 957; score 29.15; 16 entries |
+| leaderboard (2026-10-25 16:28 UTC snapshot, before submission 57654860) | rank 959 of 4,817; team best = 29.15 from 16 submissions (17 since 26 Oct; best unchanged) |
+| leaderboard screenshot (`submission_57556604.png`, about 2026-10-25 20:00 UTC, before submission 57654860) | rank 957; score 29.15; 16 entries |
 
 Source of these fields: the Kaggle API (`competition_submissions`, field `url` gives the notebook + script version).
 All 17 submissions are listed in `kaggle_submissions.csv`, the four MOD-F zero-score runs included (the 17th, 57654860 on
