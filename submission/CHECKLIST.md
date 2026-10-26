@@ -12,8 +12,9 @@ We plan to submit the Paper Track on 27 Oct.
 - **If a MOD-1 roll beats 29.15**, the nomination changes. Tell Claude, which then updates `submission/EVIDENCE.md`,
   the report (abstract + §7), `report/paper_track.md` and the ZIP. Then do steps 1–2 for the new submission instead.
 
-## 1. Screenshot of the nominated submission (done: leaderboard row saved)
-- `submission/submission_57556604.png` (leaderboard: rank 957, 29.15, 16 entries) is saved and goes into the ZIP.
+## 1. Screenshot of the nominated submission (done: Submissions-tab row saved)
+- `submission/submission_57556604.png` (row `arc3-m2-modf-sub - Version 1`, 29.15, 23 Oct 11:42:37 SAST) is saved and goes into the ZIP.
+  In the 26 Oct screenshot the Select box looks unticked: tick it (step 2), retake the screenshot, then rebuild the ZIP.
 - *Optional, stronger:* after step 2, open https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3/submissions, screenshot
   the row of **57556604** (`arc3-m2-modf-sub - Version 1`, 29.15, Select ticked) and save it as
   `submission/submission_57556604_row.png`. The ZIP builder includes every PNG in `submission/`.
