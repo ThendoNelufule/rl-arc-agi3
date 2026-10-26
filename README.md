@@ -1,249 +1,115 @@
-# ARC Prize 2026 — Local Dev Starter
+# Where ARC-AGI-3 Agents Stall: From DQN to a Pretrained LLM Agent
 
-**Go from zero to your first Kaggle submission in about 10 minutes, without
-ever opening the Kaggle notebook editor.**
+**Team Vladmir_Putin:** Musala Ndouvhada and Thendo Nelufule, University of the Witwatersrand
+(COMS4061A/7071A, 2026).
 
-This is a starter kit for the [ARC Prize 2026 — ARC-AGI-3](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3)
-competition. You'll edit one Python file on your laptop, see it actually play
-the real game environments locally, and push it to Kaggle as a submission with
-a single command.
+- **Report (PDF):** [`report/main.pdf`](report/main.pdf)
+- **Paper Track write-up:** [ARC Prize 2026 Paper Track](https://www.kaggle.com/competitions/arc-prize-2026-paper-track/writeups/where-arc-agi-3-agents-stall-from-dqn-to-a-pretra)
+- **Nominated Kaggle submission:** **57556604**, public score **29.15**, in
+  [ARC Prize 2026 - ARC-AGI-3](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3).
+  Notebook `thendonelufule/arc3-m2-modf-sub` v1 (scriptVersionId 359469291), submitted 2026-10-23 09:42:37 UTC.
 
-No Docker. No `submission.json` to hand-write. No copy-pasting between your
-editor and a notebook.
+## Summary
 
----
+Can agents trained with reinforcement learning learn to explore and solve unseen ARC-AGI-3 games? We trained DQN
+(with test-time TD learning) and PPO on 15 public games and added two improvements to each: count novelty, then
+action-effect masking, for DQN; RND, then an LSTM, for PPO. Each improvement was motivated by a measured failure of the
+previous stage. Under a frozen protocol (500 actions per game, 3 training × 3 evaluation seeds), both baselines are
+indistinguishable from random on unseen games. The best learned agent (PPO + RND) scores 0.025 on dev and 0.0005 on
+held-out games. The diagnostics point to one bottleneck: exploration inside an unseen game, where the useful knowledge
+is specific to the game. A training-free graph explorer makes that knowledge explicit. It reaches 0.79 on dev and
+0.885 on held-out games, but only 0.02 on 15 other public games. We then adopted the strongest public LLM agent,
+Daniel Franzen's M2 on Tufa Labs' Duck harness, as a research platform. A log audit shows that it, too, loses most of
+its points to stalls on later levels (43.9 points) rather than to inefficiency (2.6). Our fixes and tests on it (best
+Kaggle public score 29.15) all lie within run-to-run noise, which we quantify.
 
-## What you need before you start
+All scores are on the official ARC-AGI-3 0–100 scale: 0.79 means 0.79 out of 100, not 79%. Every number in the
+report is read from the logs in `experiments/` by `report/data.py`.
 
-- **Python 3.12** (the competition's `arc-agi` package requires it)
-  - macOS: `brew install python@3.12`
-  - Ubuntu: `sudo apt install python3.12 python3.12-venv`
-  - Windows: install from [python.org](https://www.python.org/downloads/)
-- **git** (to clone the official agent framework)
-- **A Kaggle account** with the competition rules accepted
-  ([accept here](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3/rules))
+> **Attribution.** The scored Kaggle agent is Daniel Franzen's public *ARC-AGI-3 Milestone 2 Solution*
+> ([notebook](https://www.kaggle.com/code/dfranzen/arc-agi-3-milestone-2-solution),
+> [code](https://github.com/da-fr/arc-agi-3-solution), Apache-2.0), built on Tufa Labs'
+> [Duck harness](https://github.com/Tufalabs/duck-harness). **The agent is not our work.** Our changes to it, and
+> every experiment we ran on it, are listed with their evidence in
+> [`submission/MODIFICATIONS.md`](submission/MODIFICATIONS.md).
 
-That's it. No GPU required for the starter agent.
+## Layout
 
----
-
-## Quick start
-
-```bash
-# 1.  Clone this repo and step in
-git clone https://github.com/arcprize/ARC-AGI-3-Kaggle-Starter.git
-cd ARC-AGI-3-Kaggle-Starter
-
-# 2.  Drop your Kaggle API token (kaggle.com → Settings → Create New Token)
-#     into the project-local .kaggle/ folder (NOT your home directory)
-mkdir -p .kaggle && echo "KGAT_xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" > .kaggle/access_token
-chmod 600 .kaggle/access_token
-
-# 3.  One-time setup: venv, dependencies, framework
-make setup
-
-# 4.  Open agent/my_agent.py to see the random-action starter, then edit
-#     it to make a better submission. This is the only file you change.
-
-# 5.  Run it locally against every game in the competition (takes seconds)
-make play-local
-
-# 6.  Push it to Kaggle as a submission notebook
-make submit
-
-# 7.  Watch the run
-make status
-
-# 8.  When status shows "complete", open the notebook on kaggle.com,
-#     find your kernel, click "Submit to Competition" in the top
-#     right, and pick `submission.parquet` from the Output File
-#     dropdown. That's one of your 5 daily submissions.
-```
-
-That's the entire loop. Steps 4–7 are what you'll repeat as you iterate;
-step 8 is the deliberate moment when you spend a daily submission.
-
----
-
-## The one file you edit: `agent/my_agent.py`
-
-This is the only file you normally touch. It defines a class called `MyAgent`
-with two methods:
-
-```python
-class MyAgent(Agent):
-    def is_done(self, frames, latest_frame) -> bool:
-        """Return True when your agent wants to stop playing."""
-        ...
-
-    def choose_action(self, frames, latest_frame) -> GameAction:
-        """Look at the game state and return the next action."""
-        ...
-```
-
-The starter version picks random actions — a baseline that proves your whole
-pipeline works end-to-end. Replace the body of `choose_action` with your
-strategy. Everything else (Kaggle plumbing, submission file format, game
-orchestration) is handled for you.
-
----
-
-## What happens when you run `make submit`
-
-The competition is a *code* competition: you submit a notebook, Kaggle runs it
-twice.
-
-```diagram
-   make submit
-       │
-       ▼
-   ┌─────────────────────────────────────┐
-   │  Kaggle Phase A: Save & Run All     │
-   │  ─ Runs your notebook in their      │
-   │    real environment                 │
-   │  ─ Validates that your code         │
-   │    executes without errors          │
-   │  ─ make status shows "complete"     │
-   └─────────────────┬───────────────────┘
-                     │
-                     │  You click "Submit to Competition"
-                     │  on the kernel page
-                     ▼
-   ┌─────────────────────────────────────┐
-   │  Kaggle Phase B: Competition Rerun  │
-   │  ─ Your agent actually plays the    │
-   │    hidden game set                  │
-   │  ─ Your leaderboard score appears   │
-   └─────────────────────────────────────┘
-```
-
-`make submit` builds and uploads the notebook (Phase A). After
-`make status` reports `complete`, open the kernel on kaggle.com and click
-**"Submit to Competition"** to enter Phase B and get a leaderboard score.
-
-> **You only get 5 official submissions per day**, so it pays to be
-> confident before you submit: get `make play-local` passing, then submit.
-
-> **Heads up:** Before your first `make submit`, open
-> [`notebooks/kernel-metadata.json`](notebooks/kernel-metadata.json) and
-> replace `REPLACE_WITH_YOUR_USERNAME` with your Kaggle handle. The Makefile
-> will refuse to push until you do.
-
-### Choosing an accelerator
-
-The notebook is generated with a **T4 GPU** by default (matches Kaggle's
-sample submission). To change it, open
-[`scripts/build_notebook.py`](scripts/build_notebook.py) and edit **one
-line** near the top:
-
-```python
-ACCELERATOR = "t4"     # change "t4" to one of: cpu, t4, p100, rtx6000
-```
-
-Then re-run `make submit`. That's it — both the notebook metadata and
-[`notebooks/kernel-metadata.json`](notebooks/kernel-metadata.json) get
-updated automatically.
-
-| Value | Hardware | When to use |
-|---|---|---|
-| `"cpu"` | No GPU | The random starter, or any non-ML agent |
-| `"t4"` | Nvidia T4 ×2 | **Default.** Small models, fast iteration |
-| `"p100"` | Nvidia P100 | Single big-memory GPU |
-| `"rtx6000"` | Nvidia RTX 6000 (`g4-standard-48`) | Heavy ML; **ARC-AGI-3 exclusive**, burns GPU quota faster |
-
-RTX 6000 is reserved for ARC-AGI-3 notebooks only — don't use it for early
-iteration. All accelerated Kaggle sessions have internet disabled, which is
-already the default in this kit.
-
----
-
-## All the commands
-
-| Command | What it does |
+| path | what |
 |---|---|
-| `make setup` | One-time install: Python venv, `arc-agi`, `kaggle` CLI, clones the framework |
-| `make play-local` | Runs your agent against every game in the dataset, locally |
-| `make play-local GAME=ls20` | Same, but only one game (faster while debugging) |
-| `make verify-local` | 30-second smoke test on two games |
-| `make list-games` | Print every game id available |
-| `make pull-sample` | Download the official sample agent for reference |
-| `make notebook` | Build the Kaggle notebook from your agent (no push) |
-| `make submit` | Build the notebook **and** push it to Kaggle |
-| `make status` | Check the status of your most recent Kaggle run |
-| `make clean` | Remove the venv, downloads, and generated notebook |
+| `rl/arc_gym.py` | Gymnasium adapter: obs (1,64,64) colour ids, `Discrete(70)` actions, reward = new levels, `action_masks()` |
+| `rl/evaluate.py` | **the** evaluation protocol: 500 actions/game across deaths, N seeds, fresh scorecard per seed; held-out refused without `--final` |
+| `rl/train_dqn.py`, `rl/train_ppo.py`, `rl/rnd.py`, `rl/recurrent.py`, `rl/nets.py`, `rl/replay.py`, `rl/effect.py`, `rl/sb3_nets.py` | DQN chain (T10–T12, T12a), PPO chain (T20–T22), RND, recurrent PPO, shared encoder |
+| `rl/policies.py` | all evaluated agents (`dqn`, `dqn-online`, `ppo`, `ppo-lstm`, `graph-*`, `random`) |
+| `rl/analyze_run.py`, `rl/noop_repeats.py`, `rl/aggregate.py` | behaviour diagnostics (no-op rate, repeated known no-ops, collapse) and aggregation |
+| `splits.json` | the frozen train/dev/held-out split (seed 2026), never regenerated |
+| `scripts/kaggle_train.py` | runs training/evaluation jobs on Kaggle kernels (T4 / CPU, internet off) and pulls results back |
+| `kaggle_runs/*/jobs.json` | the exact job lines of every training and evaluation kernel we ran |
+| `experiments/train/*/` | training configs, curves (`metrics.csv`), time and hardware per run |
+| `experiments/runs/*/` | every evaluation run: `summary.json`, `results.csv`, `curves.csv`, recordings |
+| `experiments/log.csv`, `experiments/kaggle_submissions.csv` | the run log, and all 17 Kaggle submissions with IDs |
+| `kaggle_dataset/` | the Kaggle dataset `arc3-rl-assets` (offline wheels list, weight manifests; checkpoints are not committed) |
+| `scripts/build_m2.py`, `kaggle_sub/*/` | builds our forks of Franzen's M2 notebook (base, MOD-1, MOD-2, MOD-F, proxies, `-sub` packaging) from the *pulled public notebooks*; only the kernel metadata is committed |
+| `recon/analysis/franzen_v3_failure_modes.py` | failure-mode decomposition of Franzen's 100 public trajectories (data extracted from skarin's public audit notebook) |
+| `report/` | `data.py` (numbers), `figures.py`, `tables.py`, `main.tex` (RLC 2026 template), `build.sh`, `paper_track.md` (the Paper Track write-up) |
+| `submission/` | `MODIFICATIONS.md`, `EVIDENCE.md` (nominated entry), `CONTRIBUTIONS.md`, Paper Track media |
+| `docs/` | `PROGRESS.md` (phase log), `REPORT_NOTES.md` (analysis notes), `STARTER_README.md` |
+| `agent/my_agent.py`, `scripts/build_notebook.py`, `notebooks/`, `scripts/play_local.py`, `Makefile` | the starter kit's Kaggle submission pipeline, adapted: `my_agent.py` wraps any `rl/policies.py` agent, and `build_notebook.py` packages it with its weights for our RL and graph submissions |
+| `kaggle_probe/`, `kaggle_verify/` | small kernels that checked the Kaggle image and the offline install from the dataset |
 
----
+## Setup
 
-## Why this setup, instead of editing in the Kaggle notebook?
+- **Python.** The local venv matches the Kaggle submission image: Python 3.12, `requirements-local.txt` (torch 2.10 CPU, numpy 2.0.2, gymnasium 1.2.0, SB3/sb3-contrib 2.9.0), plus `arc-agi`.
+  ```
+  py -3.12 -m venv .venv && .venv/bin/python -m pip install -r requirements-local.txt arc-agi kaggle
+  ```
+- **Kaggle training versions.** Training and evaluation for the report ran on Kaggle (Python 3.13.15, torch 2.11.0+cu128, numpy 2.1.3, arc-agi 0.9.8, arcengine 0.9.3).
+- **Credentials.** Put your *own* Kaggle API token in `.kaggle/access_token`. It is gitignored and never committed. The Makefile and the scripts read it as `KAGGLE_API_TOKEN`.
+- **Game files.** These come from the competition (`/kaggle/input/competitions/arc-prize-2026-arc-agi-3/environment_files`), or locally from `arc-agi`. They are not redistributed here.
 
-Three reasons:
+## Reproduce the RL and graph results
 
-1. **Iteration speed.** Editing in your normal IDE, then `make play-local`,
-   gives you a real-game-engine feedback loop in seconds. The Kaggle editor's
-   loop is *minutes* per change.
-2. **No environment surprises.** The local `arc-agi` PyPI package hosts the
-   same game engine the Kaggle gateway runs. If it works locally, it works on
-   Kaggle.
-3. **Your code stays in git.** Notebooks are awful for diffs and code review.
-   Here your real work lives in [`agent/my_agent.py`](agent/my_agent.py); the
-   notebook is just an auto-generated deployment artifact.
+Training (Kaggle T4, the 3 seeds of a version in parallel in one kernel; 400k steps each). For example, the PPO+RND baseline T21:
+```
+.venv/bin/python scripts/kaggle_train.py push team21 --accel t4 \
+  --job "train_ppo.py --tag TEAM-21-ppo-rnd-s0 --seed 0 --steps 400000 --device cuda --rnd-coef 0.05" \
+  --job "train_ppo.py --tag TEAM-21-ppo-rnd-s1 --seed 1 --steps 400000 --device cuda --rnd-coef 0.05" \
+  --job "train_ppo.py --tag TEAM-21-ppo-rnd-s2 --seed 2 --steps 400000 --device cuda --rnd-coef 0.05"
+.venv/bin/python scripts/kaggle_train.py pull team21
+```
+The exact job lines for every version are in `kaggle_runs/<name>/jobs.json` (e.g. `kaggle_runs/team12a/jobs.json` for the mask-only ablation).
+Checkpoints are copied to `kaggle_dataset/weights/ckpt/` and published as the Kaggle dataset `arc3-rl-assets` (`make dataset-push`).
 
----
+Evaluation (Kaggle CPU, 1 thread per job; same protocol for every agent):
+```
+.venv/bin/python scripts/kaggle_train.py push eval-x --accel cpu --maxpar 4 --threads 1 \
+  --job "evaluate.py --policy ppo --ckpt {ASSETS}/weights/ckpt/TEAM-21-ppo-rnd-s0.pt --split dev --seeds 3 --record --tag TEAM-21-ppo-rnd-s0-dev"
+```
+Locally, a single run is `.venv/bin/python rl/evaluate.py --policy random --split dev --seeds 3 --tag REF-random-dev`.
 
-## Project layout
+- **Graph explorer.** Training-free: `--policy graph-components` with `--ckpt` set to the T21 checkpoint (prior), or `--policy graph-components-noprior`.
+- **Held-out.** Needs `--final`. It was run exactly once, after development (kernels `heldout-rl`, `heldout-graph`).
+- **Diagnostics.** `rl/analyze_run.py TAG` and `rl/noop_repeats.py TAG`.
+
+## Reproduce the LLM-platform work (Franzen M2 fork)
+
+The third-party notebooks are **not redistributed** here. Pull them yourself and build our variants:
+```
+kaggle kernels pull dfranzen/arc-agi-3-milestone-2-solution -p recon/nb/dfranzen__arc-agi-3-milestone-2-solution -m
+kaggle kernels pull heliosli/try-merging-it-you-might-get-lucky-and-win-gold -p recon/nb/heliosli__try-merging-it-you-might-get-lucky-and-win-gold -m
+kaggle kernels pull shiiin9/affectify-arc-31-54-in-a-single-sub -p recon/nb/shiiin9__affectify-arc-31-54-in-a-single-sub -m
+.venv/bin/python scripts/build_m2.py      # writes kaggle_sub/m2-*/ (MOD-2 also needs the Fable F001 notebook in recon/fable/)
+```
+The nominated notebook is `kaggle_sub/m2-modf-sub` (pushed as `thendonelufule/arc3-m2-modf-sub` v1). All changes and experiments are listed in
+`submission/MODIFICATIONS.md`. The agent itself is Franzen's work, on Tufa Labs' Duck harness.
+
+## Rebuild the report
 
 ```
-.
-├── agent/
-│   └── my_agent.py             ★ The file you edit
-├── scripts/
-│   ├── play_local.py           Runs your agent against real games
-│   ├── build_notebook.py       Packages your agent into a Kaggle notebook
-│   └── slim_framework.py       Trims framework deps so install is light
-├── notebooks/
-│   ├── kernel-metadata.json    Edit once: your Kaggle username
-│   └── submission.ipynb        Auto-generated, never edit by hand
-├── vendor/                     Cloned framework (gitignored)
-├── .venv/                      Python 3.12 venv (gitignored)
-├── .kaggle/                    Your project-local Kaggle token (gitignored)
-└── Makefile
+sh report/build.sh path/to/tectonic      # figures + tables from experiments/, then LaTeX -> report/main.pdf
 ```
 
----
+## Credits
 
-## Troubleshooting
-
-**`make setup` fails: `python3.12: command not found`**
-Install Python 3.12 — the `arc-agi` package requires it. macOS:
-`brew install python@3.12`.
-
-**`make submit` says "edit kernel-metadata.json"**
-You haven't replaced `REPLACE_WITH_YOUR_USERNAME` in
-[`notebooks/kernel-metadata.json`](notebooks/kernel-metadata.json) yet.
-
-**`make submit` says `401 Unauthorized`**
-Your Kaggle token is missing or invalid. Generate a fresh one from your
-[Kaggle Settings page](https://www.kaggle.com/settings) and overwrite
-`.kaggle/access_token`.
-
-**`make play-local` says "Could not create environment"**
-Your machine couldn't reach the ARC-AGI API to download the game source on
-first run. Check your internet, then try again — once downloaded, games are
-cached in `environment_files/` and you're fully offline.
-
-**My local score is 0.0**
-That's expected for the random starter agent. Your job is to make it
-non-zero. 🙂
-
----
-
-## Where to go next
-
-- Read the [ARC-AGI-3 docs](https://docs.arcprize.org/) to understand the
-  benchmark.
-- `make pull-sample` to study Kaggle's reference agent (the same one
-  currently sitting on the leaderboard).
-- The competition's [discussion forum](https://www.kaggle.com/competitions/arc-prize-2026-arc-agi-3/discussion)
-  for community Q&A.
-
-Good luck. Looking forward to seeing what you build.
+This repository started from the ARC Prize [ARC-AGI-3-Kaggle-Starter](https://github.com/arcprize/ARC-AGI-3-Kaggle-Starter)
+kit. Its original README is kept as [`docs/STARTER_README.md`](docs/STARTER_README.md).
